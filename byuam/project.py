@@ -1,6 +1,7 @@
 import os
 
 from .body import Body, Asset, Shot
+from .department import Department
 from .element import Element
 from .environment import Environment
 from . import pipeline_io
@@ -77,7 +78,11 @@ class Project:
 			return None
 		datadict = Asset.create_new_dict(name)
 		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
-		return Asset(filepath)
+		new_asset = Asset(filepath)
+		for dept in Department.FRONTEND:
+			pipeline_io.mkdir(os.path.join(filepath, dept))
+			new_asset.create_element(dept, "main")
+		return new_asset
 
 	def create_shot(self, name):
 		"""
@@ -90,9 +95,13 @@ class Project:
 			return None
 		datadict = Shot.create_new_dict(name)
 		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
-		return Shot(filepath)
+		new_shot = Shot(filepath)
+		for dept in Department.BACKEND:
+			pipeline_io.mkdir(os.path.join(filepath, dept))
+			new_shot.create_element(dept, "main")
+		return new_shot
 
-	def __list_bodies(self, filepath):
+	def _list_bodies(self, filepath):
 		dirlist = os.listdir(filepath)
 		assetlist = []
 		for assetdir in dirlist:
@@ -106,10 +115,10 @@ class Project:
 		"""
 		returns a list of strings containing the names of all assets in this project
 		"""
-		return self.__list_bodies(self._env.get_assets_dir())
+		return self._list_bodies(self._env.get_assets_dir())
 
 	def list_shots(self):
 		"""
 		returns a list of strings containing the names of all shots in this project
 		"""
-		return self.__list_bodies(self._env.get_shots_dir())
+		return self._list_bodies(self._env.get_shots_dir())

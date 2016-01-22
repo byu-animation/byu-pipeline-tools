@@ -1,5 +1,6 @@
 import os
 
+from .department import Department
 from .element import Element
 from .environment import Environment
 from . import pipeline_io
@@ -49,30 +50,33 @@ class Body:
 		"""
 		raise NotImplementedError('subclass must implement get_parent_dir')
 
-	def get_element(self, department):
+	def get_element(self, department, name="main"):
 		"""
-		get the element object for this body from the given department. Raises
-		EnvironmentError if no such element exists
+		get the element object for this body from the given department. Raises EnvironmentError 
+		if no such element exists.
 		department -- the department to get the element from
+		name -- the name of the element to get. Defaults to "main" which is the name of the
+				element created by default for each department.
 		"""
-		element_dir = os.path.join(self.get_parent_dir(), self.get_name(), department)
+		element_dir = os.path.join(self._filepath, department, name)
 		if not os.path.exists(element_dir):
 			raise EnvironmentError(element_dir + " does not exist")
 
 		return Registry().create_element(department, element_dir)
 
-	def create_element(self, department):
+	def create_element(self, department, name):
 		"""
 		create an element for this body from the given department and return
 		the resulting element object. Returns None if the element already exists.
 		department -- the department to create the element for
+		name -- the name of the element to create
 		"""
-		element_dir = os.path.join(self._filepath, department)
+		element_dir = os.path.join(self._filepath, department, name)
 		if not pipeline_io.mkdir(element_dir):
 			return None
 		empty_element = Registry().create_element(department)
-		datadict = empty_element.create_new_dict(self.get_name(), department)
-		pipeline_io.writefile(os.path.join(element_dir, Element.PIPELINE_FILENAME), datadict)
+		datadict = empty_element.create_new_dict(name, department, self.get_name())
+		pipeline_io.writefile(os.path.join(element_dir, empty_element.PIPELINE_FILENAME), datadict)
 		return Registry().create_element(department, element_dir)
 
 
