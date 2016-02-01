@@ -1,5 +1,5 @@
 from byuam.body import Asset, Shot
-from byuam.department import Department
+from byuam.environment import Department
 from byuam.element import Element
 from byuam.project import Project
 import getpass

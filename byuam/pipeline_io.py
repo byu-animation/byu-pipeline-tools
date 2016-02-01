@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 def readfile(filepath):
 	"""
@@ -31,8 +32,24 @@ def version_file(filepath, zero_pad=3):
 	"""
 	versions up the given file based on other files in the same directory. The given filepath 
 	should not have a version at the end. e.g. given "/tmp/file.txt" this function will return 
-	"/tmp/file_000.txt" unless there is already a file_000.txt in /tmp, in which case it will 
-	return "/tmp/file_001.txt". zero_pad specifies how many digits to include in the version 
+	"/tmp/file_000.txt" unless there is already a file000.txt in /tmp, in which case it will 
+	return "/tmp/file001.txt". zero_pad specifies how many digits to include in the version 
 	number--the default is 3.
 	"""
 	raise NotImplementedError() # TODO
+
+def version_dir(dirpath, zero_pad=3):
+	"""
+	versions up the given directory based on other directories in the same directory. The given dirpath 
+	should not have a version at the end. e.g. given "/tmp/v" this function will return 
+	"/tmp/v000" unless there is already a v000 dir in /tmp, in which case it will 
+	return "/tmp/v001". zero_pad specifies how many digits to include in the version 
+	number--the default is 3.
+	"""
+	raise NotImplementedError() # TODO
+
+def timestamp():
+	"""
+	return a string containing the current time
+	"""
+	return time.strftime("%a, %d %b %Y %I:%M:%S %p", time.localtime())

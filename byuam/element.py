@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from .environment import Environment
+from .environment import Environment, Status
 from . import pipeline_io
 
 """
@@ -13,6 +13,7 @@ class Element:
     Abstract class describing elements that make up an asset or shot body.
     """
     PIPELINE_FILENAME = ".element"
+    DEFAULT_NAME = "main"
 
     NAME = "name"
     PARENT_NAME = "parent_name"
@@ -20,6 +21,7 @@ class Element:
     STATUS = "status"
     LATEST_VERSION = "latest_version"
     ASSIGNED_USER = "assigned_user"
+    PUBLISHES = "publishes"
     START_DATE = "start_date"
     END_DATE = "end_date"
     APP_EXT = "app_ext"
@@ -35,9 +37,10 @@ class Element:
         datadict[Element.NAME] = name
         datadict[Element.PARENT_NAME] = parent_name
         datadict[Element.DEPARTMENT] = department
-        datadict[Element.STATUS] = "WAIT" # TODO: status enumeration?
-        datadict[Element.LATEST_VERSION] = 0
+        datadict[Element.STATUS] = Status.WAIT
+        datadict[Element.LATEST_VERSION] = -1
         datadict[Element.ASSIGNED_USER] = ""
+        datadict[Element.PUBLISHES] = []
         datadict[Element.START_DATE] = ""
         datadict[Element.END_DATE] = ""
         datadict[Element.APP_EXT] = ""
@@ -97,6 +100,22 @@ class Element:
 
         return self._datadict[Element.ASSIGNED_USER]
 
+    def get_last_publish(self):
+        """
+        return a tuple describing the latest publish: (user, timestamp, comment)
+        """
+        latest_version = _datadict[Element.LATEST_VERSION]
+        if(latest_version<0):
+            return None
+        return self._datadict[Element.PUBLISHES][latest_version]
+
+    def list_publishes(self):
+        """
+        return a list of tuples describing all publishes for this element.
+        each tuple contains the following: (user, timestamp, comment)
+        """
+        return self._datadict[Element.PUBLISHES]
+
     def get_start_date(self):
 
         return self._datadict[Element.START_DATE]
@@ -119,12 +138,18 @@ class Element:
         """
         return self.get_name()+self.get_app_ext()
 
-    def get_app_file(self):
+    def get_app_filepath(self):
         """
-        return a string containing the absolute filepath for the application file of this element
+        return the absolute filepath of the application file for this element
         """
         filename = self.get_app_filename()
         return os.path.join(self._filepath, filename)
+
+    def get_version_dir(self, version):
+        """
+        return the path to the directory of the given version
+        """
+        os.path.join(self._filepath, '.v'+"%03d" % version)
 
     def get_cache_ext(self):
         """
@@ -175,30 +200,18 @@ class Element:
             self._datadict[Element.CHECKOUT_USERS].append(user)
             self._update_pipeline_file()
 
-    def version_up(self, date):
+    def version_up(self):
         """
-        Increment this element's latest version
+        Increment this element's latest version. Copies the stable app file to the new version folder.
+        If this element has no stable app file, throws IOError
         """
-        self._datadict[Element.LATEST_VERSION] += 1
+        new_version = self._datadict[Element.LATEST_VERSION] + 1
+        self._datadict[Element.LATEST_VERSION] = new_version
         self._update_pipeline_file()
-        # TODO: create new version of the element and update stable reference
+        new_version_dir = os.path.join(self._filepath, 'v'+"%03d" % (new_version+1))
+        pipeline_io.mkdir(new_version_dir)
+        shutil.copy(self.get_app_filepath(), new_version_dir)
         return self._datadict[Element.LATEST_VERSION]
-
-    def replace_app_file(self, src, user):
-        """
-        Replace the applcation file of this element. Create a new version with the new file.
-        src -- the file to be placed in the new version
-        user -- the user performing this action
-        """
-        raise NotImplementedError('subclass must implement update_file')
-
-    def replace_cache(self, src, user):
-        """
-        Replace the cache of this element. Create a new version with the new cache.
-        src -- the cache to be placed in the new version
-        user -- the user performing this action
-        """
-        raise NotImplementedError('subclass must implement update_cache')
 
     def create_new_app_file(self, location):
         """
@@ -209,13 +222,15 @@ class Element:
     def checkout(self, user):
         """
         Copies the element to the given user's work area in a directory with the following name:
-            {the parent body's name}_{this element's name} 
+            {the parent body's name}_{this element's department}_{this element's name} 
         Returns the absolute filepath to the copied file. Adds user to the list of checkout users.
         """
-        app_file = self.get_app_file()
+        app_file = self.get_app_filepath()
         if not os.path.exists(app_file):
             self.create_new_app_file(app_file)
-        checkout_dir = os.path.join(self._env.get_users_dir(), user, self.get_parent_name()+"_"+self.get_department()) # TODO: decide on convention for checkout directories
+        checkout_dir = os.path.join(self._env.get_users_dir(), user, self.get_parent_name()+"_"+
+                                                                     self.get_department()+"_"+
+                                                                     self.get_name())
         pipeline_io.mkdir(checkout_dir)
         checkout_filename = self.get_app_filename()
         checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
@@ -223,7 +238,55 @@ class Element:
         self.update_checkout_users(user)
         return checkout_file
 
+    def publish_app_file(self, user, src, comment, status=None):
+        """
+        Replace the applcation file of this element. Create a new version with the new file.
+        user -- the user performing this action
+        src -- the file to be placed in the new version
+        comment -- description of changes made in this publish
+        status -- new status for this element, defaults to None in which case no change will be made
+        """
+        dst = self.get_app_filepath()
+        timestamp = pipeline_io.timestamp()
+        self._datadict[self.PUBLISHES].append((user, timestamp, comment))
+        shutil.copyfile(src, dst)
 
+        new_version = self._datadict[Element.LATEST_VERSION] + 1
+        self._datadict[Element.LATEST_VERSION] = new_version
+        new_version_dir = self.get_version_dir(new_version)
+        pipeline_io.mkdir(new_version_dir)
+        shutil.copy(src, new_version_dir)
+
+        if status is not None:
+            self._datadict[Element.STATUS] = status
+
+        self._update_pipeline_file()
+
+    def publish_cache_file(self, user, src):
+        """
+        Replace the cache of this element.
+        user -- the user performing this action
+        src -- the new cache file
+        """
+        raise NotImplementedError()
+
+    def replace_cache_file(self, user, src):
+        """
+        Replace the cache of this element.
+        user -- the user performing this action
+        src -- the new cache file
+        """
+        raise NotImplementedError() # TODO
+
+    def publish(self, user, app_filepath, cache_filepath, comment): #TODO
+        """
+        update the stable version of this element and replace the cache file.
+        """
+        self.publish_app_file(user, app_filepath, comment)
+        self.publish_cache_file(user, cache_filepath)
+
+
+# TODO : do we need shot vs asset elements?
 class ShotElement(Element):
     """
     Abstract class describing elements that make up a shot.

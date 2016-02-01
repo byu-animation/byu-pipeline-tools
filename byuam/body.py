@@ -1,8 +1,8 @@
 import os
 
-from .department import Department
+# from .department import Department
 from .element import Element
-from .environment import Environment
+from .environment import AssetType, Department, Environment
 from . import pipeline_io
 from .registry import Registry
 
@@ -15,10 +15,10 @@ class Body:
 	Abstract class describing bodies that make up a project.
 	"""
 	# TODO allow users to subscribe to a body and recieve emails when changes are made
-	# TODO allow more than one element per department to be created
 	PIPELINE_FILENAME = ".body"
 
 	NAME = 'name'
+	REFERENCES = 'references'
 	
 	@staticmethod
 	def create_new_dict(name):
@@ -27,6 +27,7 @@ class Body:
 		"""
 		datadict = {}
 		datadict[Body.NAME] = name
+		datadict[Body.REFERENCES] = []
 		return datadict
 
 	def __init__(self, filepath):
@@ -50,12 +51,12 @@ class Body:
 		"""
 		raise NotImplementedError('subclass must implement get_parent_dir')
 
-	def get_element(self, department, name="main"):
+	def get_element(self, department, name=Element.DEFAULT_NAME):
 		"""
 		get the element object for this body from the given department. Raises EnvironmentError 
 		if no such element exists.
 		department -- the department to get the element from
-		name -- the name of the element to get. Defaults to "main" which is the name of the
+		name -- the name of the element to get. Defaults to the name of the
 				element created by default for each department.
 		"""
 		element_dir = os.path.join(self._filepath, department, name)
@@ -79,6 +80,34 @@ class Body:
 		pipeline_io.writefile(os.path.join(element_dir, empty_element.PIPELINE_FILENAME), datadict)
 		return Registry().create_element(department, element_dir)
 
+	def add_reference(self, reference):
+		"""
+		Add a reference to this body. If it already exists, do nothing. If reference is not a valid 
+		body, raise an EnvironmentError.
+		"""
+		reference_path = os.path.join(self.get_parent_dir(), reference, Body.PIPELINE_FILENAME)
+		if not os.path.exists(reference_path):
+			raise EnvironmentError(reference + " is not a valid body")
+		if reference not in self._datadict[Body.REFERENCES]:
+			self._datadict[Body.REFERENCES].append(reference)
+
+	def remove_reference(self, reference):
+		"""
+		Remove the given reference, if it exists, and return True. Otherwise do nothing, and return False.
+		"""
+		try:
+			self._datadict[Body.REFERENCES].remove(reference)
+			return True
+		except ValueError:
+			return False
+
+	def get_references(self):
+		"""
+		Return a list of all references for this body.
+		"""
+		return self._datadict[Body.REFERENCES]
+
+
 
 class Asset(Body):
 	"""
@@ -91,11 +120,10 @@ class Asset(Body):
 	def create_new_dict(name):
 		
 		datadict = Body.create_new_dict(name)
-		datadict[Asset.TYPE] = "CHAR"
+		datadict[Asset.TYPE] = AssetType.PROP
 		return datadict
 
 	# TODO check valid asset names (alpha_numeric, etc)
-	# TODO references to other assets ?
 
 	def get_parent_dir(self):
 
@@ -103,7 +131,7 @@ class Asset(Body):
 
 	def get_type(self):
 
-		return self._datadict[Asset.TYPE] # TODO: asset type enumeration? e.g. PROP, SET, CHAR, etc.
+		return self._datadict[Asset.TYPE]
 
 
 from body import Body
@@ -125,8 +153,7 @@ class Shot(Body):
 		datadict[Shot.FRAME_RANGE] = 0
 		return datadict
 
-	# TODO check valid shot names (zero padded etc.)
-	# TODO reference assets ?
+	# TODO check valid shot names
 
 	def get_parent_dir(self):
 
