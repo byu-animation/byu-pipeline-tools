@@ -38,22 +38,82 @@ class Environment:
 		"""
 		return the absolute filepath to the directory of the current project
 		"""
-		return self._project_dir
+		return os.path.abspath(self._project_dir)
 
 	def get_assets_dir(self):
 		"""
 		return the absolute filepath to the assets directory of the current project
 		"""
-		return self._datadict[Environment.ASSETS_DIR]
+		return os.path.abspath(self._datadict[Environment.ASSETS_DIR])
 
 	def get_shots_dir(self):
 		"""
 		return the absolute filepath to the shots directory of the current project
 		"""
-		return self._datadict[Environment.SHOTS_DIR]
+		return os.path.abspath(self._datadict[Environment.SHOTS_DIR])
 
 	def get_users_dir(self):
 		"""
 		return the absolute filepath to the users directory of the current project
 		"""
-		return self._datadict[Environment.USERS_DIR]
+		return os.path.abspath(self._datadict[Environment.USERS_DIR])
+
+
+class Department:
+	"""
+	Class describing departments that work on a project.
+	"""
+
+	DESIGN = "design"
+	MODEL = "model"
+	RIG = "rig"
+	STORY = "story"
+	LAYOUT = "layout"
+	ANIM = "anim"
+	MATERIAL = "material"
+	CFX = "cfx"
+	FX = "fx"
+	LIGHTING = "lighting"
+	COMP = "comp"
+	FRONTEND = [DESIGN, MODEL, RIG, MATERIAL]
+	BACKEND = [STORY, LAYOUT, ANIM, CFX, FX, LIGHTING, COMP]
+	ALL = [DESIGN, MODEL, RIG, MATERIAL, STORY, LAYOUT, ANIM, CFX, FX, LIGHTING, COMP]
+
+
+class Status:
+	"""
+	Class describing status levels for elements.
+	"""
+
+	WAIT = "wait"
+	READY = "ready"
+	STARTED = "started"
+	DONE = "done"
+	ALL = [WAIT, READY, STARTED, DONE]
+
+	def get_level(name):
+		"""
+		given a status name return the equivalent level
+		e.g. WAIT    -> 0
+			 READY   -> 1
+			 STARTED -> 2
+			 DONE    -> 3
+		"""
+		return Status.ALL.index(status)
+
+	def get_name(level):
+		"""
+		given a status level return the equivalent name
+		"""
+		return Status.ALL[level]
+
+
+class AssetType:
+	"""
+	Class describing types of assets.
+	"""
+
+	CHAR = "char"
+	SET = "set"
+	PROP = "prop"
+

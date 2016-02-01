@@ -1,5 +1,6 @@
-from .department import Department
+# from .department import Department
 from .element import Element, AssetElement, ShotElement
+from .environment import Department
 
 class Registry:
 	"""

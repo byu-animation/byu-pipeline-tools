@@ -1,9 +1,9 @@
 import os
 
 from .body import Body, Asset, Shot
-from .department import Department
+# from .department import Department
 from .element import Element
-from .environment import Environment
+from .environment import Department, Environment
 from . import pipeline_io
 from .registry import Registry
 
@@ -81,7 +81,7 @@ class Project:
 		new_asset = Asset(filepath)
 		for dept in Department.FRONTEND:
 			pipeline_io.mkdir(os.path.join(filepath, dept))
-			new_asset.create_element(dept, "main")
+			new_asset.create_element(dept, Element.DEFAULT_NAME)
 		return new_asset
 
 	def create_shot(self, name):
@@ -98,7 +98,7 @@ class Project:
 		new_shot = Shot(filepath)
 		for dept in Department.BACKEND:
 			pipeline_io.mkdir(os.path.join(filepath, dept))
-			new_shot.create_element(dept, "main")
+			new_shot.create_element(dept, Element.DEFAULT_NAME)
 		return new_shot
 
 	def _list_bodies(self, filepath):
