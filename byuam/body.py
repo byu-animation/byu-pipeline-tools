@@ -61,24 +61,44 @@ class Body:
 		"""
 		element_dir = os.path.join(self._filepath, department, name)
 		if not os.path.exists(element_dir):
-			raise EnvironmentError(element_dir + " does not exist")
+			raise EnvironmentError("no such element: " + element_dir + " does not exist")
 
 		return Registry().create_element(department, element_dir)
 
 	def create_element(self, department, name):
 		"""
-		create an element for this body from the given department and return
-		the resulting element object. Returns None if the element already exists.
+		create an element for this body from the given department and return the 
+		resulting element object. Raises EnvironmentError if the element already exists.
 		department -- the department to create the element for
 		name -- the name of the element to create
 		"""
+		dept_dir = os.path.join(self._env.get_assets_dir())
+		if not os.path.exists(dept_dir):
+			pipeline_io.mkdir(dept_dir)
+		filepath = os.path.join(dept_dir, name)
 		element_dir = os.path.join(self._filepath, department, name)
 		if not pipeline_io.mkdir(element_dir):
-			return None
+			raise EnvironmentError("element already exists: " + element_dir)
 		empty_element = Registry().create_element(department)
 		datadict = empty_element.create_new_dict(name, department, self.get_name())
 		pipeline_io.writefile(os.path.join(element_dir, empty_element.PIPELINE_FILENAME), datadict)
 		return Registry().create_element(department, element_dir)
+
+	def list_elements(self, department):
+		"""
+		return a list of all elements for the given department in this body
+		"""
+		subdir = os.path.join(self._filepath, department)
+		if not os.path.exists(subdir):
+			return []
+		dirlist = os.listdir(subdir)
+		elementlist = []
+		for elementdir in dirlist:
+			abspath = os.path.join(subdir, elementdir)
+			if os.path.exists(os.path.join(abspath, Element.PIPELINE_FILENAME)):
+				elementlist.append(elementdir)
+		elementlist.sort()
+		return elementlist
 
 	def add_reference(self, reference):
 		"""
