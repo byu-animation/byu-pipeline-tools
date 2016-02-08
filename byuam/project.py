@@ -2,7 +2,7 @@ import os
 
 from .body import Body, Asset, Shot
 # from .department import Department
-from .element import Element
+from .element import Checkout, Element
 from .environment import Department, Environment
 from . import pipeline_io
 from .registry import Registry
@@ -70,12 +70,12 @@ class Project:
 	def create_asset(self, name):
 		"""
 		creates a new shot with the given name, and returns the resulting shot object.
-		If a shot with that name already exists, returns None.
+		If a shot with that name already exists, raises EnvironmentError.
 		name -- the name of the new shot to create
 		"""
 		filepath = os.path.join(self._env.get_assets_dir(), name)
 		if not pipeline_io.mkdir(filepath):
-			return None
+			raise EnvironmentError("asset already exists: "+filepath)
 		datadict = Asset.create_new_dict(name)
 		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
 		new_asset = Asset(filepath)
@@ -87,12 +87,12 @@ class Project:
 	def create_shot(self, name):
 		"""
 		creates a new shot with the given name, and returns the resulting shot object.
-		If a shot with that name already exists, returns None.
+		If a shot with that name already exists, raises EnvironmentError.
 		name -- the name of the new shot to create
 		"""
 		filepath = os.path.join(self._env.get_shots_dir(), name)
 		if not pipeline_io.mkdir(filepath):
-			return None
+			raise EnvironmentError("shot already exists: "+filepath)
 		datadict = Shot.create_new_dict(name)
 		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
 		new_shot = Shot(filepath)
@@ -106,7 +106,7 @@ class Project:
 		assetlist = []
 		for assetdir in dirlist:
 			abspath = os.path.join(filepath, assetdir)
-			if os.path.isdir(abspath) and os.path.exists(os.path.join(abspath, Body.PIPELINE_FILENAME)):
+			if os.path.exists(os.path.join(abspath, Body.PIPELINE_FILENAME)):
 				assetlist.append(assetdir)
 		assetlist.sort()
 		return assetlist
@@ -122,3 +122,19 @@ class Project:
 		returns a list of strings containing the names of all shots in this project
 		"""
 		return self._list_bodies(self._env.get_shots_dir())
+
+	def is_checkout_dir(self, path):
+		"""
+		returns True if the given path is a valid checkout directory
+		returns False otherwise
+		"""
+		return os.path.exists(os.path.join(path, Checkout.PIPELINE_FILENAME))
+
+	def get_checkout(self, path):
+		"""
+		returns the Checkout object describing the checkout operation at the given path
+		If the path is not a valid checkout directory, returns None
+		"""
+		if not is_checkout_dir(path):
+			return None
+		return Checkout(path)
