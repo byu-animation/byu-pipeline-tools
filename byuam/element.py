@@ -58,6 +58,10 @@ class Checkout:
 
         return self._datadict[self.ELEMENT]
 
+    def get_user(self):
+
+        return self._datadict[self.USER]
+
     def list_files(self):
         """
         list all the files that have been created in this checkout directory from valid checkout operations
@@ -69,6 +73,16 @@ class Checkout:
         list all the timestamps of checkout operations performed in this checkout directory
         """
         return self._datadict[self.TIMES]
+
+    def add_operation(self, filepath):
+        """
+        record the result of a checkout operation.
+        filepath -- the file that was checked out as a result of the operation.
+        """
+        self._datadict[self.FILES].append(filepath)
+        self._datadict[self.TIMES].append(pipeline_io.timestamp())
+        pipeline_io.writefile(self._pipeline_file, self._datadict)
+
 
 class Element:
     """
@@ -170,7 +184,7 @@ class Element:
         """
         return a tuple describing the latest publish: (user, timestamp, comment)
         """
-        latest_version = _datadict[self.LATEST_VERSION]
+        latest_version = self._datadict[self.LATEST_VERSION]
         if(latest_version<0):
             return None
         return self._datadict[self.PUBLISHES][latest_version]
@@ -215,7 +229,7 @@ class Element:
         """
         return the path to the directory of the given version
         """
-        os.path.join(self._filepath, '.v'+"%03d" % version)
+        return os.path.join(self._filepath, ".v%03d" % version)
 
     def get_cache_ext(self):
         """
@@ -226,13 +240,18 @@ class Element:
 
     def get_cache_location(self):
 
-        raise NotImplementedError('subclass must implement get_cache_location')       
+        return self._datadict[self.CACHE_FILEPATH]      
 
-    def get_checkout_users(self):
+    def list_checkout_users(self):
         """
         return a list of all users who have checked out this element
         """
         return self._datadict[self.CHECKOUT_USERS]
+
+    def update_status(self, status):
+
+        self._datadict[self.STATUS] = status
+        self._update_pipeline_file()
 
     def update_assigned_user(self, user):
         """
@@ -270,7 +289,8 @@ class Element:
         """
         creates a new empty file for this element at the given location.
         """
-        raise NotImplementedError('subclass must implement create_new_app_file')
+        open(self.get_app_filepath(), 'a').close() 
+        # raise NotImplementedError('subclass must implement create_new_app_file') # TODO
 
     def get_checkout_dir(self, user):
         """
@@ -290,11 +310,16 @@ class Element:
         if not os.path.exists(app_file):
             self.create_new_app_file(app_file)
         checkout_dir = self.get_checkout_dir(user)
-        pipeline_io.mkdir(checkout_dir)
+        if not os.path.exists(checkout_dir):
+            pipeline_io.mkdir(checkout_dir)
+            datadict = Checkout.create_new_dict(user, self.get_parent(), self.get_department(), self.get_name())
+            pipeline_io.writefile(os.path.join(checkout_dir, Checkout.PIPELINE_FILENAME), datadict)
+        checkout = Checkout(checkout_dir)
         checkout_filename = self.get_app_filename()
         checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
         shutil.copyfile(app_file, checkout_file)
         self.update_checkout_users(user)
+        checkout.add_operation(checkout_file)
         return checkout_file
 
     def publish(self, user, src, comment, status=None):

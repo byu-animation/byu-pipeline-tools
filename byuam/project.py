@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from .body import Body, Asset, Shot
 # from .department import Department
@@ -135,6 +136,18 @@ class Project:
 		returns the Checkout object describing the checkout operation at the given path
 		If the path is not a valid checkout directory, returns None
 		"""
-		if not is_checkout_dir(path):
+		if not self.is_checkout_dir(path):
 			return None
 		return Checkout(path)
+
+	def delete_shot(self, shot):
+		"""
+		delete the given shot
+		"""
+		shutil.rmtree(os.path.join(self.get_shots_dir(), shot))
+
+	def delete_asset(self, asset):
+		"""
+		delete the given asset
+		"""
+		shutil.rmtree(os.path.join(self.get_asset_dir(), asset))
