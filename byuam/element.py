@@ -238,7 +238,7 @@ class Element:
         """
         return self._datadict[self.CACHE_EXT]
 
-    def get_cache_location(self):
+    def get_cache_filepath(self):
 
         return self._datadict[self.CACHE_FILEPATH]      
 
@@ -366,7 +366,10 @@ class Element:
             self._datadict[self.CACHE_FILEPATH] = ref_path
         else:
             cache_filename = os.path.basename(src)
-            cache_filepath = os.path.join(self._filepath, self.DEFAULT_CACHE_DIR, cache_filename)
+            cache_dir = os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)
+            if not os.path.exists(cache_dir):
+                pipeline_io.mkdir(cache_dir)
+            cache_filepath = os.path.join(cache_dir, cache_filename)
             shutil.copyfile(src, cache_filepath)
             self._datadict[self.CACHE_FILEPATH] = cache_filepath
 

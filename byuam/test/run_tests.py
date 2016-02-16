@@ -153,12 +153,16 @@ class TestElement(TestAssetManager):
 				self.assertEquals(comment, publish[2])
 				self.assertTrue(os.path.exists(element.get_version_dir(0)))
 
+				element.replace_cache(self.user, checkout_path)
+				self.assertTrue(os.path.exists(element.get_cache_filepath()))
+
 
 		self.assertEquals(count, self.element_count)
 
 
 if __name__ == "__main__":
-	if os.environ["BYU_PROJECT_DIR"].endswith("byu-pipeline-tools/byuam/test/"):
+	test_path = "byu-pipeline-tools/byuam/test/"
+	if os.environ["BYU_PROJECT_DIR"].endswith(test_path) or os.environ["BYU_PROJECT_DIR"].endswith(test_path[:-1]):
 		unittest.main()
 	else:
 		raise EnvironmentError("Cannot run automated tests on live project!!!")

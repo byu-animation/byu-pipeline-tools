@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+import argparse
+import os
+from byuam.environment import Environment
+from  byuam import pipeline_io
+from byuam.project import Project
+
+def create_project(path, name="test"):
+	production = os.path.join(path, "production")
+	if not os.path.exists(production):
+		pipeline_io.mkdir(production)
+	assets = os.path.join(production, "assets")
+	if not os.path.exists(assets):
+		pipeline_io.mkdir(assets)
+	shots = os.path.join(production, "shots")
+	if not os.path.exists(shots):
+		pipeline_io.mkdir(shots)
+	users = os.path.join(path, "users")
+	if not os.path.exists(users):
+		pipeline_io.mkdir(users)
+	datadict = Environment.create_new_dict(name, assets, shots, users)
+	pipeline_file = os.path.join(path, Environment.PIPELINE_FILENAME)
+	pipeline_io.writefile(pipeline_file, datadict)
+	print "To make this the active project, set the BYU_PROJECT_DIR environment variable:\nexport BYU_PROJECT_DIR=%s" % path
+
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("directory", type=str, help="location for new project")
+	args = parser.parse_args()
+	create_project(args.directory)

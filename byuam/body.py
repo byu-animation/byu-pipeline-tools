@@ -72,11 +72,10 @@ class Body:
 		department -- the department to create the element for
 		name -- the name of the element to create
 		"""
-		dept_dir = os.path.join(self._env.get_assets_dir())
+		dept_dir = os.path.join(self._filepath, department)
 		if not os.path.exists(dept_dir):
 			pipeline_io.mkdir(dept_dir)
-		filepath = os.path.join(dept_dir, name)
-		element_dir = os.path.join(self._filepath, department, name)
+		element_dir = os.path.join(dept_dir, name)
 		if not pipeline_io.mkdir(element_dir):
 			raise EnvironmentError("element already exists: " + element_dir)
 		empty_element = Registry().create_element(department)
