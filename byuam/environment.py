@@ -14,6 +14,15 @@ class Environment:
 	SHOTS_DIR = "shots_dir"
 	USERS_DIR = "users_dir"
 
+	@staticmethod
+	def create_new_dict(name, assets_dir, shots_dir, users_dir):
+		datadict = {}
+		datadict[Environment.PROJECT_NAME] = name
+		datadict[Environment.ASSETS_DIR] = assets_dir
+		datadict[Environment.SHOTS_DIR] = shots_dir
+		datadict[Environment.USERS_DIR] = users_dir
+		return datadict
+
 	def __init__(self):
 		"""
 		Creates an Environment instance from data in the .project file in the directory defined by the 
