@@ -238,9 +238,10 @@ class Element:
         """
         return self._datadict[self.CACHE_EXT]
 
-    def get_cache_filepath(self):
+    def get_cache_dir(self):
 
-        return self._datadict[self.CACHE_FILEPATH]      
+        # return self._datadict[self.CACHE_FILEPATH] 
+        return os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)     
 
     def list_checkout_users(self):
         """
@@ -357,16 +358,19 @@ class Element:
                      if true create a reference to the given source.
                      the reference is useful for very large cache files, where copying would be a hassle.
         """
-        if reference: # TODO: allow cache references?
+        if reference: # TODO: symbolic links?
             ref_path = os.path.normpath(src)
             if not ref_path.startswith(self._env.get_project_dir()):
                 raise EnvironmentError("attempted reference is not in the project directory: "+ref_path)
-            elif not os.path.exists(ref_path):
+            elif not os.path.exists(ref_path) or os.path.isdir(ref_path):
                 raise EnvironmentError("attempted reference does not exist: "+ref_path)
             self._datadict[self.CACHE_FILEPATH] = ref_path
+            cache_filename = os.path.basename(src)
+            cache_dir = self.get_cache_dir()
+            os.symlink(ref_path, os.path.join(cache_dir, cache_filename))
         else:
             cache_filename = os.path.basename(src)
-            cache_dir = os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)
+            cache_dir = self.get_cache_dir()
             if not os.path.exists(cache_dir):
                 pipeline_io.mkdir(cache_dir)
             cache_filepath = os.path.join(cache_dir, cache_filename)

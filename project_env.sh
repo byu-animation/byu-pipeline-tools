@@ -1,4 +1,7 @@
-export PYTHONPATH=${PYTHONPATH}:/groups/dusk/byu-pipeline-tools/
-export PATH=${PATH}:/groups/dusk/byu-pipeline-tools/bin/
-export BYU_PROJECT_DIR=/groups/dusk/
+export BYU_PROJECT_DIR=/groups/dusk
+export BYU_TOOLS_DIR=/groups/dusk/byu-pipeline-tools
+
+export PYTHONPATH=${PYTHONPATH}:${BYU_TOOLS_DIR}
+export PATH=${PATH}:${BYU_TOOLS_DIR}/bin
+
 
