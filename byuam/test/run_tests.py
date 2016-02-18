@@ -154,7 +154,7 @@ class TestElement(TestAssetManager):
 				self.assertTrue(os.path.exists(element.get_version_dir(0)))
 
 				element.replace_cache(self.user, checkout_path)
-				self.assertTrue(os.path.exists(element.get_cache_filepath()))
+				self.assertTrue(os.path.exists(element.get_cache_dir()))
 
 
 		self.assertEquals(count, self.element_count)
