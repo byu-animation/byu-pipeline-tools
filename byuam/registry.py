@@ -16,13 +16,13 @@ class Registry:
 		self._registrydict[Department.RIG] = self.asset_element_factory
 		self._registrydict[Department.TEXTURE] = self.asset_element_factory
 		self._registrydict[Department.MATERIAL] = self.asset_element_factory
-		self._registrydict[Department.STORY] = self.shot_element_factory
 		self._registrydict[Department.LAYOUT] = self.shot_element_factory
 		self._registrydict[Department.ANIM] = self.shot_element_factory
 		self._registrydict[Department.CFX] = self.shot_element_factory
 		self._registrydict[Department.FX] = self.shot_element_factory
 		self._registrydict[Department.LIGHTING] = self.shot_element_factory
 		self._registrydict[Department.COMP] = self.shot_element_factory
+		self._registrydict[Department.RENDER] = self.shot_element_factory
 
 	def element_factory(self, filepath):
 		return Element(filepath)

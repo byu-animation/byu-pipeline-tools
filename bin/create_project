@@ -6,6 +6,7 @@ from  byuam import pipeline_io
 from byuam.project import Project
 
 def create_project(path, name="test"):
+	path = os.path.abspath(path)
 	production = os.path.join(path, "production")
 	if not os.path.exists(production):
 		pipeline_io.mkdir(production)
@@ -28,4 +29,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("directory", type=str, help="location for new project")
 	args = parser.parse_args()
-	create_project(args.directory)
+	if os.path.exists(os.path.join(args.directory, Environment.PIPELINE_FILENAME)):
+		print "project already exists"
+	else:
+		create_project(args.directory)
