@@ -1,4 +1,6 @@
 from PyQt4 import QtGui, QtCore
+import sys, os
+from byuam.project import Project
 
 CHECKOUT_WINDOW_WIDTH = 340
 CHECKOUT_WINDOW_HEIGHT = 575
@@ -10,11 +12,11 @@ Checkout Dialog is the Dialog window for the Checkout tool
 
 class CheckoutWindow(QtGui.QWidget):
     def _init_(self):
+        super(CheckoutWindow, self)._init_()
         # self.project = Project()
         self.dept_list = ['Model', 'Rig', 'Animation', 'Layout']
 
         # Initialize the GUI
-        QtGui.QWidget._init_(self)
         self.setWindowTitle('Checkout')
         self.setFixedSize(CHECKOUT_WINDOW_WIDTH, CHECKOUT_WINDOW_HEIGHT)
 
@@ -71,9 +73,8 @@ class CheckoutWindow(QtGui.QWidget):
 
 
 if __name__ == '__main__':
-    import sys
-
     app = QtGui.QApplication(sys.argv)
-    window = CheckoutWindow()
-    window.show()
+    #window = CheckoutWindow()
+    #window.show()
+    ex = CheckoutWindow()
     sys.exit(app.exec_())
