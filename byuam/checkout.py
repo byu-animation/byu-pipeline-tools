@@ -1,5 +1,5 @@
 from PyQt4 import QtGui, QtCore
-import sys, os
+import sys
 from byuam.project import Project
 
 CHECKOUT_WINDOW_WIDTH = 340
