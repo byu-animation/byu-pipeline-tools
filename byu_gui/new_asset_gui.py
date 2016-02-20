@@ -2,7 +2,7 @@
 
 import sys
 import os
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 
 #set widget styles
@@ -15,6 +15,7 @@ stylesheet = """
 			    background-color: black;
 	        }
 	    """
+
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 150
 	    
@@ -71,8 +72,9 @@ class newAssetWindow(QtGui.QWidget):
     def createAsset(self):
 	    try:
 	        name = str(self.textField.text())
+	        name = name.replace(' ', '_')
 	        project = Project()
-	        if(self.element == 'asset'):
+	        if self.element == 'asset':
 	            asset = project.create_asset(name)
 	        else:
 			    shot = project.create_shot(name)
@@ -80,6 +82,11 @@ class newAssetWindow(QtGui.QWidget):
 	    except EnvironmentError, e:
 		    print e
 		    app.quit()
+		    
+    def keyPressEvent(self, event):
+	    key = event.key()
+	    if key == QtCore.Qt.Key_Return:
+		    self.createAsset()
     
 	    
 if __name__ == '__main__':
