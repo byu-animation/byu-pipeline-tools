@@ -1,3 +1,5 @@
+# Author: Trevor Barrus
+
 import sys
 import os
 from PyQt4 import QtGui
@@ -13,18 +15,38 @@ stylesheet = """
 			    background-color: black;
 	        }
 	    """
-
-class newAssetWindow(QtGui.QWidget):
+WINDOW_WIDTH = 300
+WINDOW_HEIGHT = 150
+	    
+class createWindow(QtGui.QTabWidget):
     def __init__(self):
-	    super(newAssetWindow, self).__init__()
+	    super(createWindow, self).__init__()
 	    self.initUI()
 	    
     def initUI(self):
 	    #define gui elements
-	    self.setGeometry(300,300,400,150)
-	    self.setWindowTitle('New Asset')
+	    self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
+	    self.setWindowTitle('Create New Element')
 	    self.setStyleSheet(stylesheet)
-	    self.label = QtGui.QLabel('Enter the asset name')
+	    
+	    #create tabs
+	    tab1 = newAssetWindow('asset')
+	    tab2 = newAssetWindow('shot')
+	    
+	    self.addTab(tab1, 'Asset')
+	    self.addTab(tab2, 'Shot')
+	    self.show()
+
+class newAssetWindow(QtGui.QWidget):
+    def __init__(self, element):
+	    super(newAssetWindow, self).__init__()
+	    self.element = element
+	    self.initUI()
+	    
+    def initUI(self):
+	    #define gui elements
+	    self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
+	    self.label = QtGui.QLabel('Enter the %s name' % self.element)
 	    self.textField = QtGui.QLineEdit()
 	    self.okBtn = QtGui.QPushButton('Ok')
 	    self.okBtn.clicked.connect(self.createAsset)
@@ -44,14 +66,16 @@ class newAssetWindow(QtGui.QWidget):
 	    grid.addWidget(self.textField, 1, 0, 1, 3)
 	    grid.addWidget(self.okBtn, 2, 1)
 	    grid.addWidget(self.cancelBtn, 2, 2)
-	    self.show()
 	
-	#create container
+	#generate directories
     def createAsset(self):
 	    try:
 	        name = str(self.textField.text())
 	        project = Project()
-	        asset = project.create_asset(name)
+	        if(self.element == 'asset'):
+	            asset = project.create_asset(name)
+	        else:
+			    shot = project.create_shot(name)
 	        app.quit()
 	    except EnvironmentError, e:
 		    print e
@@ -60,5 +84,5 @@ class newAssetWindow(QtGui.QWidget):
 	    
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = newAssetWindow()
+    ex = createWindow()
     sys.exit(app.exec_())
