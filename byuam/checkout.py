@@ -1,33 +1,30 @@
-from PyQt4 import QtGui, QtCore
-import sys
-from byuam.project import Project
-
-CHECKOUT_WINDOW_WIDTH = 340
-CHECKOUT_WINDOW_HEIGHT = 575
+from PyQt4 import QtGui
+import sys, os
+#from byuam.project import Project
 
 """
 Checkout Dialog is the Dialog window for the Checkout tool
 """
-
-
 class CheckoutWindow(QtGui.QWidget):
     def _init_(self):
         super(CheckoutWindow, self)._init_()
+        
         # self.project = Project()
         self.dept_list = ['Model', 'Rig', 'Animation', 'Layout']
 
         # Initialize the GUI
+        self.setGeometry(300, 300, 340, 575)
         self.setWindowTitle('Checkout')
-        self.setFixedSize(CHECKOUT_WINDOW_WIDTH, CHECKOUT_WINDOW_HEIGHT)
+        #self.setFixedSize(
 
         # Create tabbed view
-        self.dept_tabs = QtGui.QTabWidget()
-        for dept in self.dept_list:
-            self.dept_tabs.addTab(dept)
+        #self.dept_tabs = QtGui.QTabWidget()
+        #for dept in self.dept_list:
+        #    self.dept_tabs.addTab(dept)
 
         # Create Label to hold asset info
-        self.asset_info_label = QtGui.QLabel()
-        self.asset_info_label.setWordWrap(True)
+        #self.asset_info_label = QtGui.QLabel()
+        #self.asset_info_label.setWordWrap(True)
 
         # Create action buttons
         self.checkout_button = QtGui.QPushButton('Checkout')
@@ -42,20 +39,20 @@ class CheckoutWindow(QtGui.QWidget):
 
         # Create main layout
         main_layout = QtGui.QVBoxLayout()
+        self.setLayout(main_layout)
         main_layout.setSpacing(5)
         main_layout.setMargin(6)
-        main_layout.addWidget(self.dept_tabs)
-        main_layout.addWidget(self.asset_info_label)
+        #main_layout.addWidget(self.dept_tabs)
+        #main_layout.addWidget(self.asset_info_label)
         main_layout.addLayout(button_layout)
 
-        self.setLayout(main_layout)
-
         # Change checkout context
-        self.dept_tabs.currentChanged.connect(self.refresh)
+        #self.dept_tabs.currentChanged.connect(self.refresh)
 
         # Connect the buttons
         self.checkout_button.clicked.connect(self.checkout)
         self.cancel_button.clicked.connect(self.cancel)
+       
 
     def checkout(self):
         """
@@ -74,7 +71,6 @@ class CheckoutWindow(QtGui.QWidget):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    #window = CheckoutWindow()
-    #window.show()
-    ex = CheckoutWindow()
+    window = CheckoutWindow()
+    window.show()
     sys.exit(app.exec_())
