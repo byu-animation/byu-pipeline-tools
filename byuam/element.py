@@ -358,33 +358,25 @@ class Element:
                      if true create a reference to the given source.
                      the reference is useful for very large cache files, where copying would be a hassle.
         """
-        if reference: # TODO: symbolic links?
+        if not os.path.exists(src):
+            raise EnvironmentError("file does not exist: "+src)
+        cache_filename = os.path.basename(src)
+        cache_dir = self.get_cache_dir()
+        cache_filepath = os.path.join(cache_dir, cache_filename)
+        if not os.path.exists(cache_dir):
+            pipeline_io.mkdir(cache_dir)
+
+        if reference: # TODO: sequences?
             ref_path = os.path.normpath(src)
             if not ref_path.startswith(self._env.get_project_dir()):
                 raise EnvironmentError("attempted reference is not in the project directory: "+ref_path)
-            elif not os.path.exists(ref_path) or os.path.isdir(ref_path):
-                raise EnvironmentError("attempted reference does not exist: "+ref_path)
             self._datadict[self.CACHE_FILEPATH] = ref_path
-            cache_filename = os.path.basename(src)
-            cache_dir = self.get_cache_dir()
-            os.symlink(ref_path, os.path.join(cache_dir, cache_filename))
+            os.symlink(ref_path, cache_filepath)
         else:
-            cache_filename = os.path.basename(src)
-            cache_dir = self.get_cache_dir()
-            if not os.path.exists(cache_dir):
-                pipeline_io.mkdir(cache_dir)
-            cache_filepath = os.path.join(cache_dir, cache_filename)
-            shutil.copyfile(src, cache_filepath)
             self._datadict[self.CACHE_FILEPATH] = cache_filepath
+            shutil.copyfile(src, cache_filepath)
 
         self._update_pipeline_file()
-
-    # def publish(self, user, app_filepath, cache_filepath, comment): #TODO
-    #     """
-    #     update the stable version of this element and replace the cache file.
-    #     """
-    #     self.publish_app_file(user, app_filepath, comment)
-    #     self.replace_cache_file(user, cache_filepath)
 
 
 # TODO : do we need shot vs asset elements?
