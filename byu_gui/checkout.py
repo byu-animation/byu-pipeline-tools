@@ -1,7 +1,7 @@
 import sys
-import os
 from PyQt4 import QtGui
-#from byuam.project import Project
+from byuam.project import Project
+from byuam.environment import Department
 		
 CHECKOUT_WINDOW_WIDTH = 340
 CHECKOUT_WINDOW_HEIGHT = 575
@@ -10,6 +10,7 @@ dept_list = ['Model', 'Rig', 'Animation', 'Layout']
 class checkoutWindow(QtGui.QTabWidget):
 	def __init__(self):
 		super(checkoutWindow, self).__init__()
+		self.project = Project()
 		self.initUI()
 
 	def initUI(self):
@@ -19,9 +20,26 @@ class checkoutWindow(QtGui.QTabWidget):
 
 		#create tabs
 		self.dept_tabs = QtGui.QTabWidget()
+		asset_list = QtGui.QListWidget()
+		for asset in self.project.list_assets():
+			item = QtGui.QListWidgetItem(asset)
+			asset_list.addItem(item)
+		shot_list = QtGui.QListWidget()
+		for shot in self.project.list_shots():
+			item = QtGui.QListWidgetItem(shot)
+			shot_list.addItem(item)
+		
 		for dept in dept_list:
-			tab = QtGui.QWidget()
-			self.dept_tabs.addTab(tab, dept)
+			if dept in Department.FRONTEND:
+				tab = QtGui.QWidget()
+				tab.addWidget(asset_list)
+				self.dept_tabs.addTab(tab, dept)
+			elif dept in Department.BACKEND:
+				tab = QtGui.QWidget()
+				tab.addWidget(shot_list)
+				self.dept_tabs.addTab(tab, dept)
+			else:
+				print("Not a valid Department")
 
 		#create buttons
 		self.checkout_button = QtGui.QPushButton('Checkout')
