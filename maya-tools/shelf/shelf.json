@@ -1,0 +1,9 @@
+{
+	"buttons":[
+		{
+			"icon":"alembic_exporter.xpm",
+			"annotation":"Export as Alembic - NOT YET IMPLEMENTED",
+			"python_file":"noop.py"
+		}
+	]
+}
