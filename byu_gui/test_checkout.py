@@ -3,55 +3,62 @@ import os
 from PyQt4 import QtGui
 #from byuam.project import Project
 
-#set widget styles
-stylesheet = """
-       QWidget {
-           background-color:#2E2E2E;
-           color: white;
-       }
-       QLineEdit {
-   background-color: black;
-       }
-   """
 
-class newAssetWindow(QtGui.QWidget):
-    def __init__(self):
-	   super(newAssetWindow, self).__init__()
-	   self.initUI()
-   
-    def initUI(self):
-	   #define gui elements
-	   self.setGeometry(300,300,340,575)
-	   self.setWindowTitle('Checkout')
-	   self.setStyleSheet(stylesheet)
-	   
-	   self.dept_list = ['Model', 'Rig', 'Animation', 'Layout']
-	   self.dept_tabs = QtGui.QTabWidget()
-	   for dept in self.dept_list:
-			widget = QtGui.QWidget()
-			self.dept_tabs.addTab(widget, dept)
-            
-	   self.textField = QtGui.QLineEdit()
-	   self.okBtn = QtGui.QPushButton('Ok')
-	   self.okBtn.clicked.connect(self.createAsset)
-	   self.cancelBtn = QtGui.QPushButton('Cancel')
-	   self.cancelBtn.clicked.connect(app.quit)
-	   
-	   #set gui layout
-	   grid = QtGui.QGridLayout(self)
-	   self.setLayout(grid)
-	   grid.addWidget(self.textField, 1, 0, 1, 3)
-	   grid.addWidget(self.okBtn, 2, 1)
-	   grid.addWidget(self.cancelBtn, 2, 2)
-	   self.show()
-	#create container
-    def createAsset(self):
-	   name = self.textField.text()
-	   project = Project()
-	   project.create_asset(name)
+CHECKOUT_WINDOW_WIDTH = 340
+CHECKOUT_WINDOW_HEIGHT = 575
+dept_list = ['Model', 'Rig', 'Animation', 'Layout']
+
+class checkoutWindow(QtGui.QTabWidget):
+	def __init__(self):
+		super(checkoutWindow, self).__init__()
+		self.initUI()
+
+	def initUI(self):
+		#define gui elements
+		self.setWindowTitle('Checkout')
+		self.resize(CHECKOUT_WINDOW_WIDTH, CHECKOUT_WINDOW_HEIGHT)
+
+		#create tabs
+		self.dept_tabs = QtGui.QTabWidget()
+		for dept in dept_list:
+			tab = QtGui.QWidget()
+			self.dept_tabs.addTab(tab, dept)
+
+		#create buttons
+		self.checkout_button = QtGui.QPushButton('Checkout')
+		self.cancel_button = QtGui.QPushButton('Cancel')    
 		
-   
+		#create button layout
+		button_layout = QtGui.QHBoxLayout()
+		button_layout.setSpacing(2)
+		
+		button_layout.addWidget(self.checkout_button)
+		button_layout.addWidget(self.cancel_button)
+		
+		main_layout = QtGui.QVBoxLayout()
+		self.setLayout(main_layout)
+		main_layout.setSpacing(5)
+		main_layout.setMargin(6)
+		main_layout.addWidget(self.dept_tabs)
+		main_layout.addLayout(button_layout)
+
+		self.show()
+
+	def checkout(self):
+		"""
+		Checks out the currently selected item
+		:return:
+		"""
+		print('Checkout')
+
+	def cancel(self):
+		"""
+		Cancels the checkout
+		:return:
+		"""
+		self.close()
+
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
-    ex = newAssetWindow()
-    sys.exit(app.exec_())
+	app = QtGui.QApplication(sys.argv)
+	ex = checkoutWindow()
+	sys.exit(app.exec_())
