@@ -21,6 +21,7 @@ class Registry:
 		self._registrydict[Department.CFX] = self.shot_element_factory
 		self._registrydict[Department.FX] = self.shot_element_factory
 		self._registrydict[Department.LIGHTING] = self.shot_element_factory
+		self._registrydict[Department.RENDER] = self.shot_element_factory
 		self._registrydict[Department.COMP] = self.shot_element_factory
 		self._registrydict[Department.RENDER] = self.shot_element_factory
 
