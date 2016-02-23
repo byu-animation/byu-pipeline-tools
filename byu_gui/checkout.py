@@ -20,16 +20,15 @@ class checkoutWindow(QtGui.QTabWidget):
 
 		#create tabs
 		self.dept_tabs = QtGui.QTabWidget()
-		asset_list = QtGui.QListWidget()
-		for asset in self.project.list_assets():
-			item = QtGui.QListWidgetItem(asset)
-			asset_list.addItem(item)
-		shot_list = QtGui.QListWidget()
-		for shot in self.project.list_shots():
-			item = QtGui.QListWidgetItem(shot)
-			shot_list.addItem(item)
-		
 		for dept in dept_list:
+			asset_list = QtGui.QListWidget()
+			for asset in self.project.list_assets():
+				item = QtGui.QListWidgetItem(asset)
+				asset_list.addItem(item)
+				shot_list = QtGui.QListWidget()
+			for shot in self.project.list_shots():
+				item = QtGui.QListWidgetItem(shot)
+				shot_list.addItem(item)
 			if dept in Department.ALL:
 				tab = QtGui.QWidget()
 				self.dept_tabs.addTab(tab, dept)
