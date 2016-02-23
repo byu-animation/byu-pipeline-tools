@@ -5,7 +5,7 @@ from byuam.environment import Department
 		
 CHECKOUT_WINDOW_WIDTH = 340
 CHECKOUT_WINDOW_HEIGHT = 575
-dept_list = ['Model', 'Rig', 'Animation', 'Layout']
+dept_list = ['model', 'rig', 'anim', 'layout']
 
 class checkoutWindow(QtGui.QTabWidget):
 	def __init__(self):
@@ -30,14 +30,15 @@ class checkoutWindow(QtGui.QTabWidget):
 			shot_list.addItem(item)
 		
 		for dept in dept_list:
-			if dept in Department.FRONTEND:
+			if dept in Department.ALL:
 				tab = QtGui.QWidget()
-				tab.addWidget(asset_list)
 				self.dept_tabs.addTab(tab, dept)
-			elif dept in Department.BACKEND:
-				tab = QtGui.QWidget()
-				tab.addWidget(shot_list)
-				self.dept_tabs.addTab(tab, dept)
+				tab_layout = QtGui.QVBoxLayout()
+				if dept in Department.FRONTEND:
+					tab_layout.addWidget(asset_list)
+				elif dept in Department.BACKEND:
+					tab_layout.addWidget(shot_list)
+				tab.setLayout(tab_layout)
 			else:
 				print("Not a valid Department")
 
