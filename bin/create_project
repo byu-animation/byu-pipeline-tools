@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+import sys
 from byuam.environment import Environment
 from  byuam import pipeline_io
 from byuam.project import Project
@@ -29,6 +30,16 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("directory", type=str, help="location for new project")
 	args = parser.parse_args()
+	if not os.path.exists(args.directory):
+		print "The project directory %s does not exist." % args.directory
+		print "Would you like to create it? (y/n)"
+		yesOrNo = raw_input().lower()
+		if yesOrNo == "y" or yesOrNo == "yes":
+			os.makedirs(args.directory)
+		else:
+			print "Aborting"
+			sys.exit()
+		
 	if os.path.exists(os.path.join(args.directory, Environment.PIPELINE_FILENAME)):
 		print "project already exists"
 	else:
