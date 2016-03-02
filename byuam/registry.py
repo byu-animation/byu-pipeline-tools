@@ -16,6 +16,7 @@ class Registry:
 		self._registrydict[Department.RIG] = self.asset_element_factory
 		self._registrydict[Department.TEXTURE] = self.asset_element_factory
 		self._registrydict[Department.MATERIAL] = self.asset_element_factory
+		self._registrydict[Department.ASSEMBLY] = self.asset_element_factory
 		self._registrydict[Department.LAYOUT] = self.shot_element_factory
 		self._registrydict[Department.ANIM] = self.shot_element_factory
 		self._registrydict[Department.CFX] = self.shot_element_factory
