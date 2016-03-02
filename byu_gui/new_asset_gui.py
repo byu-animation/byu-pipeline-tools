@@ -17,7 +17,7 @@ stylesheet = """
 	    """
 
 WINDOW_WIDTH = 300
-WINDOW_HEIGHT = 150
+WINDOW_HEIGHT = 200
 	    
 class createWindow(QtGui.QTabWidget):
     def __init__(self):
@@ -55,7 +55,7 @@ class newAssetWindow(QtGui.QWidget):
 	    self.cancelBtn.clicked.connect(app.quit)
 	    #set image
 	    self.img = QtGui.QLabel()
-	    pixmap = QtGui.QPixmap(os.getcwd() + '/assets/images/taijitu.jpg')
+	    pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/assets/images/taijitu.jpg')
 	    scaled = pixmap.scaledToWidth(self.size().width()/3)
 	    self.img.setPixmap(scaled)
 	    
