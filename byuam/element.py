@@ -135,6 +135,9 @@ class Element:
         self._env = Environment()
         if filepath is not None:
             self.load_pipeline_file(filepath)
+            cache_dir = self.get_cache_dir()
+            if not os.path.exists(cache_dir):
+                pipeline_io.mkdir(cache_dir)
         else:
             self._filepath = None
             self._pipeline_file = None
@@ -231,7 +234,7 @@ class Element:
         """
         return os.path.join(self._filepath, ".v%03d" % version)
 
-    def get_cache_ext(self):
+    def get_cache_ext(self): # TODO: is this needed?
         """
         return the extension of the cache files for this element (including the period)
         e.g. the result for an element that uses alembic caches would return ".abc"
@@ -349,13 +352,13 @@ class Element:
 
         self._update_pipeline_file()
 
-    def replace_cache(self, user, src, reference=False):
+    def update_cache(self, user, src, reference=False):
         """
-        Replace the cache of this element.
+        Update the cache of this element.
         user -- the user performing this action
         src -- the new cache file
         reference -- if false (the default) copy the source into this element's cache folder.
-                     if true create a reference to the given source.
+                     if true create a symbolic link to the given source.
                      the reference is useful for very large cache files, where copying would be a hassle.
         """
         if not os.path.exists(src):

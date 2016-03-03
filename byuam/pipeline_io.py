@@ -73,6 +73,21 @@ def version_dir(dirpath, zero_pad=3):
 	"""
 	raise NotImplementedError() # TODO
 
+def alphanumeric(name):
+	"""
+	returns a string of the same length as the given name with all the non-alphanumeric characters 
+	replaced by underscores and all uppercase letters replaced by lowercase letters
+	name -- string to make alphanumeric
+	"""
+	seq = []
+	for char in name:
+	    if not char.isalnum():
+	        seq.append('_')
+	    else:
+	        seq.append(char)
+
+	return ''.join(seq).lower()
+
 def timestamp():
 	"""
 	return a string containing the current time
