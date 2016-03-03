@@ -30,6 +30,20 @@ class Body:
 		datadict[Body.REFERENCES] = []
 		return datadict
 
+	@staticmethod
+	def default_departments():
+		"""
+		return a list of departments that this body should create on initialization
+		"""
+		raise NotImplementedError('subclass must implement default_departments')
+
+	@staticmethod
+	def get_parent_dir():
+		"""
+		return the parent directory that bodies of this type are stored in
+		"""
+		raise NotImplementedError('subclass must implement get_parent_dir')
+
 	def __init__(self, filepath):
 		"""
 		creates a Body instance describing the asset or shot stored in the given filepath
@@ -45,11 +59,11 @@ class Body:
 
 		return self._datadict[Body.NAME]
 
-	def get_parent_dir(self):
-		"""
-		return the parent directory that bodies of this type are stored in
-		"""
-		raise NotImplementedError('subclass must implement get_parent_dir')
+	# def get_parent_dir(self):
+	# 	"""
+	# 	return the parent directory that bodies of this type are stored in
+	# 	"""
+	# 	raise NotImplementedError('subclass must implement get_parent_dir')
 
 	def get_element(self, department, name=Element.DEFAULT_NAME):
 		"""
@@ -75,6 +89,7 @@ class Body:
 		dept_dir = os.path.join(self._filepath, department)
 		if not os.path.exists(dept_dir):
 			pipeline_io.mkdir(dept_dir)
+		name = pipeline_io.alphanumeric(name)
 		element_dir = os.path.join(dept_dir, name)
 		if not pipeline_io.mkdir(element_dir):
 			raise EnvironmentError("element already exists: " + element_dir)
@@ -101,7 +116,7 @@ class Body:
 
 	def add_reference(self, reference):
 		"""
-		Add a reference to this body. If it already exists, do nothing. If reference is not a valid 
+		Add the given reference to this body. If it already exists, do nothing. If reference is not a valid 
 		body, raise an EnvironmentError.
 		"""
 		reference_path = os.path.join(self.get_parent_dir(), reference, Body.PIPELINE_FILENAME)
@@ -142,11 +157,15 @@ class Asset(Body):
 		datadict[Asset.TYPE] = AssetType.PROP
 		return datadict
 
-	# TODO check valid asset names (alpha_numeric, etc)
+	@staticmethod
+	def default_departments():
 
-	def get_parent_dir(self):
+		return Department.FRONTEND
 
-		return self._env.get_assets_dir()
+	@staticmethod
+	def get_parent_dir():
+
+		return Environment().get_assets_dir()
 
 	def get_type(self):
 
@@ -172,11 +191,15 @@ class Shot(Body):
 		datadict[Shot.FRAME_RANGE] = 0
 		return datadict
 
-	# TODO check valid shot names
+	@staticmethod
+	def default_departments():
 
-	def get_parent_dir(self):
+		return Department.BACKEND
 
-		return self._env.get_shots_dir()
+	@staticmethod
+	def get_parent_dir():
+
+		return Environment().get_shots_dir()
 
 	def get_frame_range(self):
 
