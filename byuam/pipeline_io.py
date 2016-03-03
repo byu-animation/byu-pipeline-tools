@@ -17,8 +17,11 @@ def writefile(filepath, datadict):
 	"""
 	writes the given data dictionary to a pipeline json file at the given filepath
 	"""
-	with open(filepath, "w") as json_file:
-		json.dump(datadict, json_file)
+	tmp_name, tmp_ext = os.path.splitext(filepath)
+	tmp_filepath = tmp_name+"_tmp"+tmp_ext
+	with open(tmp_filepath, "w") as json_file:
+		json.dump(datadict, json_file, indent=0)
+	os.rename(tmp_filepath, filepath)
 
 def mkdir(dirpath):
 	"""
@@ -28,6 +31,7 @@ def mkdir(dirpath):
 		os.mkdir(dirpath) # TODO: ensure correct permissions
 	except OSError:
 		return False # file already exists
+	os.chmod(dirpath, 0775)
 	return True
 
 def version_file(filepath, zero_pad=3):
@@ -68,6 +72,21 @@ def version_dir(dirpath, zero_pad=3):
 	number--the default is 3.
 	"""
 	raise NotImplementedError() # TODO
+
+def alphanumeric(name):
+	"""
+	returns a string of the same length as the given name with all the non-alphanumeric characters 
+	replaced by underscores and all uppercase letters replaced by lowercase letters
+	name -- string to make alphanumeric
+	"""
+	seq = []
+	for char in name:
+	    if not char.isalnum():
+	        seq.append('_')
+	    else:
+	        seq.append(char)
+
+	return ''.join(seq).lower()
 
 def timestamp():
 	"""
