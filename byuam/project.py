@@ -109,27 +109,40 @@ class Project:
 		"""
 		return self._create_body(name, Shot)
 
-	def _list_bodies_in_dir(self, filepath):
+	def _list_bodies_in_dir(self, filepath, filter=None):
 		dirlist = os.listdir(filepath)
-		assetlist = []
-		for assetdir in dirlist:
-			abspath = os.path.join(filepath, assetdir)
+		bodylist = []
+		for bodydir in dirlist:
+			abspath = os.path.join(filepath, bodydir)
 			if os.path.exists(os.path.join(abspath, Body.PIPELINE_FILENAME)):
-				assetlist.append(assetdir)
-		assetlist.sort()
-		return assetlist
+				bodylist.append(bodydir)
+		bodylist.sort()
+		if filter is not None and len(filter)==3:
+			filtered_bodylist = []
+			for body in bodylist:
+				bodyobj = self.get_body(body)
+				if bodyobj.has_relation(filter[0], filter[1], filter[2]):
+					filtered_bodylist.append(body)
+			bodylist = filtered_bodylist
+		return bodylist
 
-	def list_assets(self):
+	def list_assets(self, filter=None):
 		"""
 		returns a list of strings containing the names of all assets in this project
+		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		          e.g. (Asset.TYPE, operator.eq, AssetType.CHARACTER). Only returns assets whose
+		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
-		return self._list_bodies_in_dir(self._env.get_assets_dir())
+		return self._list_bodies_in_dir(self._env.get_assets_dir(), filter)
 
-	def list_shots(self):
+	def list_shots(self, filter=None):
 		"""
 		returns a list of strings containing the names of all shots in this project
+		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		          e.g. (Shot.FRAME)RANGE, operator.gt, 100). Only returns shots whose
+		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
-		return self._list_bodies_in_dir(self._env.get_shots_dir())
+		return self._list_bodies_in_dir(self._env.get_shots_dir(), filter)
 
 	def list_bodies(self):
 		"""
