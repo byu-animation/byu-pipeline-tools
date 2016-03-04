@@ -381,6 +381,13 @@ class Element:
 
         self._update_pipeline_file()
 
+    def list_cache_files(self):
+        """
+        list all cache files that have been published to this element.
+        """
+        cache_list = os.listdir(self.get_cache_dir())
+        return cache_list
+
 
 # TODO : do we need shot vs asset elements?
 class ShotElement(Element):
