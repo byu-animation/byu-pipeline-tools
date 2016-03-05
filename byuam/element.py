@@ -375,7 +375,10 @@ class Element:
             os.symlink(ref_path, cache_filepath)
         else:
             self._datadict[self.CACHE_FILEPATH] = cache_filepath
-            shutil.copyfile(src, cache_filepath)
+            if os.path.isdir(src):
+                shutil.copytree(src, cache_filepath)
+            else:
+                shutil.copyfile(src, cache_filepath)
 
         self._update_pipeline_file()
 
