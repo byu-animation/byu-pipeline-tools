@@ -37,7 +37,8 @@ class checkoutWindow(QtGui.QTabWidget):
 				tab = QtGui.QWidget()
 				self.dept_tabs.addTab(tab, dept)
 				tab_layout = QtGui.QVBoxLayout()
-				element_list = QtGui.QListWidget()
+				self.element_list = QtGui.QListWidget()
+				#self.element_list.rowChanged.connect(self.myfunction)
 				
 				if dept in Department.FRONTEND:
 					for asset in self.project.list_assets():
@@ -85,9 +86,11 @@ class checkoutWindow(QtGui.QTabWidget):
 		Checks out the currently selected item
 		:return:
 		"""
-		#self.dept = dept_list[self.dept_tabs.currentIndex()]
-		#self.current_item = 
-		print('Checkout')
+		#current_dept = dept_list[self.dept_tabs.currentIndex()
+		#current_item = self.dept_tabs.
+		#asset_obj = self.project.get_asset(current_item)
+		#element_obj = asset_obj.get_element(current_dept)
+		#element_path = element_obj.checkout()
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
