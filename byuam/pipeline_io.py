@@ -31,7 +31,6 @@ def mkdir(dirpath):
 		os.mkdir(dirpath) # TODO: ensure correct permissions
 	except OSError:
 		return False # file already exists
-	os.chmod(dirpath, 0775)
 	return True
 
 def version_file(filepath, zero_pad=3):
