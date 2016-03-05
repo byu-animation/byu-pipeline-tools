@@ -141,6 +141,14 @@ class Body:
 		"""
 		return self._datadict[Body.REFERENCES]
 
+	def has_relation(self, attribute, relate, value):
+		"""
+		Return True if this body has the given attribute and if the given relationship
+		to the the given value. Return False otherwise
+		"""
+		if attribute not in self._datadict:
+			return False
+		return relate(self._datadict[attribute],value)
 
 
 class Asset(Body):
@@ -171,6 +179,10 @@ class Asset(Body):
 
 		return self._datadict[Asset.TYPE]
 
+	def set_type(self, new_type):
+
+		self._datadict[Asset.TYPE] = new_type
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 from body import Body
 
@@ -204,4 +216,9 @@ class Shot(Body):
 	def get_frame_range(self):
 
 		return self._datadict[Shot.FRAME_RANGE]
+
+	def set_frame_range(self, frame_range):
+
+		self._datadict[Shot.FRAME_RANGE] = frame_range
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 

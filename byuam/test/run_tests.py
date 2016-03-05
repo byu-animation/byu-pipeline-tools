@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 from byuam.body import Asset, Shot
-from byuam.environment import Department, Status
+from byuam.environment import Department, Environment, Status
 from byuam.element import Element
 from byuam.project import Project
 
@@ -123,6 +123,11 @@ class TestElement(TestAssetManager):
 				self.assertEquals(element.get_status(), Status.DONE)
 				self.assertEquals(element.get_assigned_user(), self.user)
 
+				# publish empty file
+				empty_file = os.path.join(Environment().get_user_workspace(), "empty.txt")
+				open(empty_file, 'a').close() 
+				element.publish(self.user, empty_file, "first publish")
+
 				# test checkout
 				checkout_path = element.checkout(self.user)
 				self.assertTrue(os.path.exists(checkout_path))
@@ -147,14 +152,15 @@ class TestElement(TestAssetManager):
 				# test publish
 				comment = "automated testing"
 				element.publish(self.user, checkout_path, comment)
-				self.assertEquals(len(element.list_publishes()), 1)
+				self.assertEquals(len(element.list_publishes()), 2)
 				publish = element.get_last_publish()
 				self.assertEquals(self.user, publish[0])
 				self.assertEquals(comment, publish[2])
 				self.assertTrue(os.path.exists(element.get_version_dir(0)))
 
-				element.update_cache(self.user, checkout_path)
+				element.update_cache(checkout_path)
 				self.assertTrue(os.path.exists(element.get_cache_dir()))
+				self.assertEquals(element.list_cache_files()[0], os.path.basename(checkout_path))
 
 
 		self.assertEquals(count, self.element_count)
