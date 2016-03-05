@@ -68,22 +68,38 @@ class Project:
 			return None
 		return Shot(filepath)
 
+	def get_body(self, name):
+		"""
+		returns the body object associated with the given name.
+		name -- the name of the body
+		"""
+		body = self.get_shot(name)
+		if body is None:
+			body = self.get_asset(name)
+		return body
+
+	def _create_body(self, name, bodyobj):
+		name = pipeline_io.alphanumeric(name)
+		filepath = os.path.join(bodyobj.get_parent_dir(), name)
+		if name in self.list_bodies():
+			raise EnvironmentError("body already exists: "+filepath)
+		if not pipeline_io.mkdir(filepath):
+			raise OSError("couldn't create body directory: "+filepath)
+		datadict = bodyobj.create_new_dict(name)
+		pipeline_io.writefile(os.path.join(filepath, bodyobj.PIPELINE_FILENAME), datadict)
+		new_body = bodyobj(filepath)
+		for dept in bodyobj.default_departments():
+			pipeline_io.mkdir(os.path.join(filepath, dept))
+			new_body.create_element(dept, Element.DEFAULT_NAME)
+		return new_body
+
 	def create_asset(self, name):
 		"""
 		creates a new shot with the given name, and returns the resulting shot object.
 		If a shot with that name already exists, raises EnvironmentError.
 		name -- the name of the new shot to create
 		"""
-		filepath = os.path.join(self._env.get_assets_dir(), name)
-		if not pipeline_io.mkdir(filepath):
-			raise EnvironmentError("asset already exists: "+filepath)
-		datadict = Asset.create_new_dict(name)
-		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
-		new_asset = Asset(filepath)
-		for dept in Department.FRONTEND:
-			pipeline_io.mkdir(os.path.join(filepath, dept))
-			new_asset.create_element(dept, Element.DEFAULT_NAME)
-		return new_asset
+		return self._create_body(name, Asset)
 
 	def create_shot(self, name):
 		"""
@@ -91,38 +107,48 @@ class Project:
 		If a shot with that name already exists, raises EnvironmentError.
 		name -- the name of the new shot to create
 		"""
-		filepath = os.path.join(self._env.get_shots_dir(), name)
-		if not pipeline_io.mkdir(filepath):
-			raise EnvironmentError("shot already exists: "+filepath)
-		datadict = Shot.create_new_dict(name)
-		pipeline_io.writefile(os.path.join(filepath, Body.PIPELINE_FILENAME), datadict)
-		new_shot = Shot(filepath)
-		for dept in Department.BACKEND:
-			pipeline_io.mkdir(os.path.join(filepath, dept))
-			new_shot.create_element(dept, Element.DEFAULT_NAME)
-		return new_shot
+		return self._create_body(name, Shot)
 
-	def _list_bodies(self, filepath):
+	def _list_bodies_in_dir(self, filepath, filter=None):
 		dirlist = os.listdir(filepath)
-		assetlist = []
-		for assetdir in dirlist:
-			abspath = os.path.join(filepath, assetdir)
+		bodylist = []
+		for bodydir in dirlist:
+			abspath = os.path.join(filepath, bodydir)
 			if os.path.exists(os.path.join(abspath, Body.PIPELINE_FILENAME)):
-				assetlist.append(assetdir)
-		assetlist.sort()
-		return assetlist
+				bodylist.append(bodydir)
+		bodylist.sort()
+		if filter is not None and len(filter)==3:
+			filtered_bodylist = []
+			for body in bodylist:
+				bodyobj = self.get_body(body)
+				if bodyobj.has_relation(filter[0], filter[1], filter[2]):
+					filtered_bodylist.append(body)
+			bodylist = filtered_bodylist
+		return bodylist
 
-	def list_assets(self):
+	def list_assets(self, filter=None):
 		"""
 		returns a list of strings containing the names of all assets in this project
+		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		          e.g. (Asset.TYPE, operator.eq, AssetType.CHARACTER). Only returns assets whose
+		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
-		return self._list_bodies(self._env.get_assets_dir())
+		return self._list_bodies_in_dir(self._env.get_assets_dir(), filter)
 
-	def list_shots(self):
+	def list_shots(self, filter=None):
 		"""
 		returns a list of strings containing the names of all shots in this project
+		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		          e.g. (Shot.FRAME)RANGE, operator.gt, 100). Only returns shots whose
+		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
-		return self._list_bodies(self._env.get_shots_dir())
+		return self._list_bodies_in_dir(self._env.get_shots_dir(), filter)
+
+	def list_bodies(self):
+		"""
+		returns a list of strings containing the names of all bodies (assets and shots)
+		"""
+		return self.list_assets() + self.list_shots()
 
 	def is_checkout_dir(self, path):
 		"""
@@ -144,10 +170,12 @@ class Project:
 		"""
 		delete the given shot
 		"""
-		shutil.rmtree(os.path.join(self.get_shots_dir(), shot))
+		if shot in self.list_shots():
+			shutil.rmtree(os.path.join(self.get_shots_dir(), shot))
 
 	def delete_asset(self, asset):
 		"""
 		delete the given asset
 		"""
-		shutil.rmtree(os.path.join(self.get_asset_dir(), asset))
+		if asset in self.list_assets():
+			shutil.rmtree(os.path.join(self.get_asset_dir(), asset))

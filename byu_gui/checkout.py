@@ -85,8 +85,12 @@ class checkoutWindow(QtGui.QTabWidget):
 		Checks out the currently selected item
 		:return:
 		"""
-		#self.dept = dept_list[self.dept_tabs.currentIndex()]
-		#self.current_item = 
+		#current_dept = dept_list[self.dept_tabs.currentIndex()]
+		#current_item = self.dept_tabs.
+		#asset_obj = self.project.get_asset(current_item)
+		#element_obj = asset_obj.get_element(current_dept)
+		#element_path = element_obj.checkout()
+		#copy and open path
 		print('Checkout')
 
 if __name__ == '__main__':

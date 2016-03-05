@@ -1,6 +1,7 @@
 # from .department import Department
 from .element import Element, AssetElement, ShotElement
 from .environment import Department
+from .maya import MayaElement
 
 class Registry:
 	"""
@@ -12,12 +13,13 @@ class Registry:
 	def __init__(self):
 		self._registrydict = {}
 		self._registrydict[Department.DESIGN] = self.asset_element_factory
-		self._registrydict[Department.MODEL] = self.asset_element_factory
-		self._registrydict[Department.RIG] = self.asset_element_factory
+		self._registrydict[Department.MODEL] = self.maya_element_factory
+		self._registrydict[Department.RIG] = self.maya_element_factory
 		self._registrydict[Department.TEXTURE] = self.asset_element_factory
 		self._registrydict[Department.MATERIAL] = self.asset_element_factory
-		self._registrydict[Department.LAYOUT] = self.shot_element_factory
-		self._registrydict[Department.ANIM] = self.shot_element_factory
+		self._registrydict[Department.ASSEMBLY] = self.asset_element_factory
+		self._registrydict[Department.LAYOUT] = self.maya_element_factory
+		self._registrydict[Department.ANIM] = self.maya_element_factory
 		self._registrydict[Department.CFX] = self.shot_element_factory
 		self._registrydict[Department.FX] = self.shot_element_factory
 		self._registrydict[Department.LIGHTING] = self.shot_element_factory
@@ -27,6 +29,9 @@ class Registry:
 
 	def element_factory(self, filepath):
 		return Element(filepath)
+
+	def maya_element_factory(self, filepath):
+		return MayaElement(filepath)
 
 	def asset_element_factory(self, filepath):
 		return AssetElement(filepath)

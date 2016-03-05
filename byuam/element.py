@@ -135,6 +135,9 @@ class Element:
         self._env = Environment()
         if filepath is not None:
             self.load_pipeline_file(filepath)
+            cache_dir = self.get_cache_dir()
+            if not os.path.exists(cache_dir):
+                pipeline_io.mkdir(cache_dir)
         else:
             self._filepath = None
             self._pipeline_file = None
@@ -231,7 +234,7 @@ class Element:
         """
         return os.path.join(self._filepath, ".v%03d" % version)
 
-    def get_cache_ext(self):
+    def get_cache_ext(self): # TODO: is this needed?
         """
         return the extension of the cache files for this element (including the period)
         e.g. the result for an element that uses alembic caches would return ".abc"
@@ -286,13 +289,6 @@ class Element:
             self._datadict[self.CHECKOUT_USERS].append(user)
             self._update_pipeline_file()
 
-    def create_new_app_file(self, location):
-        """
-        creates a new empty file for this element at the given location.
-        """
-        open(self.get_app_filepath(), 'a').close() 
-        # raise NotImplementedError('subclass must implement create_new_app_file') # TODO
-
     def get_checkout_dir(self, user):
         """
         return the directory this element would be copied to during checkout for the given user
@@ -305,22 +301,25 @@ class Element:
         """
         Copies the element to the given user's work area in a directory with the following name:
             {the parent body's name}_{this element's department}_{this element's name} 
-        Returns the absolute filepath to the copied file. Adds user to the list of checkout users.
+        Adds user to the list of checkout users.
+        Returns the absolute filepath to the copied file. If this element has no app file,
+        Returns the filepath to an empty checkout directory. 
         """
-        app_file = self.get_app_filepath()
-        if not os.path.exists(app_file):
-            self.create_new_app_file(app_file)
         checkout_dir = self.get_checkout_dir(user)
         if not os.path.exists(checkout_dir):
             pipeline_io.mkdir(checkout_dir)
             datadict = Checkout.create_new_dict(user, self.get_parent(), self.get_department(), self.get_name())
             pipeline_io.writefile(os.path.join(checkout_dir, Checkout.PIPELINE_FILENAME), datadict)
         checkout = Checkout(checkout_dir)
-        checkout_filename = self.get_app_filename()
-        checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
-        shutil.copyfile(app_file, checkout_file)
+        app_file = self.get_app_filepath()
+        if os.path.exists(app_file):
+            checkout_filename = self.get_app_filename()#
+            checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))#
+            shutil.copyfile(app_file, checkout_file)#
+            checkout.add_operation(checkout_file)#
+        else:
+            checkout_file = checkout_dir
         self.update_checkout_users(user)
-        checkout.add_operation(checkout_file)
         return checkout_file
 
     def publish(self, user, src, comment, status=None):
@@ -332,11 +331,13 @@ class Element:
         comment -- description of changes made in this publish
         status -- new status for this element, defaults to None in which case no change will be made
         """
+        if not os.path.exists(src):
+            raise EnvironmentError("file does not exist: "+src)
+        self._datadict[self.APP_EXT] = os.path.splitext(src)[1]
         dst = self.get_app_filepath()
         timestamp = pipeline_io.timestamp()
         self._datadict[self.PUBLISHES].append((user, timestamp, comment))
         shutil.copyfile(src, dst)
-        self._datadict[self.APP_EXT] = os.path.splitext(src)[1]
 
         new_version = self._datadict[self.LATEST_VERSION] + 1
         self._datadict[self.LATEST_VERSION] = new_version
@@ -349,13 +350,13 @@ class Element:
 
         self._update_pipeline_file()
 
-    def replace_cache(self, user, src, reference=False):
+    def update_cache(self, src, reference=False):
         """
-        Replace the cache of this element.
+        Update the cache of this element.
         user -- the user performing this action
         src -- the new cache file
         reference -- if false (the default) copy the source into this element's cache folder.
-                     if true create a reference to the given source.
+                     if true create a symbolic link to the given source.
                      the reference is useful for very large cache files, where copying would be a hassle.
         """
         if not os.path.exists(src):
@@ -377,6 +378,13 @@ class Element:
             shutil.copyfile(src, cache_filepath)
 
         self._update_pipeline_file()
+
+    def list_cache_files(self):
+        """
+        list all cache files that have been published to this element.
+        """
+        cache_list = os.listdir(self.get_cache_dir())
+        return cache_list
 
 
 # TODO : do we need shot vs asset elements?

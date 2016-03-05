@@ -98,7 +98,7 @@ class Department:
 	DESIGN = "design"
 	MODEL = "model"
 	RIG = "rig"
-	STORY = "story"
+	ASSEMBLY = "assembly"
 	LAYOUT = "layout"
 	ANIM = "anim"
 	TEXTURE = "texture"
@@ -108,9 +108,9 @@ class Department:
 	LIGHTING = "lighting"
 	RENDER = "render"
 	COMP = "comp"
-	FRONTEND = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL]
+	FRONTEND = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY]
 	BACKEND = [LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
-	ALL = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
+	ALL = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY, LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
 
 
 class Status:
@@ -146,7 +146,9 @@ class AssetType:
 	Class describing types of assets.
 	"""
 
-	CHAR = "char"
+	CHARACTER = "character"
 	SET = "set"
 	PROP = "prop"
+	ACCESSORY = "accessory"
+	ALL = [CHARACTER, SET, PROP, ACCESSORY]
 
