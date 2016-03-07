@@ -37,17 +37,18 @@ class checkoutWindow(QtGui.QTabWidget):
 				tab = QtGui.QWidget()
 				self.dept_tabs.addTab(tab, dept)
 				tab_layout = QtGui.QVBoxLayout()
-				self.element_list = QtGui.QListWidget()
-				#self.element_list.rowChanged.connect(self.myfunction)
+				element_list = QtGui.QListWidget()
 				
 				if dept in Department.FRONTEND:
 					for asset in self.project.list_assets():
 						item = QtGui.QListWidgetItem(asset)
 						element_list.addItem(item)
+						element_list.rowChanged.connect(self.set_current_item)
 				elif dept in Department.BACKEND:
 					for shot in self.project.list_shots():
 						item = QtGui.QListWidgetItem(shot)
 						element_list.addItem(item)
+						element_list.rowChanged.connect(self.set_current_item)
 				tab_layout.addWidget(element_list)
 				tab.setLayout(tab_layout)
 			else:
@@ -81,16 +82,24 @@ class checkoutWindow(QtGui.QTabWidget):
 
 		self.show()
 
+	def set_current_item(self, index):
+		current_dept = dept_list[self.dept_tabs.currentIndex()]
+		if current_dept in Department.FRONTEND:
+			asset_list = Project.list_assets()
+			self.current_item = asset_list[index]
+		elif current_dept in Department.BACKEND:
+			shot_list = Project.list_shots()
+			self.current_item = shot_list[index]
+
 	def checkout(self):
 		"""
 		Checks out the currently selected item
 		:return:
 		"""
-		#current_dept = dept_list[self.dept_tabs.currentIndex()
-		#current_item = self.dept_tabs.
-		#asset_obj = self.project.get_asset(current_item)
-		#element_obj = asset_obj.get_element(current_dept)
-		#element_path = element_obj.checkout()
+		current_dept = dept_list[self.dept_tabs.currentIndex()]
+		asset_obj = Project.get_asset(self.current_item)
+		element_obj = asset_obj.get_element(current_dept)
+		element_path = element_obj.checkout()
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
