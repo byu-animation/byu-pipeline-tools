@@ -1,29 +1,33 @@
 {
 	"buttons":[
-		{
-			"icon":"alembic_exporter.xpm",
-			"annotation":"Export as Alembic - NOT YET IMPLEMENTED",
-			"python_file":"noop.py"
-		},
         {
             "icon":"checkout.xpm",
             "annotation":"Checkout a model, rig or animation",
             "python_file":"checkout.py"
-        },
-        {
+        }, {
             "icon":"new.xpm",
             "annotation":"Create a new asset",
             "python_file":"new_asset.py"
-        },
-        {
+        }, {
             "icon":"publish.xpm",
             "annotation":"Publish a model, rig or animation",
             "python_file":"publish.py"
-        },
-        {
+        }, {
             "icon":"frame_range.xpm",
             "annotation":"Set the correct frame range for the current shot",
             "python_file":"frame_range.py"
-        }
+		}, {
+			"icon":"alembic_exporter.xpm",
+			"annotation":"Export as Alembic",
+			"python_file":"alembic_exporter.py"
+		}, {
+			"icon":"alembic_tagger.xpm",
+			"annotation":"Tag Selected Objects for Export",
+			"python_file":"alembic_tagger.py"
+		}, {
+			"icon":"alembic_untagger.xpm",
+			"annotation":"Untag Selected Objects for Export",
+			"python_file":"alembic_untagger.py"
+		}
 	]
 }
