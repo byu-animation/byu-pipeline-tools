@@ -179,7 +179,7 @@ class Asset(Body):
 
 		return self._datadict[Asset.TYPE]
 
-	def set_type(self, new_type):
+	def update_type(self, new_type):
 
 		self._datadict[Asset.TYPE] = new_type
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
@@ -217,7 +217,7 @@ class Shot(Body):
 
 		return self._datadict[Shot.FRAME_RANGE]
 
-	def set_frame_range(self, frame_range):
+	def update_frame_range(self, frame_range):
 
 		self._datadict[Shot.FRAME_RANGE] = frame_range
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
