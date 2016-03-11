@@ -10,8 +10,10 @@ REF_WINDOW_WIDTH = 800
 REF_WINDOW_HEIGHT = 500
 
 class TreeComboBoxItem(QtGui.QComboBox):
+
     def __init__(self, tree_item, column):
         QtGui.QComboBox.__init__(self)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.tree_item = tree_item
         self.column = column
         self.currentIndexChanged.connect(self._change_item)
@@ -19,25 +21,102 @@ class TreeComboBoxItem(QtGui.QComboBox):
     def _change_item(self, index):
         self.tree_item.setText(self.column, self.itemText(index))
 
+    def wheelEvent(self, e):
+        e.ignore() # do nothing
+
+    def paintEvent(self, pe):
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        pen = QtGui.QPen(QtCore.Qt.black)
+        pen.setWidth(1)
+        pen.setColor
+        painter.setPen(pen)
+        painter.drawRect(pe.rect())
+        painter.end()
+        
+        QtGui.QComboBox.paintEvent(self, pe)
+
+class TreeLineEdit(QtGui.QLineEdit):
+
+    def __init__(self, contents, tree_item, column):
+        QtGui.QLineEdit.__init__(self, contents)
+        self.tree_item = tree_item
+        self.column = column
+        self.editingFinished.connect(self._change_item)
+
+    def _change_item(self):
+        self.tree_item.setText(self.column, self.text())
+
+    def paintEvent(self, pe):
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        pen = QtGui.QPen(QtCore.Qt.black)
+        pen.setWidth(1)
+        pen.setColor
+        painter.setPen(pen)
+        painter.drawRect(pe.rect())
+        painter.end()
+        
+        QtGui.QLineEdit.paintEvent(self, pe)
+
+class TreeLabel(QtGui.QLabel):
+
+    def __init__(self, text=""):
+        QtGui.QLabel.__init__(self, text)
+        self.setAutoFillBackground(True)
+    
+    def paintEvent(self, pe):
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        painter.setBrush(QtGui.QColor(30,30,30))
+        pen = QtGui.QPen(QtCore.Qt.black)
+        pen.setWidth(1)
+        pen.setColor
+        painter.setPen(pen)
+        painter.drawRect(pe.rect())
+        painter.end()
+        
+        QtGui.QLabel.paintEvent(self, pe)
+
+class TreeGridDelegate(QtGui.QStyledItemDelegate):
+
+    def paint(self, painter, option, index):
+        painter.save()
+        # painter.setPen(option.palette.color(QtGui.QPalette.Text))
+        painter.setPen(QtCore.Qt.black)
+        painter.drawRect(option.rect)
+        painter.restore()
+
+        QtGui.QStyledItemDelegate.paint(self, painter, option, index)
+
 class ElementBrowser(QtGui.QWidget):
 
-    ASSETS = "Asset"
+    ASSETS = "Assets"
     SHOTS = "Shots"
 
     BODY_DATA_COLUMN = 1
 
+    stylesheet = """
+    QWidget
+    {
+        color: silver;
+        background-color: #2E2E2E;
+        selection-color: black;
+        background-clip: border;
+        border-image: none;
+        outline: 0;
+    }
+    """
+
     def __init__(self):
         QtGui.QWidget.__init__(self)
+        self.setWindowTitle("Element Browser")
         self.setGeometry(0, 0, REF_WINDOW_WIDTH, REF_WINDOW_HEIGHT)
+        self.setStyleSheet(self.stylesheet)
 
-        # initialize project info
+        # initialize project
         self.project = Project()
-        self.assets = self.project.list_assets()
-        self.shots = self.project.list_shots()
-        self.bodies = self.assets
-
-        # status bar
-        self.status_bar = QtGui.QStatusBar()
+        self.userList = ["jmoborn", "render", "steve", "jmjohnson", "stella"] # TODO: get real user list
 
         # asset/shot menu
         self.body_menu = QtGui.QComboBox()
@@ -46,8 +125,15 @@ class ElementBrowser(QtGui.QWidget):
         self.current_body = self.ASSETS
         self._set_bodies()
 
+        # new button
+        self.new_button = QtGui.QPushButton("New")
+
+        # refresh button
+        self.refresh_button = QtGui.QPushButton("Refresh")
+
         # tree
         self.tree = QtGui.QTreeWidget()
+        self.tree.setItemDelegate(TreeGridDelegate(self.tree))
         self.columnCount = 7
         self.tree.setColumnCount(self.columnCount)
         tree_header = QtGui.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish"])
@@ -73,8 +159,13 @@ class ElementBrowser(QtGui.QWidget):
         self.update_tree[5] = self.update_end_date
         self.update_tree[6] = self.update_last_publish
 
+        # status bar
+        self.status_bar = QtGui.QStatusBar()
+
         # connect events
         self.body_menu.currentIndexChanged.connect(self._body_changed)
+        self.new_button.clicked.connect(self._new_body)
+        self.refresh_button.clicked.connect(self._refresh)
         self.tree.itemExpanded.connect(self._load_elements)
         self.tree.itemChanged.connect(self._item_edited)
 
@@ -82,7 +173,15 @@ class ElementBrowser(QtGui.QWidget):
         layout = QtGui.QVBoxLayout(self)
         layout.setSpacing(5)
         layout.setMargin(6)
-        layout.addWidget(self.body_menu)
+        options_layout = QtGui.QGridLayout()
+        options_layout.addWidget(self.body_menu, 0, 0)
+        options_layout.addWidget(self.new_button, 0, 1)
+        options_layout.addWidget(self.refresh_button, 0, 3)
+        options_layout.setColumnMinimumWidth(0, 100)
+        options_layout.setColumnMinimumWidth(1, 100)
+        options_layout.setColumnMinimumWidth(3, 100)
+        options_layout.setColumnStretch(2, 1)
+        layout.addLayout(options_layout)
         layout.addWidget(self.tree)
         layout.addWidget(self.status_bar)
         self.setLayout(layout)
@@ -95,49 +194,17 @@ class ElementBrowser(QtGui.QWidget):
             self.tree.addTopLevelItem(tree_item)
             tree_flags = tree_item.flags()
             tree_item.setFlags(tree_flags | QtCore.Qt.ItemIsEditable)
+            # for col in xrange(self.columnCount):
+            #     tree_item.setBackground(col, QtGui.QColor(30,30,30))
             body_obj = self.project.get_body(body)
             self._load_body(body_obj, tree_item)
             tree_item.addChild(QtGui.QTreeWidgetItem()) # empty item
-
-            # tree_item.emitDataChanged.connect(self._item_edited)
-            # body_obj = self.project.get_body(body)
-            # elements = []
-            # for dept in Department.ALL:
-            #     elements = elements + body_obj.list_elements(dept)
-            # # elements = body_obj.list_elements(self.dept)
-            # for element in elements:
-            #     element_obj = body_obj.get_element(self.dept, element)
-            #     # element_data = self._element_data(element_obj)
-            #     child_item = QtGui.QTreeWidgetItem()
-            #     tree_item.addChild(child_item)
-            #     child_item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(element))
-            #     child_flags = child_item.flags()
-            #     child_item.setFlags(child_flags | QtCore.Qt.ItemIsEditable)
-            #     for col, init in enumerate(self.init_tree):
-            #         init(element_obj, child_item, col)
-                # references = body_obj.get_element(self.dept, element).list_cache_files() # TODO: list_references
-                # for ref in references:
-                #     ref_item = QtGui.QTreeWidgetItem([ref])
-                #     ref_item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(ref))
-                #     child_item.addChild(ref_item)
-
-            # body_combobox = TreeComboBoxItem(tree_item, 1)
-            # body_type = body_obj.get_type()
-            # type_idx = 0
-            # for idx, type in enumerate(AssetType.ALL):
-            #     body_combobox.addItem(type)
-            #     if type == body_type:
-            #         type_idx = idx
-            # body_combobox.setCurrentIndex(type_idx)
-            # self.tree.setItemWidget(tree_item, 1, body_combobox)
-
         self.tree.blockSignals(tree_state)
 
     def _load_body(self, body, item):
         tree_state = self.tree.blockSignals(True)
         item.setText(0, body.get_name())
-        namelabel = QtGui.QLabel(body.get_name())
-        namelabel.setAutoFillBackground(True)
+        namelabel = TreeLabel(body.get_name())
         self.tree.setItemWidget(item, 0, namelabel)
         if self.current_body==self.ASSETS:
             body_type = body.get_type()
@@ -155,11 +222,8 @@ class ElementBrowser(QtGui.QWidget):
         else:
             self.status_bar.showMessage("Error: unknown body type")
         for col in xrange(self.BODY_DATA_COLUMN+1, self.columnCount): # disable remaining columns
-            emptylabel = QtGui.QLabel()
-            emptylabel.setAutoFillBackground(True)
+            emptylabel = TreeLabel()
             self.tree.setItemWidget(item, col, emptylabel)
-            
-
         self.tree.blockSignals(tree_state)
 
     def _load_elements(self, item):
@@ -177,7 +241,6 @@ class ElementBrowser(QtGui.QWidget):
             child_item = QtGui.QTreeWidgetItem()
             item.addChild(child_item)
             child_item.setFlags(child_item.flags() | QtCore.Qt.ItemIsEditable)
-            # child_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable)
             for col, init in enumerate(self.init_tree):
                 init(element_obj, child_item, col)
         self.tree.blockSignals(tree_state)
@@ -191,15 +254,12 @@ class ElementBrowser(QtGui.QWidget):
             self.bodies = []
 
     def _item_edited(self, item, column):
-
-        print item.text(column)
         parent = item.parent()
         if parent is not None:
             body = str(parent.text(0))
             body_obj = self.project.get_body(body)
             element = str(item.text(0))
             dept = str(item.text(1))
-            print dept
             element_obj = body_obj.get_element(dept, element)
             self.update_tree[column](element_obj, item, column)
             # self.tree.resizeColumnToContents(column)
@@ -208,11 +268,23 @@ class ElementBrowser(QtGui.QWidget):
             body_obj = self.project.get_body(body)
             self._update_body_data(body_obj, item)
 
-    def _body_changed(self, index):
-        self.current_body = str(self.body_menu.itemText(index))
+    def _refresh(self): # TODO: maintain expanded rows on refresh
         self._set_bodies()
         self._build_tree()
         self.status_bar.clearMessage()
+
+    def _body_changed(self, index):
+        self.current_body = str(self.body_menu.itemText(index))
+        self._refresh()
+
+    def _new_body(self):
+        from byu_gui import new_asset_gui
+        self.new_body_dialog = new_asset_gui.createWindow()
+        if self.current_body == self.ASSETS:
+            self.new_body_dialog.setCurrentIndex(self.new_body_dialog.ASSET_INDEX)
+        elif self.current_body == self.SHOTS:
+            self.new_body_dialog.setCurrentIndex(self.new_body_dialog.SHOT_INDEX)
+        self.new_body_dialog.finished.connect(self._refresh)
 
     def _update_body_data(self, body, item):
         if self.current_body==self.ASSETS:
@@ -224,18 +296,21 @@ class ElementBrowser(QtGui.QWidget):
 
     def init_name(self, element, item, column):
         item.setText(column, element.get_name())
-        namelabel = QtGui.QLabel(element.get_name())
-        namelabel.setAutoFillBackground(True)
+        namelabel = TreeLabel(element.get_name())
         self.tree.setItemWidget(item, column, namelabel)
 
     def init_dept(self, element, item, column):
         item.setText(column, element.get_department())
-        deptlabel = QtGui.QLabel(element.get_department())
-        deptlabel.setAutoFillBackground(True)
+        deptlabel = TreeLabel(element.get_department())
         self.tree.setItemWidget(item, column, deptlabel)
 
     def init_assigned_user(self, element, item, column):
-        item.setText(column, element.get_assigned_user())
+        user = element.get_assigned_user()
+        item.setText(column, user)
+        lineedit = TreeLineEdit(user, item, column)
+        userCompleter = QtGui.QCompleter(self.userList)
+        lineedit.setCompleter(userCompleter)
+        self.tree.setItemWidget(item, column, lineedit)
 
     def init_status(self, element, item, column):
         item.setText(column, element.get_status())
@@ -269,18 +344,26 @@ class ElementBrowser(QtGui.QWidget):
         self.status_bar.showMessage("can't change department")
 
     def update_assigned_user(self, element, item, column):
-        element.update_assigned_user(str(item.text(column)))
-        self.status_bar.clearMessage()
+        user = str(item.text(column))
+        if user in self.userList:
+            element.update_assigned_user(user)
+            self.status_bar.clearMessage()
+        else:
+            # item.setText(column, element.get_assigned_user())
+            self.tree.itemWidget(item, column).setText(element.get_assigned_user())
+            self.status_bar.showMessage('"' + user + '" is not a valid user')
 
     def update_status(self, element, item, column):
         element.update_status(str(item.text(column)))
         self.status_bar.clearMessage()
 
     def update_start_date(self, element, item, column):
-        self.status_bar.showMessage("update start date not implemented")
+        # TODO: check for valid date
+        element.update_start_date(str(item.text(column)))
 
     def update_end_date(self, element, item, column):
-        self.status_bar.showMessage("update end date not implemented")
+        # TODO: check for valid date
+        element.update_end_date(str(item.text(column)))
 
     def update_last_publish(self, element, item, column):
         self.status_bar.showMessage("can't modify publish data")
