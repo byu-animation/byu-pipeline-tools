@@ -46,19 +46,19 @@ class Checkout:
             raise EnvironmentError("not a valid checkout directory: " + self._filepath)
         self._datadict = pipeline_io.readfile(self._pipeline_file)
 
-    def get_body(self):
+    def get_body_name(self):
         
         return self._datadict[self.BODY]
 
-    def get_department(self):
+    def get_department_name(self):
 
         return self._datadict[self.DEPARTMENT]
 
-    def get_element(self):
+    def get_element_name(self):
 
         return self._datadict[self.ELEMENT]
 
-    def get_user(self):
+    def get_user_name(self):
 
         return self._datadict[self.USER]
 
@@ -313,10 +313,10 @@ class Element:
         checkout = Checkout(checkout_dir)
         app_file = self.get_app_filepath()
         if os.path.exists(app_file):
-            checkout_filename = self.get_app_filename()#
-            checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))#
-            shutil.copyfile(app_file, checkout_file)#
-            checkout.add_operation(checkout_file)#
+            checkout_filename = self.get_app_filename()
+            checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
+            shutil.copyfile(app_file, checkout_file)
+            checkout.add_operation(checkout_file)
         else:
             checkout_file = checkout_dir
         self.update_checkout_users(user)

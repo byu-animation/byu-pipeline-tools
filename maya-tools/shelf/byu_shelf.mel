@@ -1,0 +1,4 @@
+python("import sys; import os");
+python("SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')");
+python("sys.path.append(SHELF_DIR)");
+python("import byu_shelf");
