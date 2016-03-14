@@ -29,7 +29,7 @@ def mkdir(dirpath):
 	"""
 	try:
 		os.mkdir(dirpath) # TODO: ensure correct permissions
-	except OSError:
+	except OSError as e:
 		return False # file already exists
 	return True
 
