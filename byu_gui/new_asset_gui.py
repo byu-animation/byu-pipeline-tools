@@ -33,7 +33,7 @@ class createWindow(QtGui.QTabWidget):
     def initUI(self):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
-        self.setWindowTitle('Create New Element')
+        self.setWindowTitle('Create New Body')
         self.setStyleSheet(stylesheet)
         
         #create tabs

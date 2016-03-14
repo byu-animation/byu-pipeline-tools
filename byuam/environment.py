@@ -1,5 +1,6 @@
 import getpass
 import os
+import pwd
 
 from . import pipeline_io
 
@@ -38,10 +39,9 @@ class Environment:
 		if not os.path.exists(project_file):
 			raise EnvironmentError(project_file + " does not exist")
 		self._datadict = pipeline_io.readfile(project_file)
-		self._current_user = getpass.getuser()
-		self._current_user_workspace = os.path.join(self.get_users_dir(), self._current_user)
-		if not os.path.exists(self._current_user_workspace):
-			pipeline_io.mkdir(self._current_user_workspace)
+		self._current_username = getpass.getuser()
+		self._current_user_workspace = os.path.join(self.get_users_dir(), self._current_username)
+		self._create_user(self._current_username)
 
 	def get_project_name(self):
 		"""
@@ -67,27 +67,91 @@ class Environment:
 		"""
 		return os.path.abspath(self._datadict[Environment.SHOTS_DIR])
 
+	def _create_user(self, username):
+		workspace = os.path.join(self.get_users_dir(), username)
+		if not os.path.exists(workspace):
+			pipeline_io.mkdir(workspace)
+		user_pipeline_file = os.path.join(workspace, User.PIPELINE_FILENAME)
+		if not os.path.exists(user_pipeline_file):
+			datadict = User.create_new_dict(username)
+			pipeline_io.writefile(user_pipeline_file, datadict)
+		# user = User(workspace)
+		# return user
+
+	def get_user(self, username=None):
+		if username is None:
+			username = self._current_username
+		user_filepath = os.path.join(self.get_users_dir(), username)
+		if not os.path.exists(user_filepath):
+			raise EnvironmentError("no such user "+str(username))
+		return User(user_filepath)
+
 	def get_users_dir(self):
 		"""
 		return the absolute filepath to the users directory of the current project
 		"""
 		return os.path.abspath(self._datadict[Environment.USERS_DIR])
 
-	def get_current_user(self):
+	def get_current_username(self):
 
-		return self._current_user
+		return self._current_username
 
-	def get_user_workspace(self, user=None):
+	def get_user_workspace(self, username=None):
 		"""
 		return the given users workspace. If no user is given, return the current user's workspace.
 		"""
-		if user is not None:
-			workspace = os.path.join(self.get_users_dir, user)
+		if username is not None:
+			workspace = os.path.join(self.get_users_dir, username)
 			if not os.path.exists(workspace):
 				pipeline_io.mkdir(workspace)
 			return workspace
 		else:
 			return self._current_user_workspace
+
+
+class User:
+    """
+    The User class holds information about a user, this will be used a lot more for the web site 
+    """
+
+    NAME = "name"
+    EMAIL = "email"
+    CSID = "csid"
+
+    PIPELINE_FILENAME = ".user"
+
+    @staticmethod
+    def create_new_dict(username):
+        datadict = {}
+        datadict[User.CSID] = username
+        name = pwd.getpwnam(username).pw_gecos
+        datadict[User.NAME] = name
+        datadict[User.EMAIL] = ""
+        return datadict
+
+    def __init__(self, filepath):
+        self._filepath = filepath
+        self._pipeline_file = os.path.join(self._filepath, self.PIPELINE_FILENAME)
+        if not os.path.exists(self._pipeline_file):
+            raise EnvironmentError("invalid user file: " + self._pipeline_file + " does not exist")
+        self._datadict = pipeline_io.readfile(self._pipeline_file)
+    
+    def get_username(self):
+        return self._datadict[self.CSID]    
+    
+    def get_fullname(self):
+        return self._datadict[self.NAME]
+        
+    def get_email(self):
+        return self._datadict[self.EMAIL]
+        
+    def update_email(self, new_email): 
+        self._datadict[self.EMAIL] =  new_email
+        pipeline_io.writefile(self._pipeline_file, self._datadict)
+        
+    def update_fullname(self, new_name):
+        self._datadict[self.NAME] = new_name
+        pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 
 class Department:
