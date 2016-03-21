@@ -72,7 +72,7 @@ class checkoutWindow(QtGui.QTabWidget):
         button_layout.addWidget(self.cancel_button)
 
         self.img = QtGui.QLabel()
-        pixmap = QtGui.QPixmap(os.getcwd() + '/assets/images/taijitu.jpg')
+        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/taijitu.jpg')
         scaled = pixmap.scaledToWidth(self.size().width())
         self.img.setPixmap(scaled)
 
@@ -107,6 +107,9 @@ class checkoutWindow(QtGui.QTabWidget):
         element_path = element_obj.checkout(current_user)
         if element_path != None:
             app.quit()
+            
+def testStatic():
+    print 'IN STATIC METHOD'
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
