@@ -105,6 +105,7 @@ class Element:
     CACHE_EXT = "cache_ext"
     CACHE_FILEPATH = "cache_filepath"
     CHECKOUT_USERS = "checkout_users"
+    NOTES = "notes"
 
     @staticmethod
     def create_new_dict(name, department, parent_name):
@@ -125,6 +126,7 @@ class Element:
         datadict[Element.CACHE_EXT] = ""
         datadict[Element.CACHE_FILEPATH] = ""
         datadict[Element.CHECKOUT_USERS] = []
+        datadict[Element.NOTES] = []
         return datadict
 
     def __init__(self, filepath=None):
@@ -201,6 +203,17 @@ class Element:
         each tuple contains the following: (username, timestamp, comment)
         """
         return self._datadict[self.PUBLISHES]
+
+    def get_last_note(self):
+        """
+        return the latest note created for this element as a string
+        """
+        return self._datadict[self.NOTES][-1]
+    def list_notes(self):
+        """
+        return a list of all notes that have beeen created for this element
+        """
+        return self._datadict[self.NOTES]
 
     def get_start_date(self):
 
@@ -291,6 +304,12 @@ class Element:
         if username not in self._datadict[self.CHECKOUT_USERS]:
             self._datadict[self.CHECKOUT_USERS].append(username)
             self._update_pipeline_file()
+
+    def update_notes(self, note):
+        """
+        add the given note to the note list
+        """
+        self._datadict[self.NOTES].append(note)
 
     def get_checkout_dir(self, username):
         """
