@@ -1,4 +1,5 @@
-from byugui.new_asset_gui import CreateWindow, NewAssetWindow
+from byugui.publish_gui import PublishWindow
+import maya.cmds as cmds
 from PyQt4 import QtCore
 import maya.OpenMayaUI as omu
 import sip
@@ -9,4 +10,5 @@ def maya_main_window():
 
 def go():
     parent = maya_main_window()
-    dialog = CreateWindow(parent)
+    filePath = cmds.file(q=True, sceneName=True)
+    dialog = PublishWindow(filePath, parent)

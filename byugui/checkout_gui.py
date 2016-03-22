@@ -6,25 +6,18 @@ from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Department, Environment
 
-#set widget styles
-stylesheet = """
-	        QWidget {
-	            background-color:#2E2E2E;
-	            color: white;
-	        }
-	        QLineEdit {
-			    background-color: black;
-	        }
-	    """
-
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 
 dept_list = Department.FRONTEND
 
-class checkoutWindow(QtGui.QTabWidget):
-    def __init__(self):
-        super(checkoutWindow, self).__init__()
+class CheckoutWindow(QtGui.QTabWidget):
+    
+    finished = QtCore.pyqtSignal()
+    
+    def __init__(self, parent):
+        super(CheckoutWindow, self).__init__()
+        self.parent = parent
         self.project = Project()
         self.environment = Environment()
         self.initUI()
@@ -33,7 +26,6 @@ class checkoutWindow(QtGui.QTabWidget):
         #define gui elements
         self.setWindowTitle('Checkout')
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.setStyleSheet(stylesheet)
 
         #create tabs
         self.dept_tabs = QtGui.QTabWidget()
@@ -63,7 +55,7 @@ class checkoutWindow(QtGui.QTabWidget):
         self.checkout_button = QtGui.QPushButton('Checkout')
         self.checkout_button.clicked.connect(self.checkout)
         self.cancel_button = QtGui.QPushButton('Cancel')
-        self.cancel_button.clicked.connect(app.quit)    
+        self.cancel_button.clicked.connect(self.close)    
 		
         #create button layout
         button_layout = QtGui.QHBoxLayout()
@@ -84,7 +76,7 @@ class checkoutWindow(QtGui.QTabWidget):
         main_layout.setMargin(6)
         main_layout.addWidget(self.dept_tabs)
         main_layout.addLayout(button_layout)
-
+        print 'ABOUT TO SHOW'
         self.show()
         
         
@@ -108,10 +100,12 @@ class checkoutWindow(QtGui.QTabWidget):
         if element_path != None:
             app.quit()
             
-def testStatic():
-    print 'IN STATIC METHOD'
+    def closeEvent(self, event):
+        self.finished.emit()
+        event.accept()
+            
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = checkoutWindow()
+    ex = CheckoutWindow()
     sys.exit(app.exec_())

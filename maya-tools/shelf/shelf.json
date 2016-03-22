@@ -8,12 +8,17 @@
         {
             "icon":"checkout.xpm",
             "annotation":"Checkout a model, rig or animation",
-            "python_file":"new_asset.py"
+            "python_file":"checkout.py"
         },
         {
             "icon":"checkout.xpm",
             "annotation":"Create a new asset",
             "python_file":"new_asset.py"
+        },
+        {
+            "icon":"checkout.xpm",
+            "annotation":"Publish a model, rig or animation",
+            "python_file":"publish.py"
         }
 	]
 }
