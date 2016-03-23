@@ -32,7 +32,8 @@ class CheckoutWindow(QtGui.QWidget):
         self.dept_tabs = QtGui.QTabWidget()
         #create tabs
         for dept in dept_list:
-            tab = DepartmentTab(dept, self)
+            tab = DepartmentTab(self)
+            #tab = QtGui.QWidget()
             self.dept_tabs.insertTab(self.ASSET_INDEX, tab, dept)
             tab_layout = QtGui.QVBoxLayout()
             element_list = QtGui.QListWidget()
@@ -104,11 +105,10 @@ class CheckoutWindow(QtGui.QWidget):
         event.accept()
         
 class DepartmentTab(QtGui.QWidget):
-    def __init__(self, department, parent):
+    def __init__(self, parent):
         super(DepartmentTab, self).__init__()
         self.parent = parent
-        self.department = department
-        self.initUI()
+        #self.initUI()
         
     def initUI(self):
         #define gui elements

@@ -15,7 +15,7 @@ class PublishWindow(QtGui.QWidget):
         super(PublishWindow, self).__init__()
         self.environment = Environment()
         self.project = Project()
-        self.eList = elementList()
+        self.eList = ElementList(self)
         self.parent = parent
         self.src = src
         self.elementType = None
@@ -90,12 +90,13 @@ class PublishWindow(QtGui.QWidget):
             self.grid.addWidget(error, 4, 1, 2, 1)
             traceback.print_stack()
 	    
-class elementList(QtGui.QListWidget):
-    def __init__(self):
-	    super(elementList, self).__init__()
-	    self.project = Project()
-	    self.elements = self.project.list_assets()
-	    self.initUI()	    
+class ElementList(QtGui.QListWidget):
+    def __init__(self, parent):
+        super(ElementList, self).__init__()
+        self.parent = parent
+        self.project = Project()
+        self.elements = self.project.list_assets()
+        self.initUI()	    
 	    
     def initUI(self):
 	    #define gui elements
@@ -115,5 +116,5 @@ class elementList(QtGui.QListWidget):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt')
+    ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
     sys.exit(app.exec_())
