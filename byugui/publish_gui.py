@@ -7,26 +7,16 @@ from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 
-#set widget styles
-stylesheet = """
-	        QWidget {
-	            background-color:#2E2E2E;
-	            color: white;
-	        }
-	        QLineEdit {
-			    background-color: black;
-	        }
-	    """
-
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
-
-class publishWindow(QtGui.QWidget):
-    def __init__(self, src):
-        super(publishWindow, self).__init__()
+    
+class PublishWindow(QtGui.QWidget):
+    def __init__(self, src, parent):
+        super(PublishWindow, self).__init__()
         self.environment = Environment()
         self.project = Project()
-        self.eList = elementList()
+        self.eList = ElementList(self)
+        self.parent = parent
         self.src = src
         self.elementType = None
         self.initUI()
@@ -35,7 +25,6 @@ class publishWindow(QtGui.QWidget):
 	    #define gui elements
 	    self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
 	    self.setWindowTitle('Publish')
-	    self.setStyleSheet(stylesheet)
 	    self.menu = QtGui.QComboBox()
 	    self.menu.addItem('Asset')
 	    self.menu.addItem('Shot')
@@ -101,12 +90,13 @@ class publishWindow(QtGui.QWidget):
             self.grid.addWidget(error, 4, 1, 2, 1)
             traceback.print_stack()
 	    
-class elementList(QtGui.QListWidget):
-    def __init__(self):
-	    super(elementList, self).__init__()
-	    self.project = Project()
-	    self.elements = self.project.list_assets()
-	    self.initUI()	    
+class ElementList(QtGui.QListWidget):
+    def __init__(self, parent):
+        super(ElementList, self).__init__()
+        self.parent = parent
+        self.project = Project()
+        self.elements = self.project.list_assets()
+        self.initUI()	    
 	    
     def initUI(self):
 	    #define gui elements
@@ -126,5 +116,5 @@ class elementList(QtGui.QListWidget):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = publishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt')
+    ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
     sys.exit(app.exec_())
