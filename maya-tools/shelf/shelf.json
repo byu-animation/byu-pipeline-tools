@@ -11,12 +11,12 @@
             "python_file":"checkout.py"
         },
         {
-            "icon":"checkout.xpm",
+            "icon":"new.xpm",
             "annotation":"Create a new asset",
             "python_file":"new_asset.py"
         },
         {
-            "icon":"checkout.xpm",
+            "icon":"publish.xpm",
             "annotation":"Publish a model, rig or animation",
             "python_file":"publish.py"
         }

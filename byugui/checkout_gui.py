@@ -9,32 +9,32 @@ from byuam.environment import Department, Environment
 WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 600
 
-dept_list = Department.ALL
+# dept_list = Department.ALL
         
 class CheckoutWindow(QtGui.QWidget):
 
     finished = QtCore.pyqtSignal()
 
-    ASSET_INDEX = 0
-    SHOT_INDEX = 1
-
-    def __init__(self, parent):
+    def __init__(self, parent, dept_list=Department.ALL):
         super(CheckoutWindow, self).__init__()
         self.parent = parent
         self.project = Project()
         self.environment = Environment()
-        self.initUI()
+        self.initUI(dept_list)
         
-    def initUI(self):
+    def initUI(self, dept_list):
         #define gui elements
         self.resize(WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Checkout')
         self.dept_tabs = QtGui.QTabWidget()
+        self.dept_list = dept_list
+        self.result = None
         #create tabs
         for dept in dept_list:
             tab = DepartmentTab(self)
             #tab = QtGui.QWidget()
-            self.dept_tabs.insertTab(self.ASSET_INDEX, tab, dept)
+            # self.dept_tabs.insertTab(self.ASSET_INDEX, tab, dept)
+            self.dept_tabs.addTab(tab, dept)
             tab_layout = QtGui.QVBoxLayout()
             element_list = QtGui.QListWidget()
 				
@@ -80,7 +80,7 @@ class CheckoutWindow(QtGui.QWidget):
         self.show()
             
     def set_current_item(self, index):
-        current_dept = dept_list[self.dept_tabs.currentIndex()]
+        current_dept = self.dept_list[self.dept_tabs.currentIndex()]
         if current_dept in Department.FRONTEND:
             self.current_item = str(index.text())
         elif current_dept in Department.BACKEND:
@@ -91,13 +91,15 @@ class CheckoutWindow(QtGui.QWidget):
         Checks out the currently selected item
         :return:
         """
-        current_user = self.environment.get_current_user()
-        current_dept = dept_list[self.dept_tabs.currentIndex()]
-        asset_obj = self.project.get_asset(self.current_item)
+        current_user = self.environment.get_current_username()
+        current_dept = self.dept_list[self.dept_tabs.currentIndex()]
+        asset_obj = self.project.get_body(self.current_item)
         element_obj = asset_obj.get_element(current_dept)
         element_path = element_obj.checkout(current_user)
         if element_path != None:
-            self.parent.close()
+            # self.parent.close()
+            self.result = element_path
+            self.close()
             
 
     def closeEvent(self, event):

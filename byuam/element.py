@@ -326,7 +326,7 @@ class Element:
         Adds username to the list of checkout users.
         username -- the username (string) of the user performing this action
         Returns the absolute filepath to the copied file. If this element has no app file,
-        Returns the filepath to an empty checkout directory. 
+        the returned filepath will not exist. 
         """
         checkout_dir = self.get_checkout_dir(username)
         if not os.path.exists(checkout_dir):
@@ -335,13 +335,10 @@ class Element:
             pipeline_io.writefile(os.path.join(checkout_dir, Checkout.PIPELINE_FILENAME), datadict)
         checkout = Checkout(checkout_dir)
         app_file = self.get_app_filepath()
+        checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, self.get_app_filename()))
         if os.path.exists(app_file):
-            checkout_filename = self.get_app_filename()
-            checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
             shutil.copyfile(app_file, checkout_file)
             checkout.add_operation(checkout_file)
-        else:
-            checkout_file = checkout_dir
         self.update_checkout_users(username)
         return checkout_file
 

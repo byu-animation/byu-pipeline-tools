@@ -11,17 +11,21 @@ WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
     
 class PublishWindow(QtGui.QWidget):
-    def __init__(self, src, parent):
+
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, src, parent, dept_list=Department.ALL):
         super(PublishWindow, self).__init__()
         self.environment = Environment()
         self.project = Project()
         self.eList = ElementList(self)
         self.parent = parent
         self.src = src
+        self.result = None
         self.elementType = None
-        self.initUI()
+        self.initUI(dept_list)
 	    
-    def initUI(self):
+    def initUI(self, dept_list):
 	    #define gui elements
 	    self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
 	    self.setWindowTitle('Publish')
@@ -29,7 +33,7 @@ class PublishWindow(QtGui.QWidget):
 	    self.menu.addItem('Asset')
 	    self.menu.addItem('Shot')
 	    self.departmentMenu = QtGui.QComboBox()
-	    for i in Department.ALL:
+	    for i in dept_list:
 		    self.departmentMenu.addItem(i)
         
 	    self.departmentMenu.activated[str].connect(self.setElementType)
@@ -64,8 +68,10 @@ class PublishWindow(QtGui.QWidget):
         self.eList.refreshList(self.elementType)
 	    
     def selectElement(self):
-	    self.filePath.setText(self.eList.currentItem().text())
-	    self.publishBtn.setEnabled(True)
+        currentItem = self.eList.currentItem()
+        if currentItem is not None:
+	       self.filePath.setText(self.eList.currentItem().text())
+	       self.publishBtn.setEnabled(True)
 
     def publish(self):
         elementType = str(self.menu.currentText())
@@ -78,17 +84,22 @@ class PublishWindow(QtGui.QWidget):
                 shot = self.project.get_shot(str(self.filePath.text()))
                 element = shot.get_element(str(self.departmentMenu.currentText()))
 		
-            user = self.environment.get_current_user()
+            user = self.environment.get_current_username()
             src = self.src
             comment = str(self.comment.toPlainText())
             element.publish(user, src, comment)
-            app.quit()
+            self.result = element
+            self.close()
         except Exception, e:
             print e
             error = QtGui.QLineEdit()
             error.setText(str(e))
             self.grid.addWidget(error, 4, 1, 2, 1)
             traceback.print_stack()
+
+    def closeEvent(self, event):
+        self.finished.emit()
+        event.accept()
 	    
 class ElementList(QtGui.QListWidget):
     def __init__(self, parent):
