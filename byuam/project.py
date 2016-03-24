@@ -187,12 +187,24 @@ class Project:
 
 	def get_checkout(self, path):
 		"""
-		returns the Checkout object describing the checkout operation at the given path
+		returns the Checkout object describing the checkout operation at the given directory
 		If the path is not a valid checkout directory, returns None
 		"""
 		if not self.is_checkout_dir(path):
 			return None
 		return Checkout(path)
+
+	def get_checkout_element(self, path):
+		"""
+		returns the checked out element from the checkout operation at the given directory
+		If the path is not a valid checkout directory, returns None
+		"""
+		checkout = self.get_checkout(path)
+		if checkout is None:
+			return checkout
+		body = self.get_body(checkout.get_body_name())
+		element = body.get_element(checkout.get_department_name(), checkout.get_element_name())
+		return element
 
 	def delete_shot(self, shot):
 		"""
