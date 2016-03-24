@@ -7,7 +7,7 @@ from byuam.body import Asset, Shot
 from byuam.environment import AssetType, Department, Status
 from byuam.project import Project
 
-from byu_gui import request_email
+from byugui import request_email
 
 REF_WINDOW_WIDTH = 800
 REF_WINDOW_HEIGHT = 500
@@ -294,7 +294,7 @@ class ElementBrowser(QtGui.QWidget):
         self._refresh()
 
     def _new_body(self):
-        from byu_gui import new_asset_gui
+        from byugui import new_asset_gui
         self.new_body_dialog = new_asset_gui.createWindow()
         if self.current_body == self.ASSETS:
             self.new_body_dialog.setCurrentIndex(self.new_body_dialog.ASSET_INDEX)
