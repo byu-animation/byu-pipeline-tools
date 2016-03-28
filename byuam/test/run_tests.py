@@ -7,20 +7,32 @@ from byuam.body import Asset, Shot
 from byuam.environment import Department, Environment, Status
 from byuam.element import Element
 from byuam.project import Project
+from byuam import pipeline_io
 
 class TestAssetManager(unittest.TestCase):
 
 	def setUp(self):
+		project_dir = os.path.dirname(os.path.realpath(__file__))
+		self.assets_dir = os.path.join(project_dir, "assets")
+		self.shots_dir = os.path.join(project_dir, "shots")
+		self.users_dir = os.path.join(project_dir, "users")
+		pipeline_io.mkdir(self.assets_dir)
+		pipeline_io.mkdir(self.shots_dir)
+		pipeline_io.mkdir(self.users_dir)
+		datadict = Environment.create_new_dict("test", self.assets_dir, self.shots_dir, self.users_dir)
+		pipeline_io.writefile(Environment.PIPELINE_FILENAME, datadict)
+		os.environ[Environment.PROJECT_ENV] = project_dir
+
 		self.project = Project()
-		self.assets_dir = self.project.get_assets_dir()
-		if not os.path.exists(self.assets_dir):
-			os.mkdir(self.assets_dir)
-		self.shots_dir = self.project.get_shots_dir()
-		if not os.path.exists(self.shots_dir):
-			os.mkdir(self.shots_dir)
-		self.users_dir = self.project.get_users_dir()
-		if not os.path.exists(self.users_dir):
-			os.mkdir(self.users_dir)
+		# self.assets_dir = self.project.get_assets_dir()
+		# if not os.path.exists(self.assets_dir):
+		# 	os.mkdir(self.assets_dir)
+		# self.shots_dir = self.project.get_shots_dir()
+		# if not os.path.exists(self.shots_dir):
+		# 	os.mkdir(self.shots_dir)
+		# self.users_dir = self.project.get_users_dir()
+		# if not os.path.exists(self.users_dir):
+		# 	os.mkdir(self.users_dir)
 
 	def tearDown(self):
 		shutil.rmtree(self.assets_dir)
@@ -140,10 +152,10 @@ class TestElement(TestAssetManager):
 
 				checkout_dir = element.get_checkout_dir(self.user)
 				checkout = self.project.get_checkout(checkout_dir)
-				self.assertEquals(element.get_parent(), checkout.get_body())
-				self.assertEquals(element.get_department(), checkout.get_department())
-				self.assertEquals(element.get_name(), checkout.get_element())
-				self.assertEquals(self.user, checkout.get_user())
+				self.assertEquals(element.get_parent(), checkout.get_body_name())
+				self.assertEquals(element.get_department(), checkout.get_department_name())
+				self.assertEquals(element.get_name(), checkout.get_element_name())
+				self.assertEquals(self.user, checkout.get_user_name())
 				self.assertEquals(len(checkout.list_files()), 2)
 				self.assertTrue(checkout_path in checkout.list_files())
 				self.assertTrue(checkout_path2 in checkout.list_files())

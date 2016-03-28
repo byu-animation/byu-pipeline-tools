@@ -22,12 +22,12 @@ class Checkout:
     TIMES = "time"
 
     @staticmethod
-    def create_new_dict(user, body, department, element):
+    def create_new_dict(username, body, department, element):
         """
         populate a dictionary with defaults for all the fields needed to create a new checkout
         """
         datadict = {}
-        datadict[Checkout.USER] = user
+        datadict[Checkout.USER] = username
         datadict[Checkout.BODY] = body
         datadict[Checkout.DEPARTMENT] = department
         datadict[Checkout.ELEMENT] = element
@@ -105,6 +105,7 @@ class Element:
     CACHE_EXT = "cache_ext"
     CACHE_FILEPATH = "cache_filepath"
     CHECKOUT_USERS = "checkout_users"
+    NOTES = "notes"
 
     @staticmethod
     def create_new_dict(name, department, parent_name):
@@ -125,6 +126,7 @@ class Element:
         datadict[Element.CACHE_EXT] = ""
         datadict[Element.CACHE_FILEPATH] = ""
         datadict[Element.CHECKOUT_USERS] = []
+        datadict[Element.NOTES] = []
         return datadict
 
     def __init__(self, filepath=None):
@@ -180,12 +182,15 @@ class Element:
         return self._datadict[self.STATUS]
 
     def get_assigned_user(self):
+        """
+        returns the username (string) of the assigned user
+        """
 
         return self._datadict[self.ASSIGNED_USER]
 
     def get_last_publish(self):
         """
-        return a tuple describing the latest publish: (user, timestamp, comment)
+        return a tuple describing the latest publish: (username, timestamp, comment)
         """
         latest_version = self._datadict[self.LATEST_VERSION]
         if(latest_version<0):
@@ -195,9 +200,20 @@ class Element:
     def list_publishes(self):
         """
         return a list of tuples describing all publishes for this element.
-        each tuple contains the following: (user, timestamp, comment)
+        each tuple contains the following: (username, timestamp, comment)
         """
         return self._datadict[self.PUBLISHES]
+
+    def get_last_note(self):
+        """
+        return the latest note created for this element as a string
+        """
+        return self._datadict[self.NOTES][-1]
+    def list_notes(self):
+        """
+        return a list of all notes that have beeen created for this element
+        """
+        return self._datadict[self.NOTES]
 
     def get_start_date(self):
 
@@ -248,7 +264,7 @@ class Element:
 
     def list_checkout_users(self):
         """
-        return a list of all users who have checked out this element
+        return a list of the usernames of all users who have checked out this element
         """
         return self._datadict[self.CHECKOUT_USERS]
 
@@ -257,12 +273,12 @@ class Element:
         self._datadict[self.STATUS] = status
         self._update_pipeline_file()
 
-    def update_assigned_user(self, user):
+    def update_assigned_user(self, username):
         """
         Update the user assigned to this element.
-        user -- the new user to be assigned
+        username -- the username (string) of the new user to be assigned
         """
-        self._datadict[self.ASSIGNED_USER] = user
+        self._datadict[self.ASSIGNED_USER] = username
         self._update_pipeline_file()
 
     def update_start_date(self, date):
@@ -281,52 +297,56 @@ class Element:
         self._datadict[self.END_DATE] = date
         self._update_pipeline_file()
 
-    def update_checkout_users(self, user):
+    def update_checkout_users(self, username):
         """
-        add the given user to the checkout_users list, if they aren't already in it.
+        add the given username to the checkout_users list, if they aren't already in it.
         """
-        if user not in self._datadict[self.CHECKOUT_USERS]:
-            self._datadict[self.CHECKOUT_USERS].append(user)
+        if username not in self._datadict[self.CHECKOUT_USERS]:
+            self._datadict[self.CHECKOUT_USERS].append(username)
             self._update_pipeline_file()
 
-    def get_checkout_dir(self, user):
+    def update_notes(self, note):
         """
-        return the directory this element would be copied to during checkout for the given user
+        add the given note to the note list
         """
-        return os.path.join(self._env.get_users_dir(), user, self.get_parent()+"_"+
+        self._datadict[self.NOTES].append(note)
+
+    def get_checkout_dir(self, username):
+        """
+        return the directory this element would be copied to during checkout for the given username
+        """
+        return os.path.join(self._env.get_users_dir(), username, self.get_parent()+"_"+
                                                              self.get_department()+"_"+
                                                              self.get_name())
 
-    def checkout(self, user):
+    def checkout(self, username):
         """
         Copies the element to the given user's work area in a directory with the following name:
             {the parent body's name}_{this element's department}_{this element's name} 
-        Adds user to the list of checkout users.
+        Adds username to the list of checkout users.
+        username -- the username (string) of the user performing this action
         Returns the absolute filepath to the copied file. If this element has no app file,
-        Returns the filepath to an empty checkout directory. 
+        the returned filepath will not exist. 
         """
-        checkout_dir = self.get_checkout_dir(user)
+        checkout_dir = self.get_checkout_dir(username)
         if not os.path.exists(checkout_dir):
             pipeline_io.mkdir(checkout_dir)
-            datadict = Checkout.create_new_dict(user, self.get_parent(), self.get_department(), self.get_name())
+            datadict = Checkout.create_new_dict(username, self.get_parent(), self.get_department(), self.get_name())
             pipeline_io.writefile(os.path.join(checkout_dir, Checkout.PIPELINE_FILENAME), datadict)
         checkout = Checkout(checkout_dir)
         app_file = self.get_app_filepath()
+        checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, self.get_app_filename()))
         if os.path.exists(app_file):
-            checkout_filename = self.get_app_filename()
-            checkout_file = pipeline_io.version_file(os.path.join(checkout_dir, checkout_filename))
             shutil.copyfile(app_file, checkout_file)
             checkout.add_operation(checkout_file)
-        else:
-            checkout_file = checkout_dir
-        self.update_checkout_users(user)
+        self.update_checkout_users(username)
         return checkout_file
 
-    def publish(self, user, src, comment, status=None):
+    def publish(self, username, src, comment, status=None):
         """
         Replace the applcation file of this element. Create a new version with the new file.
         Store the result of this operation as a new publish.
-        user -- the user performing this action
+        username -- the username of the user performing this action
         src -- the file to be placed in the new version
         comment -- description of changes made in this publish
         status -- new status for this element, defaults to None in which case no change will be made
@@ -336,7 +356,7 @@ class Element:
         self._datadict[self.APP_EXT] = os.path.splitext(src)[1]
         dst = self.get_app_filepath()
         timestamp = pipeline_io.timestamp()
-        self._datadict[self.PUBLISHES].append((user, timestamp, comment))
+        self._datadict[self.PUBLISHES].append((username, timestamp, comment))
         shutil.copyfile(src, dst)
 
         new_version = self._datadict[self.LATEST_VERSION] + 1
@@ -353,7 +373,6 @@ class Element:
     def update_cache(self, src, reference=False):
         """
         Update the cache of this element.
-        user -- the user performing this action
         src -- the new cache file
         reference -- if false (the default) copy the source into this element's cache folder.
                      if true create a symbolic link to the given source.

@@ -1,10 +1,13 @@
 from PyQt4 import QtGui, QtCore
 
+import datetime
 import os
 
 from byuam.body import Asset, Shot
 from byuam.environment import AssetType, Department, Status
 from byuam.project import Project
+
+from byugui import request_email
 
 REF_WINDOW_WIDTH = 800
 REF_WINDOW_HEIGHT = 500
@@ -68,7 +71,7 @@ class TreeLabel(QtGui.QLabel):
     def paintEvent(self, pe):
         painter = QtGui.QPainter()
         painter.begin(self)
-        painter.setBrush(QtGui.QColor(30,30,30))
+        painter.setBrush(self.palette().color(QtGui.QPalette.AlternateBase))
         pen = QtGui.QPen(QtCore.Qt.black)
         pen.setWidth(1)
         pen.setColor
@@ -96,27 +99,38 @@ class ElementBrowser(QtGui.QWidget):
 
     BODY_DATA_COLUMN = 1
 
-    stylesheet = """
-    QWidget
-    {
-        color: silver;
-        background-color: #2E2E2E;
-        selection-color: black;
-        background-clip: border;
-        border-image: none;
-        outline: 0;
-    }
-    """
+    @staticmethod
+    def dark_palette():
+        palette = QtGui.QPalette()
+        base_color = QtGui.QColor(39,39,39)
+        alt_color = QtGui.QColor(30,30,30)
+        text_color = QtGui.QColor(192,192,192)
+        highlight_color = QtGui.QColor(57,86,115)
+        highligh_text_color = QtCore.Qt.white
+        palette.setColor(QtGui.QPalette.Window, base_color)
+        palette.setColor(QtGui.QPalette.WindowText, text_color)
+        palette.setColor(QtGui.QPalette.Base, base_color)
+        palette.setColor(QtGui.QPalette.AlternateBase, alt_color)
+        palette.setColor(QtGui.QPalette.ToolTipBase, alt_color)
+        palette.setColor(QtGui.QPalette.ToolTipText, text_color)
+        palette.setColor(QtGui.QPalette.Button, base_color)
+        palette.setColor(QtGui.QPalette.ButtonText, text_color)
+        palette.setColor(QtGui.QPalette.Text, text_color)
+        palette.setColor(QtGui.QPalette.Highlight, highlight_color)
+        palette.setColor(QtGui.QPalette.HighlightedText, highligh_text_color)
+        return palette
 
     def __init__(self):
         QtGui.QWidget.__init__(self)
         self.setWindowTitle("Element Browser")
         self.setGeometry(0, 0, REF_WINDOW_WIDTH, REF_WINDOW_HEIGHT)
-        self.setStyleSheet(self.stylesheet)
+        self.palette = self.dark_palette()
+        self.setPalette(self.palette)
 
         # initialize project
         self.project = Project()
-        self.userList = ["jmoborn", "render", "steve", "jmjohnson", "stella"] # TODO: get real user list
+        self.userList = self.project.list_users()
+        # self.userList = ["jmoborn", "render", "steve", "jmjohnson", "stella"] # TODO: get real user list
 
         # asset/shot menu
         self.body_menu = QtGui.QComboBox()
@@ -185,6 +199,8 @@ class ElementBrowser(QtGui.QWidget):
         layout.addWidget(self.tree)
         layout.addWidget(self.status_bar)
         self.setLayout(layout)
+
+        request_email.check_user_email(self)
 
     def _build_tree(self):
         self.tree.clear()
@@ -278,7 +294,7 @@ class ElementBrowser(QtGui.QWidget):
         self._refresh()
 
     def _new_body(self):
-        from byu_gui import new_asset_gui
+        from byugui import new_asset_gui
         self.new_body_dialog = new_asset_gui.createWindow()
         if self.current_body == self.ASSETS:
             self.new_body_dialog.setCurrentIndex(self.new_body_dialog.ASSET_INDEX)
@@ -293,6 +309,14 @@ class ElementBrowser(QtGui.QWidget):
             body.update_frame_range(int(item.text(self.BODY_DATA_COLUMN)))
         else:
             self.status_bar.showMessage("Error: unknown body type")
+
+    def _valid_date(self, date):
+        try:
+            date_obj = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+            return str(date_obj)
+        except ValueError:
+            self.status_bar.showMessage(date+" not a valid date, please use format: YYYY-MM-DD")
+            return None
 
     def init_name(self, element, item, column):
         item.setText(column, element.get_name())
@@ -349,21 +373,30 @@ class ElementBrowser(QtGui.QWidget):
             element.update_assigned_user(user)
             self.status_bar.clearMessage()
         else:
-            # item.setText(column, element.get_assigned_user())
             self.tree.itemWidget(item, column).setText(element.get_assigned_user())
-            self.status_bar.showMessage('"' + user + '" is not a valid user')
+            self.status_bar.showMessage('"' + user + '" is not a valid username')
 
     def update_status(self, element, item, column):
         element.update_status(str(item.text(column)))
         self.status_bar.clearMessage()
 
     def update_start_date(self, element, item, column):
-        # TODO: check for valid date
-        element.update_start_date(str(item.text(column)))
+        date_str = str(item.text(column))
+        valid_date_str = self._valid_date(date_str)
+        if valid_date_str:
+            element.update_start_date(valid_date_str)
+            self.status_bar.clearMessage()
+        else:
+            self.init_start_date(element, item, column)
 
     def update_end_date(self, element, item, column):
-        # TODO: check for valid date
-        element.update_end_date(str(item.text(column)))
+        date_str = str(item.text(column))
+        valid_date_str = self._valid_date(date_str)
+        if valid_date_str:
+            element.update_end_date(valid_date_str)
+            self.status_bar.clearMessage()
+        else:
+            self.init_end_date(element, item, column)
 
     def update_last_publish(self, element, item, column):
         self.status_bar.showMessage("can't modify publish data")

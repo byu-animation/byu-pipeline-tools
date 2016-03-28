@@ -7,40 +7,33 @@ from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 
-#set widget styles
-stylesheet = """
-	        QWidget {
-	            background-color:#2E2E2E;
-	            color: white;
-	        }
-	        QLineEdit {
-			    background-color: black;
-	        }
-	    """
-
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
+    
+class PublishWindow(QtGui.QWidget):
 
-class publishWindow(QtGui.QWidget):
-    def __init__(self, src):
-        super(publishWindow, self).__init__()
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, src, parent, dept_list=Department.ALL):
+        super(PublishWindow, self).__init__()
         self.environment = Environment()
         self.project = Project()
-        self.eList = elementList()
+        self.eList = ElementList(self)
+        self.parent = parent
         self.src = src
+        self.result = None
         self.elementType = None
-        self.initUI()
+        self.initUI(dept_list)
 	    
-    def initUI(self):
+    def initUI(self, dept_list):
 	    #define gui elements
 	    self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
 	    self.setWindowTitle('Publish')
-	    self.setStyleSheet(stylesheet)
 	    self.menu = QtGui.QComboBox()
 	    self.menu.addItem('Asset')
 	    self.menu.addItem('Shot')
 	    self.departmentMenu = QtGui.QComboBox()
-	    for i in Department.ALL:
+	    for i in dept_list:
 		    self.departmentMenu.addItem(i)
         
 	    self.departmentMenu.activated[str].connect(self.setElementType)
@@ -75,8 +68,10 @@ class publishWindow(QtGui.QWidget):
         self.eList.refreshList(self.elementType)
 	    
     def selectElement(self):
-	    self.filePath.setText(self.eList.currentItem().text())
-	    self.publishBtn.setEnabled(True)
+        currentItem = self.eList.currentItem()
+        if currentItem is not None:
+	       self.filePath.setText(self.eList.currentItem().text())
+	       self.publishBtn.setEnabled(True)
 
     def publish(self):
         elementType = str(self.menu.currentText())
@@ -89,24 +84,30 @@ class publishWindow(QtGui.QWidget):
                 shot = self.project.get_shot(str(self.filePath.text()))
                 element = shot.get_element(str(self.departmentMenu.currentText()))
 		
-            user = self.environment.get_current_user()
+            user = self.environment.get_current_username()
             src = self.src
             comment = str(self.comment.toPlainText())
             element.publish(user, src, comment)
-            app.quit()
+            self.result = element
+            self.close()
         except Exception, e:
             print e
             error = QtGui.QLineEdit()
             error.setText(str(e))
             self.grid.addWidget(error, 4, 1, 2, 1)
             traceback.print_stack()
+
+    def closeEvent(self, event):
+        self.finished.emit()
+        event.accept()
 	    
-class elementList(QtGui.QListWidget):
-    def __init__(self):
-	    super(elementList, self).__init__()
-	    self.project = Project()
-	    self.elements = self.project.list_assets()
-	    self.initUI()	    
+class ElementList(QtGui.QListWidget):
+    def __init__(self, parent):
+        super(ElementList, self).__init__()
+        self.parent = parent
+        self.project = Project()
+        self.elements = self.project.list_assets()
+        self.initUI()	    
 	    
     def initUI(self):
 	    #define gui elements
@@ -126,5 +127,5 @@ class elementList(QtGui.QListWidget):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = publishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt')
+    ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
     sys.exit(app.exec_())

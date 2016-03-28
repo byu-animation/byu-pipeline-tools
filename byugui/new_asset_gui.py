@@ -5,40 +5,29 @@ import os
 from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 
-#set widget styles
-stylesheet = """
-            QWidget {
-                background-color:#2E2E2E;
-                color: white;
-            }
-            QLineEdit {
-                background-color: black;
-            }
-        """
-
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 200
         
-class createWindow(QtGui.QTabWidget):
+class CreateWindow(QtGui.QTabWidget):
 
     finished = QtCore.pyqtSignal()
 
     ASSET_INDEX = 0
     SHOT_INDEX = 1
 
-    def __init__(self):
-        super(createWindow, self).__init__()
+    def __init__(self, parent):
+        super(CreateWindow, self).__init__()
+        self.parent = parent
         self.initUI()
         
     def initUI(self):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
-        self.setWindowTitle('Create New Element')
-        self.setStyleSheet(stylesheet)
+        self.setWindowTitle('Create New Body')
         
         #create tabs
-        assetTab = newAssetWindow('asset', self)
-        shotTab = newAssetWindow('shot', self)
+        assetTab = NewAssetWindow('asset', self)
+        shotTab = NewAssetWindow('shot', self)
         
         self.insertTab(self.ASSET_INDEX, assetTab, 'Asset')
         self.insertTab(self.SHOT_INDEX, shotTab, 'Shot')
@@ -49,9 +38,9 @@ class createWindow(QtGui.QTabWidget):
         self.finished.emit()
         event.accept()
 
-class newAssetWindow(QtGui.QWidget):
+class NewAssetWindow(QtGui.QWidget):
     def __init__(self, element, parent):
-        super(newAssetWindow, self).__init__()
+        super(NewAssetWindow, self).__init__()
         self.parent = parent
         self.element = element
         self.initUI()
@@ -67,7 +56,7 @@ class newAssetWindow(QtGui.QWidget):
         self.cancelBtn.clicked.connect(self.parent.close)
         #set image
         self.img = QtGui.QLabel()
-        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/assets/images/taijitu.jpg')
+        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/taijitu.jpg')
         scaled = pixmap.scaledToWidth(self.size().width()/3)
         self.img.setPixmap(scaled)
         

@@ -4,7 +4,7 @@ import shutil
 from .body import Body, Asset, Shot
 # from .department import Department
 from .element import Checkout, Element
-from .environment import Department, Environment
+from .environment import Department, Environment, User
 from . import pipeline_io
 from .registry import Registry
 
@@ -47,6 +47,20 @@ class Project:
 		return the absolute filepath to the users directory of this project
 		"""
 		return self._env.get_users_dir()
+
+	def get_user(self, username=None):
+		"""
+		returns a User object for the given username. If a username isn't given, the User object
+		for the current user is returned.
+		username -- (optional string) the username of the requested user
+		"""
+		return self._env.get_user(username)
+
+	def get_current_username(self):
+		"""
+		returns the username of the current user
+		"""
+		return self._env.get_current_username()
 
 	def get_asset(self, name):
 		"""
@@ -150,6 +164,20 @@ class Project:
 		"""
 		return self.list_assets() + self.list_shots()
 
+	def list_users(self):
+		"""
+		returns a list of strings containing the usernames of all users working on the project
+		"""
+		users_dir = self._env.get_users_dir()
+		dirlist = os.listdir(users_dir)
+		userlist = []
+		for username in dirlist:
+			userfile = os.path.join(users_dir, username, User.PIPELINE_FILENAME)
+			if os.path.exists(userfile):
+				userlist.append(username)
+		userlist.sort()
+		return userlist
+
 	def is_checkout_dir(self, path):
 		"""
 		returns True if the given path is a valid checkout directory
@@ -159,12 +187,24 @@ class Project:
 
 	def get_checkout(self, path):
 		"""
-		returns the Checkout object describing the checkout operation at the given path
+		returns the Checkout object describing the checkout operation at the given directory
 		If the path is not a valid checkout directory, returns None
 		"""
 		if not self.is_checkout_dir(path):
 			return None
 		return Checkout(path)
+
+	def get_checkout_element(self, path):
+		"""
+		returns the checked out element from the checkout operation at the given directory
+		If the path is not a valid checkout directory, returns None
+		"""
+		checkout = self.get_checkout(path)
+		if checkout is None:
+			return checkout
+		body = self.get_body(checkout.get_body_name())
+		element = body.get_element(checkout.get_department_name(), checkout.get_element_name())
+		return element
 
 	def delete_shot(self, shot):
 		"""

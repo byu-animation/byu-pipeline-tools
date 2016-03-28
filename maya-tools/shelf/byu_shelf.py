@@ -26,7 +26,7 @@ import sys
 import json
 
 #### CONSTANTS, Edit these for customization.
-PROJ = 'Test name'# os.environ.get('PROJECT_NAME')
+PROJ = 'taijitu'# os.environ.get('PROJECT_NAME')
 SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')
 ICON_DIR = os.path.join(SHELF_DIR, "icons")
 SCRIPT_DIR = os.path.join(SHELF_DIR, "scripts")
