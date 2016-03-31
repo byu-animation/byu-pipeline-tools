@@ -19,6 +19,7 @@ class Body:
 
 	NAME = 'name'
 	REFERENCES = 'references'
+	DESCRIPTION = "description"
 	
 	@staticmethod
 	def create_new_dict(name):
@@ -28,6 +29,7 @@ class Body:
 		datadict = {}
 		datadict[Body.NAME] = name
 		datadict[Body.REFERENCES] = []
+		datadict[Body.DESCRIPTION] = ""
 		return datadict
 
 	@staticmethod
@@ -58,6 +60,14 @@ class Body:
 	def get_name(self):
 
 		return self._datadict[Body.NAME]
+
+	def is_shot(self):
+
+		raise NotImplementedError('subclass must implement is_shot')
+
+	def is_asset(self):
+
+		raise NotImplementedError('subclass must implement is_asset')
 
 	# def get_parent_dir(self):
 	# 	"""
@@ -175,6 +185,14 @@ class Asset(Body):
 
 		return Environment().get_assets_dir()
 
+	def is_shot(self):
+		
+		return False
+
+	def is_asset(self):
+		
+		return True
+
 	def get_type(self):
 
 		return self._datadict[Asset.TYPE]
@@ -212,6 +230,14 @@ class Shot(Body):
 	def get_parent_dir():
 
 		return Environment().get_shots_dir()
+
+	def is_shot(self):
+		
+		return True
+
+	def is_asset(self):
+		
+		return False
 
 	def get_frame_range(self):
 
