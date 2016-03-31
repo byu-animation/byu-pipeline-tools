@@ -2,7 +2,7 @@
 Version=x.y
 Name=Duskaya
 Comment=Taijitu Maya
-Exec=/users/guest/t/tcbarrus/taijitu/byu-pipeline-tools/project_maya.sh
+Exec=/groups/dusk/byu-pipeline-tools/project_maya.sh
 Icon=/users/guest/t/tcbarrus/taijitu/byu-pipeline-tools/icons/taijitu_maya.png
 Terminal=false
 Type=Application
