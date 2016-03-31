@@ -3,11 +3,11 @@
 Version=1.0
 Type=Application
 Terminal=false
-Icon[en_US]=/groups/dusk/byu-pipeline-tools/byu_gui/assets/images/yinyang.png
+Icon[en_US]=/groups/dusk/byu-pipeline-tools/byugui/assets/images/yinyang.png
 Name[en_US]=Taijitu Browser
 Exec=/groups/dusk/byu-pipeline-tools/project_browser.sh
 Comment[en_US]=Element Browser for Taijitu
 Name=Taijitu Browser
 Comment=Element Browser for Taijitu
-Icon=/groups/dusk/byu-pipeline-tools/byu_gui/assets/images/yinyang.png
+Icon=/groups/dusk/byu-pipeline-tools/byugui/assets/images/yinyang.png
 Comment[en_US.UTF-8]=Element Browser for Taijitu
