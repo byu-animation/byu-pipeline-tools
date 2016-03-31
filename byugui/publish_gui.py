@@ -74,7 +74,7 @@ class PublishWindow(QtGui.QWidget):
 	       self.publishBtn.setEnabled(True)
 
     def publish(self):
-        elementType = str(self.menu.currentText())
+        self.elementType = str(self.menu.currentText())
         element = None
         try:
             if self.elementType == 'Asset':
@@ -84,10 +84,8 @@ class PublishWindow(QtGui.QWidget):
                 shot = self.project.get_shot(str(self.filePath.text()))
                 element = shot.get_element(str(self.departmentMenu.currentText()))
 		
-            user = self.environment.get_current_username()
-            src = self.src
-            comment = str(self.comment.toPlainText())
-            element.publish(user, src, comment)
+            self.user = self.environment.get_current_username()
+            self.comment = str(self.comment.toPlainText())
             self.result = element
             self.close()
         except Exception, e:

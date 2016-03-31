@@ -12,6 +12,16 @@ def maya_main_window():
     return sip.wrapinstance(long(ptr), QtCore.QObject)
 
 def post_publish():
+    if not cmds.file(q=True, sceneName=True) == '':
+        cmds.file(save=True, force=True) #save file
+        
+    #Publish
+    element = maya_publish_dialog.result
+    user = maya_publish_dialog.user
+    src = maya_publish_dialog.src
+    comment = maya_publish_dialog.comment
+    element.publish(user, src, comment)
+    
     print "TODO: export alembic, playblast"
     print maya_publish_dialog.result.get_name()
 
