@@ -19,6 +19,11 @@
             "icon":"publish.xpm",
             "annotation":"Publish a model, rig or animation",
             "python_file":"publish.py"
+        },
+        {
+            "icon":"frame_range.xpm",
+            "annotation":"Set the correct frame range for the current shot",
+            "python_file":"frame_range.py"
         }
 	]
 }
