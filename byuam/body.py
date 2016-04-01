@@ -172,7 +172,7 @@ class Asset(Body):
 	def create_new_dict(name):
 		
 		datadict = Body.create_new_dict(name)
-		datadict[Asset.TYPE] = AssetType.PROP
+		datadict[Asset.TYPE] = AssetType.ACCESSORY
 		return datadict
 
 	@staticmethod

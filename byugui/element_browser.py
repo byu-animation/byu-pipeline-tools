@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 
 import datetime
+import operator
 import os
 
 from byuam.body import Asset, Shot
@@ -9,8 +10,8 @@ from byuam.project import Project
 
 from byugui import request_email
 
-REF_WINDOW_WIDTH = 800
-REF_WINDOW_HEIGHT = 500
+REF_WINDOW_WIDTH = 1000
+REF_WINDOW_HEIGHT = 625
 
 class TreeComboBoxItem(QtGui.QComboBox):
 
@@ -106,7 +107,10 @@ class ElementBrowser(QtGui.QWidget):
         alt_color = QtGui.QColor(30,30,30)
         text_color = QtGui.QColor(192,192,192)
         highlight_color = QtGui.QColor(57,86,115)
-        highligh_text_color = QtCore.Qt.white
+        highlight_text_color = QtCore.Qt.white
+        disabled_alt_color = QtGui.QColor(49,49,49)
+        disabled_base_color = QtGui.QColor(40,40,40)
+        disabled_text_color = QtGui.QColor(100,100,100)
         palette.setColor(QtGui.QPalette.Window, base_color)
         palette.setColor(QtGui.QPalette.WindowText, text_color)
         palette.setColor(QtGui.QPalette.Base, base_color)
@@ -117,7 +121,14 @@ class ElementBrowser(QtGui.QWidget):
         palette.setColor(QtGui.QPalette.ButtonText, text_color)
         palette.setColor(QtGui.QPalette.Text, text_color)
         palette.setColor(QtGui.QPalette.Highlight, highlight_color)
-        palette.setColor(QtGui.QPalette.HighlightedText, highligh_text_color)
+        palette.setColor(QtGui.QPalette.HighlightedText, highlight_text_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Window, disabled_base_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, disabled_text_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Base, disabled_text_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.AlternateBase, disabled_alt_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Button, disabled_base_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, disabled_text_color)
+        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Text, disabled_text_color)
         return palette
 
     def __init__(self):
@@ -130,7 +141,30 @@ class ElementBrowser(QtGui.QWidget):
         # initialize project
         self.project = Project()
         self.userList = self.project.list_users()
-        # self.userList = ["jmoborn", "render", "steve", "jmjohnson", "stella"] # TODO: get real user list
+
+        #filters
+        self.filter_label = QtGui.QLabel("Filter by: ")
+
+        self.dept_filter_label = QtGui.QLabel("Department")
+        self.dept_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.dept_filter = QtGui.QComboBox()
+        self.dept_filter.addItem("all")
+        for each in Department.ALL:
+            self.dept_filter.addItem(each)
+        self.dept_list = Department.ALL
+
+        self.type_filter_label = QtGui.QLabel("Asset Type")
+        self.type_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.type_filter = QtGui.QComboBox()
+        self.type_filter.addItem("all")
+        for each in AssetType.ALL:
+            self.type_filter.addItem(each)
+
+        # menu bar
+        self.menu_bar = QtGui.QMenuBar()
+        self.view_menu = QtGui.QMenu("View")
+        self.menu_bar.addMenu(self.view_menu)
+        self.expand_action = self.view_menu.addAction("Expand All")
 
         # asset/shot menu
         self.body_menu = QtGui.QComboBox()
@@ -148,9 +182,9 @@ class ElementBrowser(QtGui.QWidget):
         # tree
         self.tree = QtGui.QTreeWidget()
         self.tree.setItemDelegate(TreeGridDelegate(self.tree))
-        self.columnCount = 7
+        self.columnCount = 8
         self.tree.setColumnCount(self.columnCount)
-        tree_header = QtGui.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish"])
+        tree_header = QtGui.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish", "note"])
         self.tree.setHeaderItem(tree_header)
 
         self.init_tree = [None]*self.columnCount
@@ -161,6 +195,7 @@ class ElementBrowser(QtGui.QWidget):
         self.init_tree[4] = self.init_start_date
         self.init_tree[5] = self.init_end_date
         self.init_tree[6] = self.init_last_publish
+        self.init_tree[7] = self.init_note
 
         self._build_tree()
 
@@ -172,16 +207,20 @@ class ElementBrowser(QtGui.QWidget):
         self.update_tree[4] = self.update_start_date
         self.update_tree[5] = self.update_end_date
         self.update_tree[6] = self.update_last_publish
-
+        self.update_tree[7] = self.update_note
+        
         # status bar
         self.status_bar = QtGui.QStatusBar()
 
         # connect events
+        self.expand_action.triggered.connect(self._expand_all)
         self.body_menu.currentIndexChanged.connect(self._body_changed)
         self.new_button.clicked.connect(self._new_body)
         self.refresh_button.clicked.connect(self._refresh)
         self.tree.itemExpanded.connect(self._load_elements)
         self.tree.itemChanged.connect(self._item_edited)
+        self.dept_filter.currentIndexChanged.connect(self._dept_filter_changed)
+        self.type_filter.currentIndexChanged.connect(self._refresh)
 
         # layout
         layout = QtGui.QVBoxLayout(self)
@@ -195,8 +234,25 @@ class ElementBrowser(QtGui.QWidget):
         options_layout.setColumnMinimumWidth(1, 100)
         options_layout.setColumnMinimumWidth(3, 100)
         options_layout.setColumnStretch(2, 1)
+        filter_layout = QtGui.QGridLayout()
+        filter_layout.addWidget(self.filter_label, 0, 0)
+        filter_layout.addWidget(self.dept_filter_label, 0, 1)
+        filter_layout.addWidget(self.dept_filter, 0, 2)
+        filter_layout.addWidget(self.type_filter_label, 0, 3)
+        filter_layout.addWidget(self.type_filter, 0, 4)
+        filter_layout.setColumnMinimumWidth(0, 50)
+        filter_layout.setColumnMinimumWidth(1, 100)
+        filter_layout.setColumnMinimumWidth(2, 100)
+        filter_layout.setColumnMinimumWidth(3, 100)
+        filter_layout.setColumnMinimumWidth(4, 100)
+        filter_layout.setColumnStretch(5, 1)
+        layout.addWidget(self.menu_bar)
         layout.addLayout(options_layout)
         layout.addWidget(self.tree)
+        layout.addLayout(filter_layout)
+        # layout.addWidget(self.filter_label)
+        # layout.addWidget(self.type_filter)
+        # layout.addWidget(self.dept_filter)
         layout.addWidget(self.status_bar)
         self.setLayout(layout)
 
@@ -247,7 +303,7 @@ class ElementBrowser(QtGui.QWidget):
         body = str(item.text(0))
         body_obj = self.project.get_body(body)
         elements = []
-        for dept in Department.ALL:
+        for dept in self.dept_list:
             dept_elements = body_obj.list_elements(dept)
             for dept_element in dept_elements:
                 elements.append((dept, dept_element))
@@ -261,9 +317,21 @@ class ElementBrowser(QtGui.QWidget):
                 init(element_obj, child_item, col)
         self.tree.blockSignals(tree_state)
 
+    def _expand_all(self):
+        # self.tree.expandAll()
+        count = self.tree.topLevelItemCount()
+        for i in xrange(count):
+            item = self.tree.topLevelItem(i)
+            self.tree.expandItem(item)
+            
+
     def _set_bodies(self):
         if self.current_body == self.ASSETS:
-            self.bodies = self.project.list_assets()
+            asset_filter = None
+            if(self.type_filter.currentIndex()):
+                asset_filter_str = str(self.type_filter.currentText())
+                asset_filter = (Asset.TYPE, operator.eq, asset_filter_str)
+            self.bodies = self.project.list_assets(asset_filter)
         elif self.current_body == self.SHOTS:
             self.bodies = self.project.list_shots()
         else:
@@ -291,11 +359,24 @@ class ElementBrowser(QtGui.QWidget):
 
     def _body_changed(self, index):
         self.current_body = str(self.body_menu.itemText(index))
+        if(self.body_menu.currentIndex()):
+            self.type_filter.setEnabled(False)
+            self.type_filter_label.setEnabled(False)
+        else:
+            self.type_filter.setEnabled(True)
+            self.type_filter_label.setEnabled(True)
+        self._refresh()
+
+    def _dept_filter_changed(self):
+        if(self.dept_filter.currentIndex()):
+            self.dept_list = [str(self.dept_filter.currentText())]
+        else:
+            self.dept_list = Department.ALL
         self._refresh()
 
     def _new_body(self):
         from byugui import new_asset_gui
-        self.new_body_dialog = new_asset_gui.createWindow()
+        self.new_body_dialog = new_asset_gui.CreateWindow(self)
         if self.current_body == self.ASSETS:
             self.new_body_dialog.setCurrentIndex(self.new_body_dialog.ASSET_INDEX)
         elif self.current_body == self.SHOTS:
@@ -361,6 +442,9 @@ class ElementBrowser(QtGui.QWidget):
         else:
             item.setText(column, "")
 
+    def init_note(self, element, item, column):
+        item.setText(column, element.get_last_note())
+
     def update_name(self, element, item, column):
         self.status_bar.showMessage("can't change name")
 
@@ -401,6 +485,10 @@ class ElementBrowser(QtGui.QWidget):
     def update_last_publish(self, element, item, column):
         self.status_bar.showMessage("can't modify publish data")
         self.init_last_publish(element, item, column)
+
+    def update_note(self, element, item, column):
+        element.update_notes(str(item.text(column)))
+        self.status_bar.clearMessage()
 
 if __name__ == '__main__':
 
