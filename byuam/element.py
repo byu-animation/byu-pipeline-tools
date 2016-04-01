@@ -208,7 +208,10 @@ class Element:
         """
         return the latest note created for this element as a string
         """
-        return self._datadict[self.NOTES][-1]
+        if(len(self._datadict[self.NOTES])>0):
+            return self._datadict[self.NOTES][-1]
+        else:
+            return ""
     def list_notes(self):
         """
         return a list of all notes that have beeen created for this element
@@ -310,6 +313,7 @@ class Element:
         add the given note to the note list
         """
         self._datadict[self.NOTES].append(note)
+        self._update_pipeline_file()
 
     def get_checkout_dir(self, username):
         """

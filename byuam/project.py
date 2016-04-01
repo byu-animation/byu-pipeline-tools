@@ -153,7 +153,7 @@ class Project:
 		"""
 		returns a list of strings containing the names of all shots in this project
 		filter -- a tuple containing an attribute (string) relation (operator) and value 
-		          e.g. (Shot.FRAME)RANGE, operator.gt, 100). Only returns shots whose
+		          e.g. (Shot.FRAME_RANGE, operator.gt, 100). Only returns shots whose
 		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
 		return self._list_bodies_in_dir(self._env.get_shots_dir(), filter)
