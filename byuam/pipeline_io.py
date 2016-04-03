@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import re
+import smtplib
 import time
 
 def readfile(filepath):
@@ -92,3 +93,32 @@ def timestamp():
 	return a string containing the current time
 	"""
 	return time.strftime("%a, %d %b %Y %I:%M:%S %p", time.localtime())
+
+def sendmail(dst_addresses, subject, message, src_address, password, src_name=""):
+	"""
+	sends an email to the given email addresses, with the given subject and message, from the given
+	gmail account that has the given password (must be a gmail account). Return True if successful.
+	dst_addresses -- list of strings destination email addresses
+	subject -- string email subject line
+	message -- string email message
+	src_address -- string gmail account to send email from, 
+				   this account must have allowed "less secure app access"
+	password -- string password to the src_address account
+	src_name -- string (optional) name of the src_address account
+	"""
+
+	email = "From: %s <%s>\nSubject: %s\n\n%s" % (src_name, src_address, subject, message)
+	client = smtplib.SMTP("smtp.gmail.com", 587)
+	client.ehlo()
+	client.starttls() #TODO: add keyfile
+	client.ehlo()
+	success = True
+	try:
+		client.login(src_address, password)	
+		client.sendmail(src_address, dst_addresses, email)
+	except (smtplib.SMTPAuthenticationError, smtplib.SMTPRecipientsRefused) as error:
+		sucess = False
+	client.close()
+	return success
+
+	
