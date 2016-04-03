@@ -177,6 +177,13 @@ class Element:
 
         return self._datadict[self.DEPARTMENT]
 
+    def get_long_name(self):
+        """
+        return a string describing a unique name for this asset:
+        {the parent body's name}_{this element's department}_{this element's name}
+        """
+        return self.get_parent()+"_"+self.get_department()+"_"+self.get_name()
+
     def get_status(self):
 
         return self._datadict[self.STATUS]
@@ -238,7 +245,7 @@ class Element:
         return the name of the application file for this element. This is just the basename
         of the file, not the absolute filepath.
         """
-        return self.get_parent()+"_"+self.get_department()+"_"+self.get_name()+self.get_app_ext()
+        return self.get_long_name()+self.get_app_ext()
 
     def get_app_filepath(self):
         """
@@ -281,8 +288,22 @@ class Element:
         Update the user assigned to this element.
         username -- the username (string) of the new user to be assigned
         """
+        old_username = self._datadict[self.ASSIGNED_USER]
+        if(old_username==username):
+            return
         self._datadict[self.ASSIGNED_USER] = username
         self._update_pipeline_file()
+        if old_username:
+            old_user = self._env.get_user(old_username)
+            if old_user and old_user.has_email():
+                subject = self.get_long_name()+" reassigned to "+username
+                message = "you are no longer assigned to "+self.get_long_name()+"."
+                self._env.sendmail([old_user.get_email()], subject, message)
+        new_user = self._env.get_user(username)
+        if new_user and new_user.has_email():
+            subject = self.get_long_name()+" assigned"
+            message = "you have been assigned to work on "+self.get_long_name()+"."
+            self._env.sendmail([new_user.get_email()], subject, message)
 
     def update_start_date(self, date):
         """
@@ -319,9 +340,7 @@ class Element:
         """
         return the directory this element would be copied to during checkout for the given username
         """
-        return os.path.join(self._env.get_users_dir(), username, self.get_parent()+"_"+
-                                                             self.get_department()+"_"+
-                                                             self.get_name())
+        return os.path.join(self._env.get_users_dir(), username, self.get_long_name())
 
     def checkout(self, username):
         """
@@ -373,6 +392,16 @@ class Element:
             self._datadict[self.STATUS] = status
 
         self._update_pipeline_file()
+
+        for checkout_username in self.list_checkout_users():
+            dst_addresses = []
+            checkout_user = self._env.get_user(checkout_username)
+            if checkout_user and checkout_user.has_email() and checkout_username != username:
+                dst_addresses.append(checkout_user.get_email())
+            if dst_addresses:
+                subject = self.get_long_name()+" new publish"
+                message = username + " has published a new version of "+self.get_long_name()
+                self._env.sendmail(dst_addresses, subject, message)
 
     def update_cache(self, src, reference=False):
         """
