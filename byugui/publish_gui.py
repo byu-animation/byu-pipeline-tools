@@ -24,6 +24,7 @@ class PublishWindow(QtGui.QWidget):
         self.result = None
         self.elementType = None
         self.initUI(dept_list)
+        self.published = False
 	    
     def initUI(self, dept_list):
 	    #define gui elements
@@ -75,18 +76,21 @@ class PublishWindow(QtGui.QWidget):
 
     def publish(self):
         self.elementType = str(self.menu.currentText())
-        element = None
+        #element = None
+        element = self.project.get_checkout_element(os.path.dirname(self.src))
         try:
-            if self.elementType == 'Asset':
-                asset = self.project.get_asset(str(self.filePath.text()))
-                element = asset.get_element(str(self.departmentMenu.currentText()))
-            else:
-                shot = self.project.get_shot(str(self.filePath.text()))
-                element = shot.get_element(str(self.departmentMenu.currentText()))
+            #Leave here to use for advanced options
+            #if self.elementType == 'Asset':
+            #    asset = self.project.get_asset(str(self.filePath.text()))
+            #    element = asset.get_element(str(self.departmentMenu.currentText()))
+            #else:
+            #    shot = self.project.get_shot(str(self.filePath.text()))
+            #    element = shot.get_element(str(self.departmentMenu.currentText()))
 		
             self.user = self.environment.get_current_username()
             self.comment = str(self.comment.toPlainText())
             self.result = element
+            self.published = True
             self.close()
         except Exception, e:
             print e
