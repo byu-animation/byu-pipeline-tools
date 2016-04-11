@@ -49,6 +49,7 @@ class TreeLineEdit(QtGui.QLineEdit):
         self.editingFinished.connect(self._change_item)
 
     def _change_item(self):
+        print self.column
         self.tree_item.setText(self.column, self.text())
 
     def paintEvent(self, pe):
@@ -99,6 +100,7 @@ class ElementBrowser(QtGui.QWidget):
     SHOTS = "Shots"
 
     BODY_DATA_COLUMN = 1
+    BODY_DESCRIPTION_COLUMN = 7
 
     @staticmethod
     def dark_palette():
@@ -160,6 +162,10 @@ class ElementBrowser(QtGui.QWidget):
         for each in AssetType.ALL:
             self.type_filter.addItem(each)
 
+        self.name_filter_label = QtGui.QLabel("Name")
+        self.name_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.name_filter = QtGui.QLineEdit()
+
         # menu bar
         self.menu_bar = QtGui.QMenuBar()
         self.view_menu = QtGui.QMenu("View")
@@ -220,6 +226,7 @@ class ElementBrowser(QtGui.QWidget):
         self.tree.itemExpanded.connect(self._load_elements)
         self.tree.itemChanged.connect(self._item_edited)
         self.dept_filter.currentIndexChanged.connect(self._dept_filter_changed)
+        self.name_filter.editingFinished.connect(self._filter_by_name)
         self.type_filter.currentIndexChanged.connect(self._refresh)
 
         # layout
@@ -238,14 +245,18 @@ class ElementBrowser(QtGui.QWidget):
         filter_layout.addWidget(self.filter_label, 0, 0)
         filter_layout.addWidget(self.dept_filter_label, 0, 1)
         filter_layout.addWidget(self.dept_filter, 0, 2)
-        filter_layout.addWidget(self.type_filter_label, 0, 3)
-        filter_layout.addWidget(self.type_filter, 0, 4)
+        filter_layout.addWidget(self.name_filter_label, 0, 3)
+        filter_layout.addWidget(self.name_filter, 0, 4)
+        filter_layout.addWidget(self.type_filter_label, 0, 5)
+        filter_layout.addWidget(self.type_filter, 0, 6)
         filter_layout.setColumnMinimumWidth(0, 50)
         filter_layout.setColumnMinimumWidth(1, 100)
         filter_layout.setColumnMinimumWidth(2, 100)
         filter_layout.setColumnMinimumWidth(3, 100)
         filter_layout.setColumnMinimumWidth(4, 100)
-        filter_layout.setColumnStretch(5, 1)
+        filter_layout.setColumnMinimumWidth(5, 100)
+        filter_layout.setColumnMinimumWidth(6, 100)
+        filter_layout.setColumnStretch(7, 1)
         layout.addWidget(self.menu_bar)
         layout.addLayout(options_layout)
         layout.addWidget(self.tree)
@@ -262,15 +273,16 @@ class ElementBrowser(QtGui.QWidget):
         self.tree.clear()
         tree_state = self.tree.blockSignals(True)
         for body in self.bodies:
-            tree_item = QtGui.QTreeWidgetItem([body])
-            self.tree.addTopLevelItem(tree_item)
-            tree_flags = tree_item.flags()
-            tree_item.setFlags(tree_flags | QtCore.Qt.ItemIsEditable)
-            # for col in xrange(self.columnCount):
-            #     tree_item.setBackground(col, QtGui.QColor(30,30,30))
-            body_obj = self.project.get_body(body)
-            self._load_body(body_obj, tree_item)
-            tree_item.addChild(QtGui.QTreeWidgetItem()) # empty item
+            if(str(self.name_filter.text()) in body):
+                tree_item = QtGui.QTreeWidgetItem([body])
+                self.tree.addTopLevelItem(tree_item)
+                tree_flags = tree_item.flags()
+                tree_item.setFlags(tree_flags | QtCore.Qt.ItemIsEditable)
+                # for col in xrange(self.columnCount):
+                #     tree_item.setBackground(col, QtGui.QColor(30,30,30))
+                body_obj = self.project.get_body(body)
+                self._load_body(body_obj, tree_item)
+                tree_item.addChild(QtGui.QTreeWidgetItem()) # empty item
         self.tree.blockSignals(tree_state)
 
     def _load_body(self, body, item):
@@ -290,10 +302,14 @@ class ElementBrowser(QtGui.QWidget):
             combobox.setCurrentIndex(type_idx)
             self.tree.setItemWidget(item, self.BODY_DATA_COLUMN, combobox)
         elif self.current_body==self.SHOTS:
-            item.setText(1, str(body.get_frame_range()))
+            item.setText(self.BODY_DATA_COLUMN, str(body.get_frame_range()))
         else:
             self.status_bar.showMessage("Error: unknown body type")
-        for col in xrange(self.BODY_DATA_COLUMN+1, self.columnCount): # disable remaining columns
+
+        description_edit = TreeLineEdit(body.get_description(), item, self.BODY_DESCRIPTION_COLUMN)
+        self.tree.setItemWidget(item, self.BODY_DESCRIPTION_COLUMN, description_edit)
+
+        for col in xrange(self.BODY_DATA_COLUMN+1, self.columnCount-1): # disable remaining columns
             emptylabel = TreeLabel()
             self.tree.setItemWidget(item, col, emptylabel)
         self.tree.blockSignals(tree_state)
@@ -350,7 +366,11 @@ class ElementBrowser(QtGui.QWidget):
         else:
             body = str(item.text(0))
             body_obj = self.project.get_body(body)
-            self._update_body_data(body_obj, item)
+            if column==self.BODY_DATA_COLUMN:
+                self._update_body_data(body_obj, item)
+            elif column==self.BODY_DESCRIPTION_COLUMN:
+                self._update_body_description(body_obj, item)
+                
 
     def _refresh(self): # TODO: maintain expanded rows on refresh
         self._set_bodies()
@@ -374,6 +394,13 @@ class ElementBrowser(QtGui.QWidget):
             self.dept_list = Department.ALL
         self._refresh()
 
+    def _filter_by_name(self):
+        self._refresh()
+        # target = str(self.name_filter.text())
+        # for i in reversed(xrange(self.tree.topLevelItemCount())):
+        #     if (target not in self.tree.topLevelItem(i).text(0)):
+        #         self.tree.takeTopLevelItem(i)
+
     def _new_body(self):
         from byugui import new_asset_gui
         self.new_body_dialog = new_asset_gui.CreateWindow(self)
@@ -390,6 +417,9 @@ class ElementBrowser(QtGui.QWidget):
             body.update_frame_range(int(item.text(self.BODY_DATA_COLUMN)))
         else:
             self.status_bar.showMessage("Error: unknown body type")
+
+    def _update_body_description(self, body, item):
+        body.update_description(str(item.text(self.BODY_DESCRIPTION_COLUMN)))
 
     def _valid_date(self, date):
         try:

@@ -69,6 +69,10 @@ class Body:
 
 		raise NotImplementedError('subclass must implement is_asset')
 
+	def get_description(self):
+		
+		return self._datadict[Body.DESCRIPTION]
+
 	# def get_parent_dir(self):
 	# 	"""
 	# 	return the parent directory that bodies of this type are stored in
@@ -134,6 +138,7 @@ class Body:
 			raise EnvironmentError(reference + " is not a valid body")
 		if reference not in self._datadict[Body.REFERENCES]:
 			self._datadict[Body.REFERENCES].append(reference)
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 	def remove_reference(self, reference):
 		"""
@@ -144,6 +149,12 @@ class Body:
 			return True
 		except ValueError:
 			return False
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
+
+	def update_description(self, description):
+
+		self._datadict[Body.DESCRIPTION] = description
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 	def get_references(self):
 		"""
