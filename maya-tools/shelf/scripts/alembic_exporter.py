@@ -1,27 +1,27 @@
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 from pymel.core import *
 # import utilities as amu #asset manager utilities
 import os
-import shiboken
+import sip
+import byuam
 from byuam.environment import Environment
+from byuam.project import Project
 
 WINDOW_WIDTH = 330
 WINDOW_HEIGHT = 300
 
-
 def maya_main_window():
 	ptr = omu.MQtUtil.mainWindow()
-	return shiboken.wrapInstance(long(ptr), QWidget)
+	return sip.wrapinstance(long(ptr), QObject)
 
 class AlembicExportDialog(QDialog):
 	def __init__(self, parent=maya_main_window()):
 	#def setup(self, parent):
 		QDialog.__init__(self, parent)
-		self._env = Environment()
 		self.saveFile()
 		self.setWindowTitle('Select Objects for Export')
 		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -50,6 +50,7 @@ class AlembicExportDialog(QDialog):
 		#Create main layout
 		main_layout = QVBoxLayout()
 		main_layout.setSpacing(2)
+		main_layout.setMargin(2)
 		main_layout.addWidget(self.selection_list)
 		main_layout.addLayout(button_layout)
 
@@ -72,7 +73,7 @@ class AlembicExportDialog(QDialog):
 			item.setText(ref)
 			self.selection_list.addItem(item)
 
-		self.selection_list.sortItems()
+		self.selection_list.sortItems(0)
 
 	def getLoadedReferences(self):
 		references = cmds.ls(references=True)
@@ -86,14 +87,19 @@ class AlembicExportDialog(QDialog):
 			except:
 				print "Warning: " + ref + " was not associated with a reference file"
 		return loaded
-	
-	
+
+
 	########################################################################
 	# SLOTS
 	########################################################################
+
+	def get_filename_for_reference(self, ref):
+		refPath = cmds.referenceQuery(unicode(ref), filename=True)
+		return os.path.basename(refPath).split('.')[0] + '.abc'
+
 	def export_alembic(self):
 		self.saveFile()
-		
+
 		selectedReferences = []
 		selectedItems = self.selection_list.selectedItems()
 		for item in selectedItems:
@@ -102,19 +108,23 @@ class AlembicExportDialog(QDialog):
 
 		if self.showConfirmAlembicDialog(selectedReferences) == 'Yes':
 			loadPlugin("AbcExport")
-			for ref in selectedReferences:
-				filePath = cmds.file(q=True, sceneName=True)
-				refPath = cmds.referenceQuery(unicode(ref), filename=True)
-				"""
-				TODO: get the file path for alembic export (from Environment or Element?)
+			filePath = cmds.file(q=True, sceneName=True)
+			fileDir = os.path.dirname(filePath)
 
-				abcFilePath = self._env.get_alembic_path(self, refPath, filePath)
+			proj = Project()
+			checkout = proj.get_checkout(fileDir)
+			body = proj.get_body(checkout.get_body_name())
+			dept = checkout.get_department_name()
+			elem = body.get_element(dept, checkout.get_element_name())
+			abcFilePath = elem.get_cache_dir()
+
+			for ref in selectedReferences:
+				abcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
 				print "abcFilePath", abcFilePath
 				command = self.build_alembic_command(ref, abcFilePath)
 				print "Export Alembic command: ", command
 				Mel.eval(command)
 				os.system('chmod 774 ' + abcFilePath)
-				"""
 
 		self.close_dialog()
 
@@ -129,19 +139,6 @@ class AlembicExportDialog(QDialog):
 		                         , defaultButton = 'Yes'
 		                         , cancelButton  = 'No'
 		                         , dismissString = 'No')
-	
-	# def build_alembic_filepath(self, ref):
-	# 	# This builds the location where the alembic file will be stored. This definitely needs to be moved.
-	# 	#Get Shot Directory
-	# 	filePath = cmds.file(q=True, sceneName=True)
-	# 	toCheckin = os.path.join(amu.getUserCheckoutDir(), os.path.basename(os.path.dirname(filePath)))
-	# 	dest = amu.getCheckinDest(toCheckin)
-		
-	# 	#Get Asset Name
-	# 	refPath = cmds.referenceQuery(unicode(ref), filename=True)
-	# 	assetName = os.path.basename(refPath).split('.')[0]
-		
-	# 	return os.path.join(os.path.dirname(dest), 'animation_cache', 'abc', assetName+'.abc')
 
 	def build_alembic_command(self, ref, abcfilepath):
 		# First check and see if the reference has a tagged node on it.
@@ -151,7 +148,7 @@ class AlembicExportDialog(QDialog):
 			return ""
 
 		# Then we get the dependencies of that item to be tagged.
-		depList = self.get_dependancies(ref)
+		depList = self.get_dependencies(ref)
 
 		# This determines the pieces that are going to be exported via alembic.
 		roots_string = ""
@@ -180,7 +177,6 @@ class AlembicExportDialog(QDialog):
 		end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
 
 		# Then here is the actual Alembic Export command for Mel.
-		# command = 'AbcExport -j "%s -frameRange %s %s -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
 		command = 'AbcExport -j "%s -frameRange %s %s -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
 		return command
 
@@ -205,7 +201,7 @@ class AlembicExportDialog(QDialog):
 
 	def get_tagged_children(self, node):
 		# Too bad this is similar to the get_tagged_node method. Maybe this could be combined...
-		# This needs to grab multiple pieces of geometry - currently this only grabs one. 
+		# This needs to grab multiple pieces of geometry - currently this only grabs one.
 		# Can we export multiple pieces of geometry? Usually it's been a little different since the mesh is in one place,
 		# but it might be good to set it up so that geo in multiple places can be grabbed.
 		tagged_children = []
@@ -237,15 +233,15 @@ class AlembicExportDialog(QDialog):
 		# print tagged_children
 		return tagged_children
 
-	def get_dependancies(self, ref):
-		# Looks like the 
+	def get_dependencies(self, ref):
+		# Looks like the
 		refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
 		rootNode = ls(refNodes[0])
-		depList = self.get_dependant_children(rootNode[0])
+		depList = self.get_dependent_children(rootNode[0])
 
 		return depList
 
-	def get_dependant_children(self, node):
+	def get_dependent_children(self, node):
 		depList = []
 		for const in node.listRelatives(ad=True, type="parentConstraint"):
 			par = const.listRelatives(p=True)
@@ -265,13 +261,13 @@ class AlembicExportDialog(QDialog):
 		                         , defaultButton = 'OK'
 		                         , cancelButton  = 'OK'
 		                         , dismissString = 'OK')
-	
+
 	def close_dialog(self):
 		self.close()
 
 def go():
 	dialog = AlembicExportDialog()
 	dialog.show()
-	
+
 if __name__ == '__main__':
 	go()
