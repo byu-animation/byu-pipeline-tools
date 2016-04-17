@@ -16,7 +16,6 @@ def post_reference():
     done = maya_reference_dialog.done
     reference = maya_reference_dialog.reference
     if file_path is not None and reference:
-        print file_path
         cmds.file(file_path, reference=True)
     if not done:
         go()
@@ -24,6 +23,7 @@ def post_reference():
 
 def go():
     parent = maya_main_window()
+    filePath = cmds.file(q=True, sceneName=True)
     global maya_reference_dialog
-    maya_reference_dialog = ReferenceWindow(parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM])
+    maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM])
     maya_reference_dialog.finished.connect(post_reference)

@@ -13,11 +13,11 @@ class ReferenceWindow(QtGui.QWidget):
     
     finished = QtCore.pyqtSignal()
     
-    def __init__(self, parent,  dept_list=Department.ALL):
+    def __init__(self, parent, src, dept_list=Department.ALL):
         super(ReferenceWindow, self).__init__()
         self.project = Project()
         self.parent = parent
-        self.elementType = 'Asset'
+        self.src = src
         self.filePath = None
         self.done = True
         self.reference = False
@@ -54,13 +54,14 @@ class ReferenceWindow(QtGui.QWidget):
         
     def setElementType(self):
         department = str(self.departmentMenu.currentText())
-        if department in Department.FRONTEND:
-            self.elementType = 'Asset'
-        else:
-            self.elementType = 'Shot'
-        self.assetList.refreshList(self.elementType)
+        self.assetList.refreshList(department)
         
     def createReference(self):
+        checkout = self.project.get_checkout(os.path.dirname(self.src))
+        if checkout is not None:
+            body_name = checkout.get_body_name()
+            body = self.project.get_body(body_name)
+            body.add_reference(self.assetList.current_selection)
         self.done = False
         self.reference = True
         self.close()
@@ -73,6 +74,7 @@ class AssetListWindow(QtGui.QListWidget):
     def __init__(self, parent):
         super(AssetListWindow, self).__init__()
         self.parent = parent
+        self.current_selection = None
         self.project = Project()
         self.initUI()
         
@@ -80,16 +82,14 @@ class AssetListWindow(QtGui.QListWidget):
         self.currentItemChanged.connect(self.set_current_item)
         
     def set_current_item(self, index):
-        if self.parent.elementType == 'Asset':
-            body = self.project.get_asset(str(index.text()))
-        else:
-            body = self.project.get_shot(str(index.text()))
+        self.current_selection = str(index.text())
+        body = self.project.get_body(self.current_selection)
         element = body.get_element(str(self.parent.departmentMenu.currentText()))
-        path = element.get_app_filepath
-        self.parent.filePath = path()
+        path = element.get_app_filepath()
+        self.parent.filePath = path
         
-    def refreshList(self, element):
-        if element == 'Asset':
+    def refreshList(self, department):
+        if department in Department.FRONTEND:
             self.elements = self.project.list_assets()
         else:
             self.elements = self.project.list_shots()
