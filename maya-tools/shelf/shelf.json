@@ -28,6 +28,10 @@
 			"icon":"alembic_untagger.xpm",
 			"annotation":"Untag Selected Objects for Export",
 			"python_file":"alembic_untagger.py"
-		}
+        }, {
+            "icon":"reference.xpm",
+            "annotation":"Reference a model or rig",
+            "python_file":"reference.py"
+        }
 	]
 }
