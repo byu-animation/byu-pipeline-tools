@@ -133,8 +133,9 @@ class Body:
 		Add the given reference to this body. If it already exists, do nothing. If reference is not a valid 
 		body, raise an EnvironmentError.
 		"""
-		reference_path = os.path.join(self.get_parent_dir(), reference, Body.PIPELINE_FILENAME)
-		if not os.path.exists(reference_path):
+		ref_asset_path = os.path.join(self._env.get_assets_dir(), reference, Body.PIPELINE_FILENAME)
+		ref_shot_path = os.path.join(self._env.get_shots_dir(), reference, Body.PIPELINE_FILENAME)
+		if not os.path.exists(ref_asset_path) and not os.path.exists(ref_shot_path):
 			raise EnvironmentError(reference + " is not a valid body")
 		if reference not in self._datadict[Body.REFERENCES]:
 			self._datadict[Body.REFERENCES].append(reference)

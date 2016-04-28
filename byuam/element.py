@@ -303,6 +303,12 @@ class Element:
         if new_user and new_user.has_email():
             subject = self.get_long_name()+" assigned"
             message = "you have been assigned to work on "+self.get_long_name()+"."
+            start = self.get_start_date()
+            if start:
+                message = message + " you can start on "+start+"."
+            end = self.get_end_date()
+            if end:
+                message = message + " the end date is "+end+"."
             self._env.sendmail([new_user.get_email()], subject, message)
 
     def update_start_date(self, date):
