@@ -91,6 +91,7 @@ class Element:
     PIPELINE_FILENAME = ".element"
     DEFAULT_NAME = "main"
     DEFAULT_CACHE_DIR = "cache"
+    DEFAULT_RENDER_DIR = "render"
 
     NAME = "name"
     PARENT = "parent"
@@ -271,6 +272,13 @@ class Element:
 
         # return self._datadict[self.CACHE_FILEPATH] 
         return os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)     
+
+    def get_render_dir(self):
+
+        render_dir = os.path.join(self._filepath, self.DEFAULT_RENDER_DIR)
+        if not os.path.exists(render_dir):
+            pipeline_io.mkdir(render_dir)
+        return render_dir
 
     def list_checkout_users(self):
         """
