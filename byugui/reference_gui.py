@@ -2,9 +2,11 @@
 
 import sys
 import os
+import operator
 from PyQt4 import QtGui, QtCore
 from byuam.project import Project
-from byuam.environment import Department
+from byuam.body import Asset
+from byuam.environment import Department, AssetType
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
@@ -36,7 +38,15 @@ class ReferenceWindow(QtGui.QWidget):
         for asset in self.project.list_assets():
             item = QtGui.QListWidgetItem(asset)
             self.assetList.addItem(item)
+
+        self.typeFilterLabel = QtGui.QLabel("Type Filter")
+        self.typeFilterLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.typeFilter = QtGui.QComboBox()
+        self.typeFilter.addItem("all")
+        for i in AssetType.ALL:
+            self.typeFilter.addItem(i)
             
+        self.typeFilter.currentIndexChanged.connect(self.setElementType)
         self.referenceButton = QtGui.QPushButton('Reference')
         self.referenceButton.clicked.connect(self.createReference)
         self.cancelButton = QtGui.QPushButton('Cancel')
@@ -47,14 +57,16 @@ class ReferenceWindow(QtGui.QWidget):
         self.setLayout(self.grid)
         self.grid.addWidget(self.departmentMenu, 0, 0)
         self.grid.addWidget(self.assetList, 1, 0, 1, 0)
-        self.grid.addWidget(self.referenceButton, 2, 0)
-        self.grid.addWidget(self.cancelButton, 2, 1)
+        self.grid.addWidget(self.typeFilterLabel, 2, 0)
+        self.grid.addWidget(self.typeFilter, 2, 1)
+        self.grid.addWidget(self.referenceButton, 3, 0)
+        self.grid.addWidget(self.cancelButton, 3, 1)
         
         self.show()
         
-    def setElementType(self):
+    def setElementType(self, idx=0):
         department = str(self.departmentMenu.currentText())
-        self.assetList.refreshList(department)
+        self.refreshList(department)
         
     def createReference(self):
         checkout = self.project.get_checkout(os.path.dirname(self.src))
@@ -65,6 +77,20 @@ class ReferenceWindow(QtGui.QWidget):
         self.done = False
         self.reference = True
         self.close()
+
+    def refreshList(self, department):
+        if department in Department.FRONTEND:
+            asset_filter = None
+            if(self.typeFilter.currentIndex()):
+                asset_filter_str = str(self.typeFilter.currentText())
+                asset_filter = (Asset.TYPE, operator.eq, asset_filter_str)
+            self.elements = self.project.list_assets(asset_filter)
+        else:
+            self.elements = self.project.list_shots()
+            
+        self.assetList.clear()
+        for e in self.elements:
+            self.assetList.addItem(e)
         
     def closeEvent(self, event):
         self.finished.emit()
@@ -90,7 +116,11 @@ class AssetListWindow(QtGui.QListWidget):
         
     def refreshList(self, department):
         if department in Department.FRONTEND:
-            self.elements = self.project.list_assets()
+            asset_filter = None
+            if(self.typeFilter.currentIndex()):
+                asset_filter_str = str(self.typeFilter.currentText())
+                asset_filter = (Asset.TYPE, operator.eq, asset_filter_str)
+            self.elements = self.project.list_assets(asset_filter)
         else:
             self.elements = self.project.list_shots()
 		    
