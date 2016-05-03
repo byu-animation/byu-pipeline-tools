@@ -19,6 +19,7 @@ class Body:
 
 	NAME = 'name'
 	REFERENCES = 'references'
+	DESCRIPTION = "description"
 	
 	@staticmethod
 	def create_new_dict(name):
@@ -28,6 +29,7 @@ class Body:
 		datadict = {}
 		datadict[Body.NAME] = name
 		datadict[Body.REFERENCES] = []
+		datadict[Body.DESCRIPTION] = ""
 		return datadict
 
 	@staticmethod
@@ -58,6 +60,18 @@ class Body:
 	def get_name(self):
 
 		return self._datadict[Body.NAME]
+
+	def is_shot(self):
+
+		raise NotImplementedError('subclass must implement is_shot')
+
+	def is_asset(self):
+
+		raise NotImplementedError('subclass must implement is_asset')
+
+	def get_description(self):
+		
+		return self._datadict[Body.DESCRIPTION]
 
 	# def get_parent_dir(self):
 	# 	"""
@@ -119,11 +133,13 @@ class Body:
 		Add the given reference to this body. If it already exists, do nothing. If reference is not a valid 
 		body, raise an EnvironmentError.
 		"""
-		reference_path = os.path.join(self.get_parent_dir(), reference, Body.PIPELINE_FILENAME)
-		if not os.path.exists(reference_path):
+		ref_asset_path = os.path.join(self._env.get_assets_dir(), reference, Body.PIPELINE_FILENAME)
+		ref_shot_path = os.path.join(self._env.get_shots_dir(), reference, Body.PIPELINE_FILENAME)
+		if not os.path.exists(ref_asset_path) and not os.path.exists(ref_shot_path):
 			raise EnvironmentError(reference + " is not a valid body")
 		if reference not in self._datadict[Body.REFERENCES]:
 			self._datadict[Body.REFERENCES].append(reference)
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 	def remove_reference(self, reference):
 		"""
@@ -134,6 +150,12 @@ class Body:
 			return True
 		except ValueError:
 			return False
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
+
+	def update_description(self, description):
+
+		self._datadict[Body.DESCRIPTION] = description
+		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 	def get_references(self):
 		"""
@@ -162,7 +184,7 @@ class Asset(Body):
 	def create_new_dict(name):
 		
 		datadict = Body.create_new_dict(name)
-		datadict[Asset.TYPE] = AssetType.PROP
+		datadict[Asset.TYPE] = AssetType.ACCESSORY
 		return datadict
 
 	@staticmethod
@@ -174,6 +196,14 @@ class Asset(Body):
 	def get_parent_dir():
 
 		return Environment().get_assets_dir()
+
+	def is_shot(self):
+		
+		return False
+
+	def is_asset(self):
+		
+		return True
 
 	def get_type(self):
 
@@ -212,6 +242,14 @@ class Shot(Body):
 	def get_parent_dir():
 
 		return Environment().get_shots_dir()
+
+	def is_shot(self):
+		
+		return True
+
+	def is_asset(self):
+		
+		return False
 
 	def get_frame_range(self):
 

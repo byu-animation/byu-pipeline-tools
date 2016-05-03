@@ -1,4 +1,4 @@
-#### Shelf code written for the BYU Animation Program by 
+#### Shelf code written for the BYU Animation Program by
 #### Murphy Randle (murphyspublic@gmail.com). Inspiration and some code
 #### snippets taken from http://etoia.free.fr/?p=1771
 
@@ -8,25 +8,28 @@
 # | $$  | $$  /$$$$$$ | $$| $$  /$$$$$$ | $$| $$
 # | $$$$$$$$ /$$__  $$| $$| $$ /$$__  $$| $$| $$
 # | $$__  $$| $$$$$$$$| $$| $$| $$  \ $$|__/|__/
-# | $$  | $$| $$_____/| $$| $$| $$  | $$        
+# | $$  | $$| $$_____/| $$| $$| $$  | $$
 # | $$  | $$|  $$$$$$$| $$| $$|  $$$$$$/ /$$ /$$
 # |__/  |__/ \_______/|__/|__/ \______/ |__/|__/
 ####
-#### Welcome to the shelf script! 
+#### Welcome to the shelf script!
 ####
 #### If you'd like to add a shelf button, you can add it to
 #### shelf.json. Follow the example of the other buttons in there.
 #### Remember, the icon must be a 33X33 .xpm, and the python_file key
-#### must be the name of the file where your python script is 
+#### must be the name of the file where your python script is
 #### stored. (Careful, it's not an absolute path!)
 ####
 from pymel.core import *
 import os
 import sys
 import json
+from byuam.environment import Environment
+
+env = Environment()
 
 #### CONSTANTS, Edit these for customization.
-PROJ = 'taijitu'# os.environ.get('PROJECT_NAME')
+PROJ = env.get_project_name()
 SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')
 ICON_DIR = os.path.join(SHELF_DIR, "icons")
 SCRIPT_DIR = os.path.join(SHELF_DIR, "scripts")

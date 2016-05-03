@@ -4,6 +4,7 @@ import maya.cmds as cmds
 from PyQt4 import QtCore
 import maya.OpenMayaUI as omu
 import sip
+import alembic_static_exporter
 
 maya_publish_dialog = None
 
@@ -12,8 +13,23 @@ def maya_main_window():
     return sip.wrapinstance(long(ptr), QtCore.QObject)
 
 def post_publish():
-    print "TODO: export alembic, playblast"
-    print maya_publish_dialog.result.get_name()
+    element = maya_publish_dialog.result
+
+    if maya_publish_dialog.published:
+        if not cmds.file(q=True, sceneName=True) == '':
+            cmds.file(save=True, force=True) #save file
+
+        #Publish
+        user = maya_publish_dialog.user
+        src = maya_publish_dialog.src
+        comment = maya_publish_dialog.comment
+        element.publish(user, src, comment)
+
+        print "TODO: export playblast"
+        print maya_publish_dialog.result.get_name()
+
+        print "Exporting Alembic"
+        alembic_static_exporter.go()
 
 def go():
     parent = maya_main_window()

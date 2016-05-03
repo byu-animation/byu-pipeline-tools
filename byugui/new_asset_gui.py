@@ -34,9 +34,10 @@ class CreateWindow(QtGui.QTabWidget):
         
         self.show()
 
-    def closeEvent(self, event):
+    def accept(self):
         self.finished.emit()
-        event.accept()
+        self.close()
+
 
 class NewAssetWindow(QtGui.QWidget):
     def __init__(self, element, parent):
@@ -79,12 +80,10 @@ class NewAssetWindow(QtGui.QWidget):
                 asset = project.create_asset(name)
             else:
                 shot = project.create_shot(name)
-            # app.quit()
-            self.parent.close()
+            self.parent.accept()
         except EnvironmentError, e:
             print e
-            # app.quit()
-            self.parent.close()
+            self.parent.accept()
             
     def keyPressEvent(self, event):
         key = event.key()
@@ -94,5 +93,5 @@ class NewAssetWindow(QtGui.QWidget):
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = createWindow()
+    ex = CreateWindow()
     sys.exit(app.exec_())
