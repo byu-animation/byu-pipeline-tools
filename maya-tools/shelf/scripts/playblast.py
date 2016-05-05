@@ -75,6 +75,8 @@ def simpleBlast(name, startFrame, endFrame):
     mc.modelEditor(currentPanel, e=True, hu=panelSwitch[22])
 
     filename = name +".mov"
+    #Element new_element = Project.getelement?
+    #filepath = new_element.get_render_dir()
     djv_cmd = (" /usr/local/djv/bin/djv_view  " + filename + " &");
     os.system(djv_cmd)
     print "playblast saved here: "+filename
@@ -99,7 +101,7 @@ def go():
         showErrorDialog()
         return
 
-    if not assetType == 'animation':
+    if not assetType == Department.LAYOUT:
         showErrorDialog()
         return
 
