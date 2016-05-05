@@ -4,6 +4,8 @@ import maya.cmds as mc
 import maya.mel as mel
 import os
 import shutil
+from byuam.project import Project
+from byuam.environment import Environment, Department, Status
 
 def simpleBlast(name, startFrame, endFrame):
 
@@ -47,7 +49,7 @@ def simpleBlast(name, startFrame, endFrame):
     print soundfile
 
     mc.playblast(st=startFrame, et=endFrame, sound=soundfile, fmt="qt", compression="jpeg", qlt=100, forceOverwrite=True, filename=name,
-                 width=1280, height=692, offScreen=True, percent=100, v=False)
+                 width=1920, height=817, offScreen=True, percent=100, v=False)
 
     mel.eval("lookThroughModelPanel "+currentCamera+" "+currentPanel)
     mc.modelEditor(currentPanel, e=True, nc=panelSwitch[0])
@@ -73,17 +75,26 @@ def simpleBlast(name, startFrame, endFrame):
     mc.modelEditor(currentPanel, e=True, gr=panelSwitch[20])
     mc.modelEditor(currentPanel, e=True, cv=panelSwitch[21])
     mc.modelEditor(currentPanel, e=True, hu=panelSwitch[22])
-
-    filename = name +".mov"
-    #Element new_element = Project.getelement?
-    #filepath = new_element.get_render_dir()
+    
+    src_dir = os.path.dirname(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt')
+    project = Project()
+    playblast_element = project.get_checkout_element(src_dir)
+    playblast_dept = None
+    playblast_body_name = None
+    if playblast_element is not None:
+        playblast_dept = playblast_element.get_department()
+        playblast_body_name = playblast_element.get_parent()
+    filename = playblast_body_name +".mov"
+    filepath = playblast_element.get_render_dir()
+    
     djv_cmd = (" /usr/local/djv/bin/djv_view  " + filename + " &");
     os.system(djv_cmd)
+    
     print "playblast saved here: "+filename
-    for_edit_dir = os.path.join(os.environ['PRODUCTION_DIR'], 'FOR_EDIT', 'ANIMATION_PLAYBLASTS')
-    for_edit_name = os.path.basename(filename).split('_')[0]+'.mov'
-    for_edit_path = os.path.join(for_edit_dir, for_edit_name)
-    shutil.copy(filename, for_edit_path)
+    #for_edit_dir = os.path.join(os.environ['PRODUCTION_DIR'], 'FOR_EDIT', 'ANIMATION_PLAYBLASTS')
+    #for_edit_name = os.path.basename(filename).split('_')[0]+'.mov'
+    #for_edit_path = os.path.join(for_edit_dir, for_edit_name)
+    shutil.copy(filename, filepath)
 
 def showErrorDialog():
     return mc.confirmDialog(title = 'Error'
@@ -101,7 +112,7 @@ def go():
         showErrorDialog()
         return
 
-    if not assetType == Department.LAYOUT:
+    if not assetType in Department.BACKEND:
         showErrorDialog()
         return
 
@@ -123,6 +134,3 @@ def go():
                               , dismissString = 'Cancel')
     if choice == 'Playblast':
         simpleBlast(name, startFrame, endFrame)
-
-if __name__ == '__main__':
-    go()

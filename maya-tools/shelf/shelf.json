@@ -17,6 +17,10 @@
             "annotation":"Set the correct frame range for the current shot",
             "python_file":"frame_range.py"
 		}, {
+			"icon":"frame_range.xpm",
+			"annotation":"Playblast this shot",
+			"python_file":"playblast.py"
+		}, {
 			"icon":"alembic_exporter.xpm",
 			"annotation":"Export as Alembic",
 			"python_file":"alembic_exporter.py"
