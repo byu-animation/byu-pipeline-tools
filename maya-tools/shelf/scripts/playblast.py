@@ -1,5 +1,3 @@
-import maya_geo_export as geo
-import utilities as amu
 import maya.cmds as mc
 import maya.mel as mel
 import os
@@ -84,17 +82,20 @@ def simpleBlast(name, startFrame, endFrame):
     if playblast_element is not None:
         playblast_dept = playblast_element.get_department()
         playblast_body_name = playblast_element.get_parent()
-    filename = playblast_body_name +".mov"
-    filepath = playblast_element.get_render_dir()
     
-    djv_cmd = (" /usr/local/djv/bin/djv_view  " + filename + " &");
-    os.system(djv_cmd)
+    ###THIS PART IS NOT USING JEREMY'S GET_RENDER_DIR() FUNCTION YET...
     
-    print "playblast saved here: "+filename
+    #filename = playblast_body_name + ".mov"
+    #filepath = playblast_element.get_render_dir()
+    
+    #djv_cmd = (" /usr/local/djv/bin/djv_view  " + filename + " &");
+    #os.system(djv_cmd)
+    
+    #print "playblast saved here: "+filename
     #for_edit_dir = os.path.join(os.environ['PRODUCTION_DIR'], 'FOR_EDIT', 'ANIMATION_PLAYBLASTS')
     #for_edit_name = os.path.basename(filename).split('_')[0]+'.mov'
     #for_edit_path = os.path.join(for_edit_dir, for_edit_name)
-    shutil.copy(filename, filepath)
+    #shutil.copy(filename, filepath)
 
 def showErrorDialog():
     return mc.confirmDialog(title = 'Error'
@@ -104,10 +105,30 @@ def showErrorDialog():
                         , cancelButton  = 'Ok'
                         , dismissString = 'Ok')
     
+def decodeFileName():
+	'''
+			Decodes the base name of the folder to get the asset name, assetType, and asset directory.
+			@return: Array = [assetName:- the asset name, assetType:- the asset Type, version:- the asset version]
+	'''
+	# get the encoded folder name from the filesystem        
+	encodedFolderName = os.path.basename(os.path.dirname(mc.file(q=True, sceneName=True)))
+
+	# split the string based on underscore delimiters
+	namesAry = encodedFolderName.split("_")
+	
+	# pop off the version and asset type information
+	version   = namesAry.pop()
+	assetType = namesAry.pop()
+
+	#combine the array into a string to form the assetname
+	assetName = '_'.join(namesAry)
+	
+	# return the assetName, assetType, and version
+	return [assetName, assetType]
 
 def go():
     try:
-        assetName, assetType, version = geo.decodeFileName()
+        assetName, assetType = decodeFileName()
     except IndexError:
         showErrorDialog()
         return
@@ -117,11 +138,10 @@ def go():
         return
 
     fileName = mc.file(q=True, sceneName=True)
-    dirName = os.path.dirname(fileName)
-    source = amu.getCheckinDest(dirName)
-    blastPath = os.path.join(os.path.dirname(source), 'playblasts')
-    versionNum = amu.getLatestVersion(source)+1
-    name = os.path.join(blastPath, assetName+"_v"+("%03d" % versionNum))
+    #THIS IS A HACK FOR NOW...
+    group_path = os.path.join(os.environ['BYU_PROJECT_DIR'], 'production', 'shots', assetName, 'render')
+    blastPath = os.path.join(group_path, 'playblast')
+    name = os.path.join(blastPath, assetName)
 
     startFrame = mc.playbackOptions(q=True, min=True)
     endFrame = mc.playbackOptions(q=True, max=True)
