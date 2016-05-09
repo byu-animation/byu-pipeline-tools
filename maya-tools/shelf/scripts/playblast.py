@@ -9,6 +9,20 @@ def simpleBlast(name, startFrame, endFrame):
 
     currentPanel = mc.getPanel(wf=True)
     currentCamera = mc.modelEditor(currentPanel, q=True, camera=True)
+    
+    src_dir = os.path.dirname(mc.file(q=True, sceneName=True))
+    project = Project()
+    playblast_element = project.get_checkout_element(src_dir)
+    playblast_dept = None
+    playblast_body_name = None
+    playblast_dir = src_dir
+    playblast_filename = "playblast.mov"
+    if playblast_element is not None:
+		playblast_dir = playblast_element.get_render_dir()
+		playblast_filename = playblast_element.get_name()+".mov"
+		playblast_dept = playblast_element.get_department()
+		playblast_body_name = playblast_element.get_parent()
+	name = os.path.join(playblast_dir, playblast_filename)
 
     panelSwitch = []
     panelSwitch.append(mc.modelEditor(currentPanel, q=True, nc=True))
@@ -73,29 +87,6 @@ def simpleBlast(name, startFrame, endFrame):
     mc.modelEditor(currentPanel, e=True, gr=panelSwitch[20])
     mc.modelEditor(currentPanel, e=True, cv=panelSwitch[21])
     mc.modelEditor(currentPanel, e=True, hu=panelSwitch[22])
-    
-    src_dir = os.path.dirname(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt')
-    project = Project()
-    playblast_element = project.get_checkout_element(src_dir)
-    playblast_dept = None
-    playblast_body_name = None
-    if playblast_element is not None:
-        playblast_dept = playblast_element.get_department()
-        playblast_body_name = playblast_element.get_parent()
-    
-    ###THIS PART IS NOT USING JEREMY'S GET_RENDER_DIR() FUNCTION YET...
-    
-    #filename = playblast_body_name + ".mov"
-    #filepath = playblast_element.get_render_dir()
-    
-    #djv_cmd = (" /usr/local/djv/bin/djv_view  " + filename + " &");
-    #os.system(djv_cmd)
-    
-    #print "playblast saved here: "+filename
-    #for_edit_dir = os.path.join(os.environ['PRODUCTION_DIR'], 'FOR_EDIT', 'ANIMATION_PLAYBLASTS')
-    #for_edit_name = os.path.basename(filename).split('_')[0]+'.mov'
-    #for_edit_path = os.path.join(for_edit_dir, for_edit_name)
-    #shutil.copy(filename, filepath)
 
 def showErrorDialog():
     return mc.confirmDialog(title = 'Error'
@@ -137,11 +128,10 @@ def go():
         showErrorDialog()
         return
 
-    fileName = mc.file(q=True, sceneName=True)
-    #THIS IS A HACK FOR NOW...
-    group_path = os.path.join(os.environ['BYU_PROJECT_DIR'], 'production', 'shots', assetName, 'render')
-    blastPath = os.path.join(group_path, 'playblast')
-    name = os.path.join(blastPath, assetName)
+    #fileName = mc.file(q=True, sceneName=True)
+    #group_path = os.path.join(os.environ['BYU_PROJECT_DIR'], 'production', 'shots', assetName, 'render')
+    #blastPath = os.path.join(group_path, 'playblast')
+    #name = os.path.join(blastPath, assetName)
 
     startFrame = mc.playbackOptions(q=True, min=True)
     endFrame = mc.playbackOptions(q=True, max=True)

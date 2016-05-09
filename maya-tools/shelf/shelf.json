@@ -17,7 +17,7 @@
             "annotation":"Set the correct frame range for the current shot",
             "python_file":"frame_range.py"
 		}, {
-			"icon":"temp.xpm",
+			"icon":"playblast.xpm",
 			"annotation":"Playblast this shot",
 			"python_file":"playblast.py"
 		}, {
