@@ -317,6 +317,10 @@ class Element:
             end = self.get_end_date()
             if end:
                 message = message + " the end date is "+end+"."
+
+            note = self.get_last_note()
+            if note:
+                message = message + " note: "+note
             self._env.sendmail([new_user.get_email()], subject, message)
 
     def update_start_date(self, date):
