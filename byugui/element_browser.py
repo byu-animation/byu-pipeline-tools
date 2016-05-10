@@ -49,7 +49,6 @@ class TreeLineEdit(QtGui.QLineEdit):
         self.editingFinished.connect(self._change_item)
 
     def _change_item(self):
-        print self.column
         self.tree_item.setText(self.column, self.text())
 
     def paintEvent(self, pe):
@@ -142,7 +141,8 @@ class ElementBrowser(QtGui.QWidget):
 
         # initialize project
         self.project = Project()
-        self.userList = self.project.list_users()
+        self.user_list = self.project.list_users()
+        self.user_completer = QtGui.QCompleter(self.user_list)
 
         #filters
         self.filter_label = QtGui.QLabel("Filter by: ")
@@ -171,6 +171,9 @@ class ElementBrowser(QtGui.QWidget):
         self.view_menu = QtGui.QMenu("View")
         self.menu_bar.addMenu(self.view_menu)
         self.expand_action = self.view_menu.addAction("Expand All")
+        self.user_list_action = self.view_menu.addAction("User Directory")
+        self.theme_action = self.view_menu.addAction("Default Theme")
+        self.theme_action.setCheckable(True)
 
         # asset/shot menu
         self.body_menu = QtGui.QComboBox()
@@ -220,6 +223,8 @@ class ElementBrowser(QtGui.QWidget):
 
         # connect events
         self.expand_action.triggered.connect(self._expand_all)
+        self.user_list_action.triggered.connect(self._show_user_directory)
+        self.theme_action.triggered.connect(self._toggle_theme)
         self.body_menu.currentIndexChanged.connect(self._body_changed)
         self.new_button.clicked.connect(self._new_body)
         self.refresh_button.clicked.connect(self._refresh)
@@ -256,6 +261,8 @@ class ElementBrowser(QtGui.QWidget):
         filter_layout.setColumnMinimumWidth(4, 100)
         filter_layout.setColumnMinimumWidth(5, 100)
         filter_layout.setColumnMinimumWidth(6, 100)
+        cal = QtGui.QCalendarWidget()
+        
         filter_layout.setColumnStretch(7, 1)
         layout.addWidget(self.menu_bar)
         layout.addLayout(options_layout)
@@ -339,7 +346,18 @@ class ElementBrowser(QtGui.QWidget):
         for i in xrange(count):
             item = self.tree.topLevelItem(i)
             self.tree.expandItem(item)
-            
+    
+    def _show_user_directory(self):
+        user_directory = UserListDialog(self)
+        user_directory.show()
+
+    def _toggle_theme(self):
+        checked = self.theme_action.isChecked()
+        if not checked:
+            self.palette = self.dark_palette()
+        else:
+            self.palette = QtGui.QPalette()
+        self.setPalette(self.palette)
 
     def _set_bodies(self):
         if self.current_body == self.ASSETS:
@@ -443,8 +461,7 @@ class ElementBrowser(QtGui.QWidget):
         user = element.get_assigned_user()
         item.setText(column, user)
         lineedit = TreeLineEdit(user, item, column)
-        userCompleter = QtGui.QCompleter(self.userList)
-        lineedit.setCompleter(userCompleter)
+        lineedit.setCompleter(self.user_completer)
         self.tree.setItemWidget(item, column, lineedit)
 
     def init_status(self, element, item, column):
@@ -483,7 +500,7 @@ class ElementBrowser(QtGui.QWidget):
 
     def update_assigned_user(self, element, item, column):
         user = str(item.text(column))
-        if user in self.userList:
+        if user in self.user_list:
             element.update_assigned_user(user)
             self.status_bar.clearMessage()
         else:
@@ -519,6 +536,28 @@ class ElementBrowser(QtGui.QWidget):
     def update_note(self, element, item, column):
         element.update_notes(str(item.text(column)))
         self.status_bar.clearMessage()
+
+class UserListDialog(QtGui.QDialog):
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, parent)
+        self.setWindowTitle("User Directory")
+        self.setPalette(parent.palette)
+        # self.user_grid = QtGui.QTableWidget(user_count, 3, self)
+        self.user_grid = QtGui.QGridLayout()
+
+        self.user_info_list = []
+        for username in parent.user_list:
+            user_obj = parent.project.get_user(username)
+            self.user_info_list.append((user_obj.get_fullname(), user_obj.get_username(), user_obj.get_email()))
+
+        self.user_info_list.sort()
+
+        for i, user_tuple in enumerate(self.user_info_list):
+            for j, user_data in enumerate(user_tuple):
+                self.user_grid.addWidget(QtGui.QLabel(user_tuple[j]), i, j)
+
+        self.setLayout(self.user_grid)
+            
 
 if __name__ == '__main__':
 
