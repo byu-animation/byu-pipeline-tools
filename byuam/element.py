@@ -411,15 +411,16 @@ class Element:
 
         self._update_pipeline_file()
 
+        dst_addresses = []
         for checkout_username in self.list_checkout_users():
-            dst_addresses = []
             checkout_user = self._env.get_user(checkout_username)
             if checkout_user and checkout_user.has_email() and checkout_username != username:
                 dst_addresses.append(checkout_user.get_email())
-            if dst_addresses:
-                subject = self.get_long_name()+" new publish"
-                message = username + " has published a new version of "+self.get_long_name()
-                self._env.sendmail(dst_addresses, subject, message)
+        if dst_addresses:
+            subject = self.get_long_name()+" new publish"
+            publish_user = self._env.get_user(username)
+            message = publish_user.get_fullname() + " has published a new version of "+self.get_long_name()
+            self._env.sendmail(dst_addresses, subject, message)
 
     def update_cache(self, src, reference=False):
         """
