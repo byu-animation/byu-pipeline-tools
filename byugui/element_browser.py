@@ -10,8 +10,8 @@ from byuam.project import Project
 
 from byugui import request_email
 
-REF_WINDOW_WIDTH = 1000
-REF_WINDOW_HEIGHT = 625
+REF_WINDOW_WIDTH = 1080
+REF_WINDOW_HEIGHT = 650
 
 class TreeComboBoxItem(QtGui.QComboBox):
 
@@ -92,6 +92,83 @@ class TreeGridDelegate(QtGui.QStyledItemDelegate):
         painter.restore()
 
         QtGui.QStyledItemDelegate.paint(self, painter, option, index)
+
+
+class TreeDateEdit(QtGui.QWidget):
+    
+    def __init__(self, date, tree_item, column, parent=None, type='end'):
+        QtGui.QDateEdit.__init__(self, parent)
+
+        self.tree_item = tree_item
+        self.column = column
+
+        self.min_date = QtCore.QDate(2016,1,1)
+        self.max_date = QtCore.QDate(2016,12,31)
+        self.today = QtCore.QDate.currentDate()
+        self.date_format = 'yyyy-MM-dd'
+        self.date = date
+
+        self.dateedit = TreeDateLineEdit(self)
+        self.dateedit.setCalendarPopup(True)
+        self.dateedit.setDisplayFormat(self.date_format)
+        self.dateedit.setMinimumDate(self.min_date)
+        self.dateedit.setMaximumDate(self.max_date)
+
+        self.empty = DateLineEdit(date, self)
+
+        self.layout = QtGui.QVBoxLayout(parent)
+        self.layout.addWidget(self.empty)
+        self.layout.addWidget(self.dateedit)
+
+        if date!="":
+            self.dateedit.setDate(QtCore.QDate.fromString(date, self.date_format))
+            self.empty.setVisible(False)
+            self.dateedit.setVisible(True)
+        else:
+            self.dateedit.setDate(self.today)
+            self.empty.setVisible(True)
+            self.dateedit.setVisible(False)
+    
+        self.setLayout(self.layout)
+        self.empty.clicked.connect(self._show_date)
+        self.dateedit.dateChanged.connect(self._change_date)
+
+    def _show_date(self):
+        self.dateedit.setVisible(True)
+        # self.dateedit.setFocus(QtCore.Qt.OtherFocusReason)
+        if self.date=="":
+            self._change_date(self.today)
+
+    def _change_date(self, date):
+        self.date = date.toString(self.date_format)
+        self.tree_item.setText(self.column, self.date)
+
+    # def eventFilter(self, source, event):
+    #     if event.type() == QtCore.QEvent.FocusIn: #and source is self.empty
+    #         self._show_date()
+    #     return False
+
+
+class TreeDateLineEdit(QtGui.QDateEdit):
+
+    def __init__(self, parent=None):
+        QtGui.QCalendarWidget.__init__(self, parent)
+    
+    def wheelEvent(self, e):
+        e.ignore() # do nothing
+
+
+class DateLineEdit(QtGui.QLineEdit):
+
+    clicked = QtCore.pyqtSignal()
+
+    def __init__(self, date="", parent=None):
+        QtGui.QLineEdit.__init__(self, date, parent)
+
+    def focusInEvent(self, event):
+        QtGui.QLineEdit.focusInEvent(self, event)
+        self.clicked.emit()
+
 
 class ElementBrowser(QtGui.QWidget):
 
@@ -195,6 +272,9 @@ class ElementBrowser(QtGui.QWidget):
         self.tree.setColumnCount(self.columnCount)
         tree_header = QtGui.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish", "note"])
         self.tree.setHeaderItem(tree_header)
+        tree_header_view = self.tree.header()
+        tree_header_view.resizeSection(4, 120)
+        tree_header_view.resizeSection(5, 120)
 
         self.init_tree = [None]*self.columnCount
         self.init_tree[0] = self.init_name
@@ -261,16 +341,13 @@ class ElementBrowser(QtGui.QWidget):
         filter_layout.setColumnMinimumWidth(4, 100)
         filter_layout.setColumnMinimumWidth(5, 100)
         filter_layout.setColumnMinimumWidth(6, 100)
-        cal = QtGui.QCalendarWidget()
         
         filter_layout.setColumnStretch(7, 1)
         layout.addWidget(self.menu_bar)
         layout.addLayout(options_layout)
         layout.addWidget(self.tree)
         layout.addLayout(filter_layout)
-        # layout.addWidget(self.filter_label)
-        # layout.addWidget(self.type_filter)
-        # layout.addWidget(self.dept_filter)
+        
         layout.addWidget(self.status_bar)
         self.setLayout(layout)
 
@@ -477,10 +554,16 @@ class ElementBrowser(QtGui.QWidget):
         self.tree.setItemWidget(item, column, combobox)
 
     def init_start_date(self, element, item, column):
-        item.setText(column, element.get_start_date())
+        start_date = element.get_start_date()
+        item.setText(column, " "+start_date)
+        start_dateedit = TreeDateEdit(start_date, item, column, self.tree)
+        self.tree.setItemWidget(item, column, start_dateedit)
 
     def init_end_date(self, element, item, column):
-        item.setText(column, element.get_end_date())
+        end_date = element.get_end_date()
+        item.setText(column, " "+end_date)
+        end_dateedit = TreeDateEdit(end_date, item, column, self.tree)
+        self.tree.setItemWidget(item, column, end_dateedit)
 
     def init_last_publish(self, element, item, column):
         publish = element.get_last_publish()
@@ -516,6 +599,7 @@ class ElementBrowser(QtGui.QWidget):
         valid_date_str = self._valid_date(date_str)
         if valid_date_str:
             element.update_start_date(valid_date_str)
+            item.setText(column, " "+date_str)
             self.status_bar.clearMessage()
         else:
             self.init_start_date(element, item, column)
@@ -525,6 +609,7 @@ class ElementBrowser(QtGui.QWidget):
         valid_date_str = self._valid_date(date_str)
         if valid_date_str:
             element.update_end_date(valid_date_str)
+            item.setText(column, " "+date_str)
             self.status_bar.clearMessage()
         else:
             self.init_end_date(element, item, column)
@@ -542,8 +627,10 @@ class UserListDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.setWindowTitle("User Directory")
         self.setPalette(parent.palette)
-        # self.user_grid = QtGui.QTableWidget(user_count, 3, self)
-        self.user_grid = QtGui.QGridLayout()
+        user_count = len(parent.user_list)
+        self.user_grid = QtGui.QTableWidget(user_count, 3, self)
+        self.user_grid.verticalHeader().setVisible(False)
+        self.user_grid.horizontalHeader().setVisible(False)
 
         self.user_info_list = []
         for username in parent.user_list:
@@ -554,9 +641,18 @@ class UserListDialog(QtGui.QDialog):
 
         for i, user_tuple in enumerate(self.user_info_list):
             for j, user_data in enumerate(user_tuple):
-                self.user_grid.addWidget(QtGui.QLabel(user_tuple[j]), i, j)
+                table_item = QtGui.QTableWidgetItem(user_tuple[j])
+                table_flags = table_item.flags()
+                table_item.setFlags(table_flags & (~QtCore.Qt.ItemIsEditable))
+                self.user_grid.setItem(i, j, table_item)
+        self.user_grid.resizeColumnsToContents()
 
-        self.setLayout(self.user_grid)
+        self.layout = QtGui.QVBoxLayout()
+        self.layout.addWidget(self.user_grid)
+        self.setLayout(self.layout)
+
+    def sizeHint(self):
+        return QtCore.QSize(540, 800)
             
 
 if __name__ == '__main__':

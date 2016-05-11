@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+import argparse
+from byuam.project import Project
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("username", type=str, help="user's netid")
+    parser.add_argument("email", type=str, help="user's email")
+    args = parser.parse_args()
+    project = Project()
+    user = project.get_user(args.username)
+    if user is None:
+        project._env._create_user(args.username)
+        user = project.get_user(args.username)
+        user.update_email(args.email)
+    else:
+        print 'user already exists'
+    
