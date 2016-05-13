@@ -32,11 +32,12 @@ class CheckoutWindow(QtGui.QWidget):
         #create tabs
         for dept in dept_list:
             tab = DepartmentTab(self)
-            #tab = QtGui.QWidget()
-            # self.dept_tabs.insertTab(self.ASSET_INDEX, tab, dept)
             self.dept_tabs.addTab(tab, dept)
-            tab_layout = QtGui.QVBoxLayout()
+            tab_layout = QtGui.QHBoxLayout()
             element_list = QtGui.QListWidget()
+            commentBox = QtGui.QTextEdit()
+            commentBox.setReadOnly(True)
+            tab.commentBox = commentBox
 				
             if dept in Department.FRONTEND:
                 for asset in self.project.list_assets():
@@ -49,6 +50,7 @@ class CheckoutWindow(QtGui.QWidget):
                     element_list.addItem(item)
                     element_list.currentItemChanged.connect(self.set_current_item)
             tab_layout.addWidget(element_list)
+            tab_layout.addWidget(commentBox)
             tab.setLayout(tab_layout)
             
         #create buttons
@@ -85,6 +87,17 @@ class CheckoutWindow(QtGui.QWidget):
             self.current_item = str(index.text())
         elif current_dept in Department.BACKEND:
             self.current_item = str(index.text())
+        
+        asset_obj = self.project.get_body(self.current_item)
+        element_obj = asset_obj.get_element(current_dept)
+        last_publish = element_obj.get_last_publish()
+        last_publish_comment = None
+        if last_publish is not None:
+            last_publish_comment = "Last published {0} by {1} \n \"{2}\"".format(last_publish[1], last_publish[0], last_publish[2])
+        else:
+            last_publish_comment = "No publishes for this element"
+        currentTab = self.dept_tabs.currentWidget()
+        currentTab.commentBox.setText(last_publish_comment)
             
     def checkout(self):
         """
@@ -97,7 +110,6 @@ class CheckoutWindow(QtGui.QWidget):
         element_obj = asset_obj.get_element(current_dept)
         element_path = element_obj.checkout(current_user)
         if element_path != None:
-            # self.parent.close()
             self.result = element_path
             self.close()
             
@@ -110,6 +122,7 @@ class DepartmentTab(QtGui.QWidget):
     def __init__(self, parent):
         super(DepartmentTab, self).__init__()
         self.parent = parent
+        self.commentBox = None
         #self.initUI()
         
     def initUI(self):
