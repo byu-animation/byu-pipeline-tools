@@ -36,6 +36,10 @@
             "icon":"reference.xpm",
             "annotation":"Reference a model or rig",
             "python_file":"reference.py"
+        }, {
+            "icon":"rollback.xpm",
+            "annotation":"Rollback body to previous version",
+            "python_file":"rollback.py"
         }
 	]
 }
