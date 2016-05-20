@@ -20,7 +20,7 @@ class ReferenceWindow(QtGui.QWidget):
         self.project = Project()
         self.parent = parent
         self.src = src
-        self.filePath = None
+        self.filePaths = []
         self.done = True
         self.reference = False
         self.initUI(dept_list)
@@ -69,11 +69,20 @@ class ReferenceWindow(QtGui.QWidget):
         self.refreshList(department)
         
     def createReference(self):
+        selected = []
+        del self.filePaths[:]
+        for item in self.assetList.selectedItems():
+            body = self.project.get_body(str(item.text()))
+            element = body.get_element(str(self.departmentMenu.currentText()))
+            path = element.get_app_filepath()
+            self.filePaths.append(path)
+            selected.append(str(item.text()))
         checkout = self.project.get_checkout(os.path.dirname(self.src))
         if checkout is not None:
             body_name = checkout.get_body_name()
             body = self.project.get_body(body_name)
-            body.add_reference(self.assetList.current_selection)
+            for sel in selected:
+                body.add_reference(sel)
         self.done = False
         self.reference = True
         self.close()
@@ -105,31 +114,11 @@ class AssetListWindow(QtGui.QListWidget):
         self.initUI()
         
     def initUI(self):
-        self.currentItemChanged.connect(self.set_current_item)
+        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         
-    def set_current_item(self, index):
-        self.current_selection = str(index.text())
-        body = self.project.get_body(self.current_selection)
-        element = body.get_element(str(self.parent.departmentMenu.currentText()))
-        path = element.get_app_filepath()
-        self.parent.filePath = path
-        
-    def refreshList(self, department):
-        if department in Department.FRONTEND:
-            asset_filter = None
-            if(self.typeFilter.currentIndex()):
-                asset_filter_str = str(self.typeFilter.currentText())
-                asset_filter = (Asset.TYPE, operator.eq, asset_filter_str)
-            self.elements = self.project.list_assets(asset_filter)
-        else:
-            self.elements = self.project.list_shots()
-		    
-        self.clear()
-        for e in self.elements:
-		    self.addItem(e)
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    ex = ReferenceWindow(app)
+    ex = ReferenceWindow(app, None)
     sys.exit(app.exec_())
 

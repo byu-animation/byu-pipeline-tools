@@ -13,18 +13,24 @@ def maya_main_window():
     return sip.wrapinstance(long(ptr), QtCore.QObject)
     
 def post_reference():
-    file_path = maya_reference_dialog.filePath
+    file_paths = maya_reference_dialog.filePaths
     done = maya_reference_dialog.done
     reference = maya_reference_dialog.reference
 
-    if file_path is not None and reference:
-        if os.path.exists(file_path):
-            cmds.file(file_path, reference=True)
-        else:
+    if file_paths is not None and reference:
+        empty = []
+        for path in file_paths:
+            if os.path.exists(path):
+                cmds.file(path, reference=True)
+            else:
+                empty.append(path)
+
+        if empty:
+            empty_str = '\n'.join(empty)
             error_dialog = QtGui.QErrorMessage(maya_main_window())
-            error_dialog.showMessage("The chosen element is empty. Nothing has been published to it, so it can't be referenced.")
-    if not done:
-        go()
+            error_dialog.showMessage("The following elements are empty. Nothing has been published to them, so they can't be referenced.\n"+empty_str)
+    # if not done:
+    #     go()
 
 
 def go():
