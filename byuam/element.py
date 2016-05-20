@@ -420,6 +420,8 @@ class Element:
             subject = self.get_long_name()+" new publish"
             publish_user = self._env.get_user(username)
             message = publish_user.get_fullname() + " has published a new version of "+self.get_long_name()
+            if comment!="":
+                message += "comment: "+comment
             self._env.sendmail(dst_addresses, subject, message)
 
     def update_cache(self, src, reference=False):
