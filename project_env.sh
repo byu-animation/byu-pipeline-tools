@@ -1,3 +1,5 @@
+#!/bin/sh
+
 export BYU_PROJECT_DIR=/groups/dusk
 export BYU_TOOLS_DIR=/groups/dusk/byu-pipeline-tools
 

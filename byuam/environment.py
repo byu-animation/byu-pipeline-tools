@@ -14,16 +14,18 @@ class Environment:
     ASSETS_DIR = "assets_dir"
     SHOTS_DIR = "shots_dir"
     USERS_DIR = "users_dir"
+    ASSEMBLY_DIR = "assembly_dir"
     EMAIL_ADDRESS = "email_address"
     EMAIL_PASSWORD = "email_password"
 
     @staticmethod
-    def create_new_dict(name, assets_dir, shots_dir, users_dir):
+    def create_new_dict(name, assets_dir, shots_dir, users_dir, assembly_dir):
         datadict = {}
         datadict[Environment.PROJECT_NAME] = name
         datadict[Environment.ASSETS_DIR] = assets_dir
         datadict[Environment.SHOTS_DIR] = shots_dir
         datadict[Environment.USERS_DIR] = users_dir
+        datadict[Environment.ASSEMBLY_DIR] = assembly_dir
         return datadict
 
     def __init__(self):
@@ -68,6 +70,13 @@ class Environment:
         return the absolute filepath to the shots directory of the current project
         """
         return os.path.abspath(self._datadict[Environment.SHOTS_DIR])
+
+    def get_assembly_dir(self):
+        """
+        return the absolute filepath to the assembly directory of the current project
+        (in a houdini pipeline, this is the otls directory)
+        """
+        return os.path.abspath(self._datadict[Environment.ASSEMBLY_DIR])
 
     def _create_user(self, username):
         workspace = os.path.join(self.get_users_dir(), username)
