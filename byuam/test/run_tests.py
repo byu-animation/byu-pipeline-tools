@@ -16,10 +16,11 @@ class TestAssetManager(unittest.TestCase):
 		self.assets_dir = os.path.join(project_dir, "assets")
 		self.shots_dir = os.path.join(project_dir, "shots")
 		self.users_dir = os.path.join(project_dir, "users")
+		self.assmelby_dir = os.path.join(project_dir, "otls")
 		pipeline_io.mkdir(self.assets_dir)
 		pipeline_io.mkdir(self.shots_dir)
 		pipeline_io.mkdir(self.users_dir)
-		datadict = Environment.create_new_dict("test", self.assets_dir, self.shots_dir, self.users_dir)
+		datadict = Environment.create_new_dict("test", self.assets_dir, self.shots_dir, self.users_dir, self.assmelby_dir)
 		pipeline_io.writefile(Environment.PIPELINE_FILENAME, datadict)
 		os.environ[Environment.PROJECT_ENV] = project_dir
 

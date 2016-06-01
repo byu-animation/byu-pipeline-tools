@@ -2,6 +2,7 @@
 from .element import Element, AssetElement, ShotElement
 from .environment import Department
 from .maya import MayaElement
+from .houdini import HDAElement
 
 class Registry:
 	"""
@@ -17,7 +18,7 @@ class Registry:
 		self._registrydict[Department.RIG] = self.maya_element_factory
 		self._registrydict[Department.TEXTURE] = self.asset_element_factory
 		self._registrydict[Department.MATERIAL] = self.asset_element_factory
-		self._registrydict[Department.ASSEMBLY] = self.asset_element_factory
+		self._registrydict[Department.ASSEMBLY] = self.hda_element_factory
 		self._registrydict[Department.LAYOUT] = self.maya_element_factory
 		self._registrydict[Department.ANIM] = self.maya_element_factory
 		self._registrydict[Department.CFX] = self.shot_element_factory
@@ -32,6 +33,9 @@ class Registry:
 
 	def maya_element_factory(self, filepath):
 		return MayaElement(filepath)
+
+	def hda_element_factory(self, filepath):
+		return HDAElement(filepath)
 
 	def asset_element_factory(self, filepath):
 		return AssetElement(filepath)

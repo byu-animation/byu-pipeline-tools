@@ -421,7 +421,7 @@ class Element:
             publish_user = self._env.get_user(username)
             message = publish_user.get_fullname() + " has published a new version of "+self.get_long_name()
             if comment!="":
-                message += "comment: "+comment
+                message += "\ncomment: "+comment
             self._env.sendmail(dst_addresses, subject, message)
 
     def update_cache(self, src, reference=False):
