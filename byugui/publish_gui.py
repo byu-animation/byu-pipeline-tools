@@ -93,18 +93,9 @@ class PublishWindow(QtGui.QWidget):
 
     def publish(self):
         self.elementType = str(self.menu.currentText())
-        # element = None
-        # element = self.project.get_checkout_element(os.path.dirname(self.src))
         try:
-            #Leave here to use for advanced options
             body = self.project.get_body(str(self.filePath.text()))
             element = body.get_element(str(self.departmentMenu.currentText()))
-            # if self.elementType == 'Asset':
-            #    asset = self.project.get_asset(str(self.filePath.text()))
-            #    element = asset.get_element(str(self.departmentMenu.currentText()))
-            # else:
-            #    shot = self.project.get_shot(str(self.filePath.text()))
-            #    element = shot.get_element(str(self.departmentMenu.currentText()))
         
             self.user = self.environment.get_current_username()
             self.comment = str(self.comment.toPlainText())

@@ -5,9 +5,15 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <toolshelf name="byu_tools" label="BYU Tools">
-    <memberTool name="assemble"/>
-    <memberTool name="checkout"/>
-    <memberTool name="publish" />
-  </toolshelf>
+  <tool name="checkout" label="Checkout Asset" icon="PLASMA_App">
+    <helpText><![CDATA[= Publish Asset =
+
+"""Checks out an asset or shot to the user for editing."""
+
+    ]]></helpText>
+    <script scriptType="python"><![CDATA[import checkout_asset
+
+checkout_asset.go()
+]]></script>
+  </tool>
 </shelfDocument>
