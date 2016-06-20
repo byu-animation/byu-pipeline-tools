@@ -48,6 +48,7 @@ def go():
             publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.ASSEMBLY])
         else:
             hou.ui.displayMessage("Node is not a digital asset")
+            return
     
     else:
         publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.LIGHTING])
