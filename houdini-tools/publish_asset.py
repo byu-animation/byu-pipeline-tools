@@ -1,6 +1,6 @@
+#Author: Trevor Barrus
 import hou
 import os
-# import pyqt_houdini
 from PyQt4 import QtGui, QtCore
 from byugui import PublishWindow
 
