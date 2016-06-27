@@ -37,5 +37,5 @@ def go():
     parent = maya_main_window()
     filePath = cmds.file(q=True, sceneName=True)
     global maya_reference_dialog
-    maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.RIG, Department.MODEL])
+    maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG])
     maya_reference_dialog.finished.connect(post_reference)
