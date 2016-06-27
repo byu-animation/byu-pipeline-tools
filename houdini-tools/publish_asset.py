@@ -4,10 +4,12 @@ import os
 from PyQt4 import QtGui, QtCore
 from byugui import PublishWindow
 
-from byuam import Department, Project, Element
+from byuam import Department, Project, Element, Environment
 
 def publish_hda():
     project = Project()
+    environment = Environment()
+    
     if publish_window.published:
         user = publish_window.user
         comment = publish_window.comment
@@ -24,6 +26,10 @@ def publish_hda():
                         asset.matchCurrentDefinition()
                         element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
                         element.publish(user, src, comment)		
+                        hou.hda.uninstallFile(src, change_oplibraries_file=False)
+                        saveFile = asset_name + "_assembly_main.hdanc"
+                        dst = os.path.join(environment.get_assembly_dir(), saveFile)
+                        hou.hda.installFile(dst)
             else:
                 hou.ui.displayMessage("File does not exist")
                 
