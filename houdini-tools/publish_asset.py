@@ -43,7 +43,8 @@ def go():
             asset = nodes[0]
             asset_name = nodes[0].type().name() #get name of asset
             index = asset_name.find("_main")
-            asset_name = asset_name[:index]
+            if index > 0:
+                asset_name = asset_name[:index]
             src = nodes[0].type().definition().libraryFilePath()
             publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.ASSEMBLY])
         else:
