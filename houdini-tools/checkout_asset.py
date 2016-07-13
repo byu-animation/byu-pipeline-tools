@@ -5,6 +5,19 @@ from PyQt4 import QtGui, QtCore
 from byugui import CheckoutWindow
 
 from byuam import Department, Project, Environment, Element
+
+def checkout_shot():
+    filepath = checkout_window.result
+    print filepath
+    if filepath is not None:
+        if not os.path.exists(filepath):
+            print "Filepath doesn't exist"
+            filepath += ".hipnc"
+            hou.hipFile.clear()
+            hou.hipFile.setName(filepath)
+            hou.hipFile.save()
+        else:
+            hou.hipFile.load(filepath)
         
 def go():
     global checkout_window
@@ -38,4 +51,6 @@ def go():
     elif len(nodes) > 1:
         hou.ui.displayMessage("Only one node can be selected for checkout")
     else:
-        checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LAYOUT])    
+        checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])    
+        
+    checkout_window.finished.connect(checkout_shot)

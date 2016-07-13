@@ -33,7 +33,19 @@ def publish_hda():
             else:
                 hou.ui.displayMessage("File does not exist")
                 
+def publish_shot():
+    print "Publish shot"
+    element = publish_window.result
+
+    if publish_window.published:
+        hou.hipFile.save()
         
+        #Publish
+        user = publish_window.user
+        src = publish_window.src
+        comment = publish_window.comment
+        element.publish(user, src, comment)
+    
 def go():
     global publish_window
     global asset
@@ -56,8 +68,10 @@ def go():
         else:
             hou.ui.displayMessage("Node is not a digital asset")
             return
+        publish_window.finished.connect(publish_hda)
     
     else:
-        publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.LIGHTING])
+        scene = hou.hipFile.name()
+        publish_window = PublishWindow(scene, hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
+        publish_window.finished.connect(publish_shot)
     
-    publish_window.finished.connect(publish_hda)
