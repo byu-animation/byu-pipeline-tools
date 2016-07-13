@@ -8,8 +8,6 @@ from byuam.environment import Department, Environment
 
 WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 600
-
-# dept_list = Department.ALL
         
 class CheckoutWindow(QtGui.QWidget):
 
@@ -61,7 +59,6 @@ class CheckoutWindow(QtGui.QWidget):
 		
         #create button layout
         button_layout = QtGui.QHBoxLayout()
-        #button_layout.setSpacing(2)
         button_layout.addWidget(self.checkout_button)
         button_layout.addWidget(self.cancel_button)
 
@@ -123,12 +120,6 @@ class DepartmentTab(QtGui.QWidget):
         super(DepartmentTab, self).__init__()
         self.parent = parent
         self.commentBox = None
-        #self.initUI()
-        
-    def initUI(self):
-        #define gui elements
-        self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
-    
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
