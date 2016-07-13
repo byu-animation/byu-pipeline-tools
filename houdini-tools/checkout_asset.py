@@ -8,7 +8,6 @@ from byuam import Department, Project, Environment, Element
 
 def checkout_shot():
     filepath = checkout_window.result
-    print filepath
     if filepath is not None:
         if not os.path.exists(filepath):
             print "Filepath doesn't exist"

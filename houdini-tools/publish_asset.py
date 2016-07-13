@@ -34,7 +34,6 @@ def publish_hda():
                 hou.ui.displayMessage("File does not exist")
                 
 def publish_shot():
-    print "Publish shot"
     element = publish_window.result
 
     if publish_window.published:
