@@ -5,10 +5,15 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <toolshelf name="byu_tools" label="BYU Tools">
-    <memberTool name="assemble"/>
-    <memberTool name="checkout"/>
-    <memberTool name="publish" />
-    <memberTool name="rollback" />
-  </toolshelf>
+  <tool name="rollback" label="Rollback Asset" icon="PLASMA_App">
+    <helpText><![CDATA[= Publish Asset =
+
+"""Rollback an asset or shot to a previous version."""
+
+    ]]></helpText>
+    <script scriptType="python"><![CDATA[import rollback_asset
+
+rollback_asset.go()
+]]></script>
+  </tool>
 </shelfDocument>

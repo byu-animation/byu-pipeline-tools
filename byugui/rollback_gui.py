@@ -1,4 +1,4 @@
-#Author Trevor Barrus
+# Author: Trevor Barrus
 
 import sys
 import os
@@ -7,16 +7,16 @@ from PyQt4 import QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Environment
 
-WINDOW_WIDTH = 400
+WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 300
 
 class RollbackWindow(QtGui.QWidget):
     
     finished = QtCore.pyqtSignal()
     
-    def __init__(self, src, parent):
+    def __init__(self, element, parent):
         super(RollbackWindow, self).__init__()
-        self.src = src
+        self.element = element
         self.parent = parent
         self.environment = Environment()
         self.project = Project()
@@ -50,8 +50,7 @@ class RollbackWindow(QtGui.QWidget):
         self.show()
         
     def list_publishes(self):
-        element = self.project.get_checkout_element(os.path.dirname(self.src))
-        publishes = element.list_publishes();
+        publishes = self.element.list_publishes();
         for p in publishes:
             publish = Publish(p[0], p[1], p[2])
             self.publishes = self.publishes + [publish]
@@ -64,15 +63,14 @@ class RollbackWindow(QtGui.QWidget):
         
     def rollback(self):
         selectedVersion = self.publishes[self.publish_list.currentRow()]
-        element = self.project.get_checkout_element(os.path.dirname(self.src))
-        versionDir = element.get_version_dir(self.publish_list.currentRow())
+        versionDir = self.element.get_version_dir(self.publish_list.currentRow())
         versionFile = listdir(versionDir)[0]
         filepath = versionDir + '/' + versionFile
         user = self.environment.get_current_username()
         comment = "Rollback to version dated \n{0}".format(selectedVersion.timestamp)
-        element.publish(user, filepath, comment)
+        self.element.publish(user, filepath, comment)
         #checkout element again to user to remove errors upon multiple uses of rollback
-        self.result = element.checkout(user)
+        self.result = self.element.checkout(user)
         self.close()
         
     def closeEvent(self, event):

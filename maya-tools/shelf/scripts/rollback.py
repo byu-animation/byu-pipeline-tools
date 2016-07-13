@@ -1,5 +1,6 @@
 from byugui.rollback_gui import RollbackWindow
 from byuam.environment import Department
+from byuam.project import Project
 import maya.cmds as cmds
 from PyQt4 import QtCore
 import maya.OpenMayaUI as omu
@@ -28,8 +29,10 @@ def rollback():
             print "open file "+filepath
 
 def go():
+    project = Project()
     parent = maya_main_window()
     filePath = cmds.file(q=True, sceneName=True)
+    element = project.get_checkout_element(os.path.dirname(filePath))
     global maya_rollback_dialog
-    maya_rollback_dialog = RollbackWindow(filePath, parent)
+    maya_rollback_dialog = RollbackWindow(element, parent)
     maya_rollback_dialog.finished.connect(rollback)
