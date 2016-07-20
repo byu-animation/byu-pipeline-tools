@@ -1,10 +1,10 @@
 from byuam import Department
 from byugui.publish_gui import PublishWindow
-import maya.cmds as cmds
 from PyQt4 import QtCore
+import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 import sip
-import alembic_static_exporter
+#import alembic_static_exporter
 
 maya_publish_dialog = None
 
@@ -29,7 +29,7 @@ def post_publish():
         print maya_publish_dialog.result.get_name()
 
         print "Exporting Alembic"
-        alembic_static_exporter.go()
+        #alembic_static_exporter.go()
 
 def go():
     parent = maya_main_window()
