@@ -51,5 +51,4 @@ def go():
         hou.ui.displayMessage("Only one node can be selected for checkout")
     else:
         checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])    
-        
-    checkout_window.finished.connect(checkout_shot)
+        checkout_window.finished.connect(checkout_shot)
