@@ -5,6 +5,7 @@ import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 import sip
 import alembic_static_exporter
+import os
 
 maya_publish_dialog = None
 
@@ -23,7 +24,9 @@ def post_publish():
         user = maya_publish_dialog.user
         src = maya_publish_dialog.src
         comment = maya_publish_dialog.comment
-        element.publish(user, src, comment)
+        dst = element.publish(user, src, comment)
+        #Ensure file has correct permissions
+        os.chmod(dst, 0660)
 
         print "TODO: export playblast"
         print maya_publish_dialog.result.get_name()

@@ -423,6 +423,8 @@ class Element:
             if comment!="":
                 message += "\ncomment: "+comment
             self._env.sendmail(dst_addresses, subject, message)
+        
+        return dst
 
     def update_cache(self, src, reference=False):
         """
