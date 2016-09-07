@@ -119,12 +119,12 @@ class AlembicExportDialog(QDialog):
 			abcFilePath = elem.get_cache_dir()
 
 			for ref in selectedReferences:
-				abcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
-				print "abcFilePath", abcFilePath
-				command = self.build_alembic_command(ref, abcFilePath)
+				refAbcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
+				print "abcFilePath", refAbcFilePath
+				command = self.build_alembic_command(ref, refAbcFilePath)
 				print "Export Alembic command: ", command
 				Mel.eval(command)
-				os.system('chmod 774 ' + abcFilePath)
+				os.system('chmod 774 ' + refAbcFilePath)
 
 		self.close_dialog()
 
