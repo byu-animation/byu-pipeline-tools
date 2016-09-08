@@ -4,7 +4,5 @@ python("sys.path.append(SHELF_DIR)");
 python("import byu_shelf");
 
 //Test
-python("print '##############TEST##############'");
 python("import maya.cmds");
-python("cmds.loadPlugin('/users/guest/t/tcbarrus/taijitu/byu-pipeline-tools/maya-tools/plug-ins/cvshapeinverter_plugin.py')");
-python("print '##############END TEST##############'");
+python("cmds.loadPlugin('/groups/dusk/byu-pipeline-tools/maya-tools/plug-ins/cvshapeinverter_plugin.py')");
