@@ -20,10 +20,10 @@ def create_project(path, name="test"):
 	users = os.path.join(path, "users")
 	if not os.path.exists(users):
 		pipeline_io.mkdir(users)
-	assembly = os.path.join(production, "otls")
+	otls = os.path.join(production, "otls")
 	if not os.path.exists(otls):
 		pipeline_io.mkdir(otls)
-	datadict = Environment.create_new_dict(name, assets, shots, users, assembly)
+	datadict = Environment.create_new_dict(name, assets, shots, users, otls)
 	pipeline_file = os.path.join(path, Environment.PIPELINE_FILENAME)
 	pipeline_io.writefile(pipeline_file, datadict)
 	print "To make this the active project, set the BYU_PROJECT_DIR environment variable:\nexport BYU_PROJECT_DIR=%s" % path
