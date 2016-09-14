@@ -26,7 +26,10 @@ def post_publish():
         comment = maya_publish_dialog.comment
         dst = element.publish(user, src, comment)
         #Ensure file has correct permissions
-        os.chmod(dst, 0660)
+        try:
+            os.chmod(dst, 0660)
+        except:
+            pass
 
         print "TODO: export playblast"
         print maya_publish_dialog.result.get_name()
