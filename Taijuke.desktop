@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=x.y
+Name=Taijuke
+Comment=Taijitu Nuke
+Exec=/users/guest/a/ablomqui/PIPELINE-TEST/byu-pipeline-tools/project_nuke.sh
+Icon=/users/guest/t/tcbarrus/taijitu/byu-pipeline-tools/icons/taijitu_maya.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;
+Name[en_US]=Taijuke
