@@ -2,7 +2,6 @@
 #!/bin/sh
 
 # project_nuke.sh: opens nuke  with the project environment
-# @author Brian Kingery
 
 # source project environment
 DIR=`dirname $0`
