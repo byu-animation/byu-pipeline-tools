@@ -34,8 +34,9 @@ def post_publish():
         print "TODO: export playblast"
         print maya_publish_dialog.result.get_name()
 
-        print "Exporting Alembic"
-        alembic_static_exporter.go()
+        if element.get_department() == Department.MODEL:
+            print "Exporting Alembic"
+            alembic_static_exporter.go()
 
 def go():
     parent = maya_main_window()
