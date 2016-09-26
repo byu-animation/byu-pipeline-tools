@@ -3,8 +3,8 @@
 Version=x.y
 Name=Taijuke
 Comment=Taijitu Nuke
-Exec=/users/guest/a/ablomqui/PIPELINE-TEST/byu-pipeline-tools/project_nuke.sh
-Icon=/users/guest/a/ablomqui/PIPELINE-TEST/byu-pipeline-tools/icons/taijitu_nuke.png
+Exec=/groups/dusk/byu-pipeline-tools/project_nuke.sh
+Icon=/groups/dusk/byu-pipeline-tools/byugui/assets/images/yinyang.png
 Terminal=false
 Type=Application
 Categories=Utility;Application;
