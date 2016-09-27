@@ -25,7 +25,12 @@ def publish_hda():
                         asset.type().definition().updateFromNode(asset)
                         asset.matchCurrentDefinition()
                         element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
-                        element.publish(user, src, comment)		
+                        element.publish(user, src, comment)
+                        #Ensure file has correct permissions
+                        try:
+                            os.chmod(dst, 0660)
+                        except:
+                            pass
                         hou.hda.uninstallFile(src, change_oplibraries_file=False)
                         saveFile = asset_name + "_assembly_main.hdanc"
                         dst = os.path.join(environment.get_assembly_dir(), saveFile)
