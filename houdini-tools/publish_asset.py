@@ -25,7 +25,7 @@ def publish_hda():
                         asset.type().definition().updateFromNode(asset)
                         asset.matchCurrentDefinition()
                         element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
-                        element.publish(user, src, comment)
+                        dst = element.publish(user, src, comment)
                         #Ensure file has correct permissions
                         try:
                             os.chmod(dst, 0660)
