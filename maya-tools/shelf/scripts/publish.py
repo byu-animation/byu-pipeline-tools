@@ -42,5 +42,5 @@ def go():
     parent = maya_main_window()
     filePath = cmds.file(q=True, sceneName=True)
     global maya_publish_dialog
-    maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM])
+    maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX])
     maya_publish_dialog.finished.connect(post_publish)
