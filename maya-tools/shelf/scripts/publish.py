@@ -6,6 +6,7 @@ import maya.OpenMayaUI as omu
 import sip
 import alembic_static_exporter
 import os
+import alembic_exporter
 
 maya_publish_dialog = None
 
@@ -37,6 +38,9 @@ def post_publish():
         if element.get_department() == Department.MODEL:
             print "Exporting Alembic"
             alembic_static_exporter.go()
+        if element.get_department() == Department.ANIM:
+            print "Giving the Animator the opportunity to export alembic"
+            alembic_exporter.go()
 
 def go():
     parent = maya_main_window()
