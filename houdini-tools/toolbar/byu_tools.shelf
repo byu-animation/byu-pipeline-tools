@@ -6,9 +6,9 @@
  a single file. -->
 
   <toolshelf name="byu_tools" label="BYU Tools">
-    <memberTool name="assemble"/>
     <memberTool name="checkout"/>
-    <memberTool name="publish" />
-    <memberTool name="rollback" />
+    <memberTool name="publish"/>
+    <memberTool name="rollback"/>
+    <memberTool name="assemble"/>
   </toolshelf>
 </shelfDocument>

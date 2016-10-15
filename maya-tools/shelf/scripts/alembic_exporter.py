@@ -162,16 +162,16 @@ class AlembicExportDialog(QDialog):
 		# roots_string = " ".join([roots_string, "-root %s"%(' '.join(tagged))])
         print "roots_string: " + roots_string
 
-
+        # Commented out 10/16/16: Testing to see if dependency list is necessary in export. Currently there are parenting/ancestor relationship conflicts - Trevor Barrus
 		# But it seems we add the dependencies to the thing being exported.
-        for dep in depList:
-            depRef = ls(dep)
-            if len(depRef) > 0:
-                tagged = self.get_tagged_node(depRef[0]).name()
-            else:
-                tagged = dep[:-2]
+        #for dep in depList:
+        #    depRef = ls(dep)
+        #    if len(depRef) > 0:
+        #        tagged = self.get_tagged_node(depRef[0]).name()
+        #    else:
+        #        tagged = dep[:-2]
 
-            roots_string = " ".join([roots_string, "-root %s"%(tagged)])
+        #    roots_string = " ".join([roots_string, "-root %s"%(tagged)])
 
         start_frame = cmds.playbackOptions(q=1, animationStartTime=True) - 5
         end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
