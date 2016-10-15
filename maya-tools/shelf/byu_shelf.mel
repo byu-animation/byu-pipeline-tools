@@ -3,6 +3,6 @@ python("SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')");
 python("sys.path.append(SHELF_DIR)");
 python("import byu_shelf");
 
-//Test
+//Import CVShapeInverter Plugin
 python("import maya.cmds");
 python("cmds.loadPlugin('/groups/dusk/byu-pipeline-tools/maya-tools/plug-ins/cvshapeinverter_plugin.py')");
