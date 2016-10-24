@@ -45,7 +45,7 @@
 			"annotation":"Preroll Jampa",
 			"python_file":"jampa_preroll.py"
 		}, {
-            "icon":"jampa_preroll.xpm",
+            "icon":"jampa_robe_setup.xpm",
             "annotation":"Jampa Robe Setup (Use in anim scene)",
             "python_file":"jampa_robe_setup.py"
         }
