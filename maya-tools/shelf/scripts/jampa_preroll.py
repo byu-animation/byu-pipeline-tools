@@ -1,3 +1,4 @@
+#Author: Trevor Barrus
 import maya.cmds as cm
 
 def go():
