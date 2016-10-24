@@ -29,7 +29,7 @@ def go():
     rz = mc.getAttr(globPos+".rotateZ")
 
     # get alembic filepath for scene's animation (requires prior export)
-    src = cmds.file(q=True, sceneName=True)
+    src = mc.file(q=True, sceneName=True)
     src_dir = os.path.dirname(src)
     checkout_element = project.get_checkout_element(src_dir)
     checkout_body_name = checkout_element.get_parent()
@@ -44,15 +44,15 @@ def go():
 
     #open cfx file 
     if cfx_filepath is not None:
-        if not cmds.file(q=True, sceneName=True) == '':
-            cmds.file(save=True, force=True) #save file
+        if not mc.file(q=True, sceneName=True) == '':
+            mc.file(save=True, force=True) #save file
 
         if not os.path.exists(cfx_filepath):
-            cmds.file(new=True, force=True)
-            cmds.file(rename=cfx_filepath)
-            cmds.file(save=True, force=True)
+            mc.file(new=True, force=True)
+            mc.file(rename=cfx_filepath)
+            mc.file(save=True, force=True)
         else:
-            cmds.file(cfx_filepath, open=True, force=True)
+            mc.file(cfx_filepath, open=True, force=True)
 
     # import alembic
     command = "AbcImport -mode import \"" + cache_file + "\""
