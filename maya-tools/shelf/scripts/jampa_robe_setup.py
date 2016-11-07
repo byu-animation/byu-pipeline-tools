@@ -4,6 +4,7 @@
     Result: A checkout out cfx file with Jampa's robe set in starting position with attached nCloth nodes and proper nucleus parameters.
 '''
 import os
+import maya
 import maya.cmds as mc
 from byuam.project import Project
 from byuam.environment import Department, Environment
@@ -13,6 +14,7 @@ def go():
     environment = Environment()
 
     # Create a global position locator which will grab Jampa's position despite his scaled translations
+    mc.currentTime(0)
     globalPos = mc.spaceLocator(p=[0,0,0])
     globPos = mc.rename(globalPos, "jampaGlobalPos")
     mc.select("jampa_rig_main_global_cc_01")
@@ -88,6 +90,8 @@ def go():
     maya.mel.eval(command)
     rigid_shape = "nRigid_jampa"
     mc.rename("nRigid1", rigid_shape)
+    mc.setAttr(rigid_shape+".stickiness", 0.2)
+    mc.setAttr(rigid_shape+".friction", 0.5)
 
     # make cloth objects and display layers of each robe piece
     jampa_torso = "jampa_robe_model_main_robe_torso_01"
@@ -108,7 +112,7 @@ def go():
     nucleus = "nucleus_jampa"
     mc.rename("nucleus1", nucleus)
     mc.setAttr(nucleus+".subSteps", 30)
-    mc.setAttr(nucleus+".startFrame", -50)
+    mc.setAttr(nucleus+".startFrame", -30)
     mc.setAttr(nucleus+".spaceScale", 0.23)
 
     mc.currentTime(-50)

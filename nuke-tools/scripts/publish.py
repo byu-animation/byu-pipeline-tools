@@ -17,9 +17,8 @@ def post_publish():
     element = nuke_publish_dialog.result
 
     if nuke_publish_dialog.published:
-        #if the file hasn't been saved, save it
-        #if not cmds.file(q=True, sceneName=True) == '':
-        #    cmds.file(save=True, force=True) #save file
+        #save the file
+        nuke.scriptSave()
 
         #Publish
         user = nuke_publish_dialog.user
