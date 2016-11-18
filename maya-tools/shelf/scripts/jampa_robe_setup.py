@@ -77,12 +77,12 @@ def go():
     mc.file(robe_file, reference=True)
 
     # set robe transforms to variables above
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.translateX", tx)
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.translateY", ty)
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.translateZ", tz)
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.rotateX", rx)
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.rotateY", ry)
-    mc.setAttr("jampa_robe_model_main_jampa_robe_sim.rotateZ", rz)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.translateX", tx)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.translateY", ty)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.translateZ", tz)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.rotateX", rx)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.rotateY", ry)
+    mc.setAttr("jampa_robe_model_main_jampa_robe.rotateZ", rz)
 
     # make jampa skin a passive collider
     mc.select(collide)
@@ -94,9 +94,9 @@ def go():
     mc.setAttr(rigid_shape+".friction", 0.5)
 
     # make cloth objects and display layers of each robe piece
-    jampa_torso = "jampa_robe_model_main_robe_torso_01"
-    jampa_sash = "jampa_robe_model_main_robe_sash_01"
-    jampa_skirt = "jampa_robe_model_main_robe_skirt_01"
+    jampa_torso = "jampa_robe_model_main_robe_torso_sim"
+    jampa_sash = "jampa_robe_model_main_robe_sash_sim"
+    jampa_skirt = "jampa_robe_model_main_robe_skirt_sim"
 
     cloth_pieces = {jampa_torso, jampa_sash, jampa_skirt}
     command = "createNCloth 0"

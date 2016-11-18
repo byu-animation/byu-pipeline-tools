@@ -128,7 +128,7 @@ class ExportDialog(QDialog):
                 node.parm('soho_diskfile').set(ifd_dir+('/%s_$F04.ifd' % name))
                 # Loop through every frame in framerange
                 for frame in range(start, end+1, step):
-                    job_script += "\n\t\tTask {Frame %04d} -cmds { RemoteCmd {./mantra -V a -f $ifddir/%s_%04d.ifd} }" % (frame, name, frame)
+                    job_script += "\n\t\tTask {Frame %04d} -cmds { RemoteCmd {./mantra -V a4 -f $ifddir/%s_%04d.ifd} }" % (frame, name, frame)
                     # Render this frame to the ifd file
                     node.render([frame, frame])
                 job_script += "\n\t}"
@@ -152,6 +152,9 @@ class ExportDialog(QDialog):
         #Cleanup ifd files, if they didn't want to retry
         if not choice:
             shutil.rmtree(ifd_dir)
+	#After the export is done clear the mantra_nodes array - Ben DeMann 10/17/2016
+	del mantra_nodes[:]
+	print "Export Finished!"
 
     # Spool the generated script to the engine
     def spool(self, job_script, time_now):
@@ -205,6 +208,7 @@ def go():
             entrance_checkbox = node.parm('entranceCheck').evalAsInt()
             props_checkbox = node.parm('propsCheck').evalAsInt()
             effects_checkbox = node.parm('effectsCheck').evalAsInt()
+            shadow_checkbox = node.parm('parm').evalAsInt()
 
             #Check the checkboxes, if checked for render add to mantra_nodes - Nick Evans 10/11/16
             if ten_checkbox > 0:
@@ -221,6 +225,8 @@ def go():
                 mantra_nodes.append(node.node("dusk_props"))
             if effects_checkbox > 0:
                 mantra_nodes.append(node.node("dusk_effects"))
+	    if shadow_checkbox > 0:
+                mantra_nodes.append(node.node("dusk_shadow"))
             print "Size of mantra_nodes: ", len(mantra_nodes)
             
 
@@ -233,4 +239,3 @@ def go():
         dialog = ExportDialog()
         dialog.show()
         pyqt_houdini.exec_(dialog)
-	del mantra_nodes[:]

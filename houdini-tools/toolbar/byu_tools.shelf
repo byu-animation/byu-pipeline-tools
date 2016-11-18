@@ -7,8 +7,8 @@
 
   <toolshelf name="byu_tools" label="BYU Tools">
     <memberTool name="checkout"/>
-    <memberTool name="publish"/>
     <memberTool name="rollback"/>
     <memberTool name="assemble"/>
+    <memberTool name="publish"/>
   </toolshelf>
 </shelfDocument>
