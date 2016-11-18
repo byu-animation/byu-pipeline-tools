@@ -9,6 +9,3 @@ python("cmds.loadPlugin('cvshapeinverter_plugin.py')");
 
 //Import SOuP
 python("cmds.loadPlugin('SOuP.so')");
-
-//Add soup buttons
-shelf_soup;
