@@ -5,4 +5,10 @@ python("import byu_shelf");
 
 //Import CVShapeInverter Plugin
 python("import maya.cmds");
-python("cmds.loadPlugin('/groups/dusk/byu-pipeline-tools/maya-tools/plug-ins/cvshapeinverter_plugin.py')");
+python("cmds.loadPlugin('cvshapeinverter_plugin.py')");
+
+//Import SOuP
+python("cmds.loadPlugin('SOuP.so')");
+
+//Add soup buttons
+shelf_soup;

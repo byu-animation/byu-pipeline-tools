@@ -9,6 +9,7 @@ source ${DIR}/project_env.sh
 
 export CURRENT_PROG='Maya'
 export MAYA_PRESET_PATH=${BYU_TOOLS_DIR}/maya-tools/presets
+export MAYA_PLUG_IN_PATH=${BYU_TOOLS_DIR}/maya-tools/plug-ins
 
 # Change directories so current directory is not in the tools folder
 cd ${USER_DIR}
