@@ -40,14 +40,6 @@
             "icon":"rollback.xpm",
             "annotation":"Rollback body to previous version",
             "python_file":"rollback.py"
-        }, {
-		    "icon":"jampa_preroll.xpm", 
-			"annotation":"Preroll Jampa",
-			"python_file":"jampa_preroll.py"
-		}, {
-            "icon":"jampa_robe_setup.xpm",
-            "annotation":"Jampa Robe Setup (Use in anim scene)",
-            "python_file":"jampa_robe_setup.py"
         }
 	]
 }
