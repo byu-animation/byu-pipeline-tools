@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Grendini
+Comment=Grendel Houdini
+Exec=/groups/grendel/byu-pipeline-tools/project_houdini.sh
+Icon=/groups/grendel/byu-pipeline-tools/icons/grendel-houdini1.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;
+Name[en_US]=Grendini

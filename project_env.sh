@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export BYU_PROJECT_DIR=/groups/dusk
-export BYU_TOOLS_DIR=/groups/dusk/byu-pipeline-tools
+export BYU_PROJECT_DIR=/groups/grendel
+export BYU_TOOLS_DIR=/groups/grendel/byu-pipeline-tools
 
 # PyQt4
 export PYTHONPATH=${PYTHONPATH}:/usr/lib64/python2.7/site-packages
