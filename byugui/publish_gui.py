@@ -92,7 +92,6 @@ class PublishWindow(QtGui.QWidget):
         
     def selectElement(self):
         currentItem = self.eList.currentItem()
-        print currentItem.text()
         if currentItem is not None:
            self.filePath.setText(self.eList.currentItem().text())
            self.publishBtn.setEnabled(True)
