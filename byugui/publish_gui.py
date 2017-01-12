@@ -54,6 +54,8 @@ class PublishWindow(QtGui.QWidget):
         self.filePath.setReadOnly(True)
         self.label = QtGui.QLabel('What did you change?')
         self.comment = QtGui.QTextEdit()
+        self.lastPublish = QtGui.QTextEdit()
+        self.lastPublish.setReadOnly(True)
         self.publishBtn = QtGui.QPushButton('Publish')
         self.publishBtn.setEnabled(False)
         
@@ -69,11 +71,14 @@ class PublishWindow(QtGui.QWidget):
         self.grid = QtGui.QGridLayout(self)
         self.setLayout(self.grid)
         self.grid.addWidget(self.departmentMenu, 0, 0)
-        self.grid.addWidget(self.label, 1, 1)
-        self.grid.addWidget(self.eList, 2, 0)
-        self.grid.addWidget(self.comment, 2, 1)
-        self.grid.addWidget(self.filePath, 3, 0)
-        self.grid.addWidget(self.publishBtn, 3, 1)
+
+        self.grid.addWidget(self.lastPublish, 1, 1)
+        self.grid.addWidget(self.label, 2, 1)
+        self.grid.addWidget(self.comment, 3, 1)
+
+        self.grid.addWidget(self.eList, 1, 0, 3, 1)
+        self.grid.addWidget(self.filePath, 4, 0)
+        self.grid.addWidget(self.publishBtn, 4, 1)
         
         self.show()
         
@@ -90,6 +95,18 @@ class PublishWindow(QtGui.QWidget):
         if currentItem is not None:
            self.filePath.setText(self.eList.currentItem().text())
            self.publishBtn.setEnabled(True)
+
+           current_dept = str(self.departmentMenu.currentText())
+           
+           asset_obj = self.project.get_body(str(currentItem.text()))
+           element_obj = asset_obj.get_element(current_dept)
+           last_publish = element_obj.get_last_publish()
+           last_publish_comment = None
+           if last_publish is not None:
+              last_publish_comment = "Last published {0} by {1} \n \"{2}\"".format(last_publish[1], last_publish[0], last_publish[2])
+           else:
+              last_publish_comment = "No publishes for this element"
+           self.lastPublish.setText(last_publish_comment)
 
     def publish(self):
         self.elementType = str(self.menu.currentText())
