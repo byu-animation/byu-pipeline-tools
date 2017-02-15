@@ -5,11 +5,15 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <toolshelf name="byu_tools" label="BYU Tools">
-    <memberTool name="checkout"/>
-    <memberTool name="rollback"/>
-    <memberTool name="assemble"/>
-    <memberTool name="publish"/>
-    <memberTool name="inspire"/>
-  </toolshelf>
+  <tool name="inspire" label="Inspire" icon="PLASMA_App">
+    <helpText><![CDATA[= Inspire Asset =
+
+"""Brings you inpirations to help you get through"""
+
+    ]]></helpText>
+    <script scriptType="python"><![CDATA[import inspire_quote
+
+inspire_quote.go()
+]]></script>
+  </tool>
 </shelfDocument>
