@@ -1,0 +1,34 @@
+{
+	"quotes":[
+        {
+            "author":"Brent",
+            "quote":"We are in polish mode",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+	{
+            "author":"Brent",
+            "quote":"We need you to submit more quotes from Brent into the tool_suggestions channel in slack!",
+	    "image":"brent.jpg",
+            "contributor":"Ben DeMann"
+        },
+	{
+            "author":"Kelly",
+            "quote":"We need you to submit more quotes from Kelly into the tool_suggestions channel in slack!",
+	    "image":"kelly.jpg",
+            "contributor":"Ben DeMann"
+        },
+	{
+            "author":"Seth",
+            "quote":"We need you to submit more quotes from Seth into the tool_suggestions channel in slack!",
+	    "image":"seth.png",
+            "contributor":"Ben DeMann"
+        },
+	{
+            "author":"???",
+            "quote":"Have quotes from your favorite faculty/producer/director/anybody? submit the quote and a picture to the tool_suggestions channel in slack!",
+	    "image":"profile.jpg",
+            "contributor":"Ben DeMann"
+        }
+	]
+}

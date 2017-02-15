@@ -37,6 +37,10 @@
             "annotation":"Reference a model or rig",
             "python_file":"reference.py"
         }, {
+            "icon":"brent.xpm",
+            "annotation":"Get an inspirational quote from Brent",
+            "python_file":"inspire_quote.py"
+        }, {
             "icon":"rollback.xpm",
             "annotation":"Rollback body to previous version",
             "python_file":"rollback.py"
