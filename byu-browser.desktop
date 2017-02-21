@@ -1,8 +1,9 @@
+#!/usr/bin/env xdg-open
 [Desktop Entry]
 Version=x.y
 Name=Grendel Project Browser
 Comment=Grendel Project Browser
-Exec=/groups/grendel/byu-pipeline-tools/project_browser.sh
+Exec=/groups/grendel/byu-pipeline-tools/app-launch-scripts/project_browser.sh
 Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-browser.png
 Terminal=false
 Type=Application

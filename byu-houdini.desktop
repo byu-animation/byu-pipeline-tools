@@ -2,7 +2,7 @@
 Version=1.0
 Name=Grendini
 Comment=Grendel Houdini
-Exec=/groups/grendel/byu-pipeline-tools/project_houdini.sh
+Exec=/groups/grendel/byu-pipeline-tools/app-launch-scripts/project_houdini.sh
 Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-houdini.png
 Terminal=false
 Type=Application

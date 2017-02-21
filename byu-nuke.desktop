@@ -3,7 +3,7 @@
 Version=x.y
 Name=Grenduke
 Comment=Grendel Nuke
-Exec=/groups/grendel/byu-pipeline-tools/project_nuke.sh
+Exec=/groups/grendel/byu-pipeline-tools/app-launch-scripts/project_nuke.sh
 Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-nuke.png
 Terminal=false
 Type=Application

@@ -1,8 +1,9 @@
+#!/usr/bin/env xdg-open
 [Desktop Entry]
 Version=x.y
 Name=Grendeya
 Comment=Grendel Maya
-Exec=/groups/grendel/byu-pipeline-tools/project_maya.sh
+Exec=/groups/grendel/byu-pipeline-tools/app-launch-scripts/project_maya.sh
 Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-maya.png
 Terminal=false
 Type=Application
