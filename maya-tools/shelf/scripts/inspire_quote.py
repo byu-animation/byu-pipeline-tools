@@ -18,6 +18,5 @@ def maya_main_window():
 
 def go():
     parent = maya_main_window()
-    filePath = cmds.file(q=True, sceneName=True)
     global maya_publish_dialog
     maya_publish_dialog = QuoteWindow(parent)

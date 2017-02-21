@@ -38,8 +38,12 @@
             "python_file":"reference.py"
         }, {
             "icon":"brent.xpm",
-            "annotation":"Get an inspirational quote from Brent",
+            "annotation":"Get an inspirational quote",
             "python_file":"inspire_quote.py"
+        }, {
+            "icon":"gnome.xpm",
+            "annotation":"Gnomic Test Geo",
+            "python_file":"import_test_geo.py"
         }, {
             "icon":"rollback.xpm",
             "annotation":"Rollback body to previous version",
