@@ -61,7 +61,7 @@ class QuoteWindow(QtGui.QWidget):
     def populateQuote(self):
 	quoteInfo = self.getQuote()
 
-        self.quote.setText(quoteInfo["quote"] + "\n\t-" + quoteInfo["author"] + "\n\n\n Submitted by: " + quoteInfo["contributor"])
+        self.quote.setText(quoteInfo["quote"] + "\n\t-" + quoteInfo["author"])# + "\n\n\n Submitted by: " + quoteInfo["contributor"])
         pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/' + quoteInfo['image'])
         scaled = pixmap.scaledToWidth(self.size().width()/2)
         print scaled

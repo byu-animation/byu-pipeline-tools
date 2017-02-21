@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Name=Grendari
+Comment=Grendel Mari
+Exec=/groups/grendel/byu-pipeline-tools/app-launch-scripts/project_mari.sh
+Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-mari.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;
+Name[en_US]=Grendari

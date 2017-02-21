@@ -6,6 +6,66 @@
 	    "image":"brent.jpg",
             "contributor":"Anonymous"
         },
+        {
+            "author":"Brent",
+            "quote":"We're in finish mode. Kay?",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"Go team!",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"This is the best film BYU has ever produced.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"If winning was easy, even losers could do it.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"If you want to sound smart then you should call them crepuscular rays and not God rays!",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"It has a tanget",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"What you guys are doing is impossilble. It takes Pixar a team of 20 people and $10 million to make a short and they don't have English, Math and Religion classes.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"Normally they have three winners for each category in the student Emmys. I feel bad for the other schools.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"It doesn't matter if you guys get an Emmy. Look at Finding Dory. It was the highest grossing animated film of all time and it didn't even get nominated.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
+        {
+            "author":"Brent",
+            "quote":"You guys have really made a cohesive group. And I didn't think that you would be at the beginning of the semster.",
+	    "image":"brent.jpg",
+            "contributor":"Anonymous"
+        },
 	{
             "author":"Brent",
             "quote":"We need you to submit more quotes from Brent into the tool_suggestions channel in slack!",
@@ -30,5 +90,6 @@
 	    "image":"profile.jpg",
             "contributor":"Ben DeMann"
         }
+
 	]
 }
