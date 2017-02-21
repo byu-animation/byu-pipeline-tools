@@ -2,7 +2,7 @@
 Version=x.y
 Name=Grendack
 Comment=Grendel Slack
-Exec=/opt/google/chrome/chrome https://grendelbyu.slack.com/
+Exec=xdg-open https://grendelbyu.slack.com/
 Icon=/groups/grendel/byu-pipeline-tools/byugui/assets/images/icons/byu-slack.png
 Terminal=false
 Type=Application
