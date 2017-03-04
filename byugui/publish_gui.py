@@ -3,16 +3,16 @@
 import sys
 import os
 import traceback
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
     
-class PublishWindow(QtGui.QWidget):
+class PublishWindow(QtWidgets.QWidget):
 
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.Signal()
 
     def __init__(self, src, parent, dept_list=Department.ALL):
         super(PublishWindow, self).__init__()
@@ -39,10 +39,10 @@ class PublishWindow(QtGui.QWidget):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Publish')
-        self.menu = QtGui.QComboBox()
+        self.menu = QtWidgets.QComboBox()
         self.menu.addItem('Asset')
         self.menu.addItem('Shot')
-        self.departmentMenu = QtGui.QComboBox()
+        self.departmentMenu = QtWidgets.QComboBox()
         checkout_idx = -1
         for i, dept in enumerate(dept_list):
             self.departmentMenu.addItem(dept)
@@ -50,11 +50,11 @@ class PublishWindow(QtGui.QWidget):
                 checkout_idx = i
         
         self.departmentMenu.activated[str].connect(self.setElementType)
-        self.filePath = QtGui.QLineEdit()
+        self.filePath = QtWidgets.QLineEdit()
         self.filePath.setReadOnly(True)
-        self.label = QtGui.QLabel('What did you change?')
-        self.comment = QtGui.QTextEdit()
-        self.publishBtn = QtGui.QPushButton('Publish')
+        self.label = QtWidgets.QLabel('What did you change?')
+        self.comment = QtWidgets.QTextEdit()
+        self.publishBtn = QtWidgets.QPushButton('Publish')
         self.publishBtn.setEnabled(False)
         
         self.eList.currentItemChanged.connect(self.selectElement)
@@ -66,7 +66,7 @@ class PublishWindow(QtGui.QWidget):
         self.eList.setElement(checkout_body_name)
         
         #set gui layout
-        self.grid = QtGui.QGridLayout(self)
+        self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
         self.grid.addWidget(self.departmentMenu, 0, 0)
         self.grid.addWidget(self.label, 1, 1)
@@ -104,7 +104,7 @@ class PublishWindow(QtGui.QWidget):
             self.close()
         except Exception, e:
             print e
-            error = QtGui.QLineEdit()
+            error = QtWidgets.QLineEdit()
             error.setText(str(e))
             self.grid.addWidget(error, 4, 1, 2, 1)
             traceback.print_stack()
@@ -113,7 +113,7 @@ class PublishWindow(QtGui.QWidget):
         self.finished.emit()
         event.accept()
         
-class ElementList(QtGui.QListWidget):
+class ElementList(QtWidgets.QListWidget):
     def __init__(self, parent):
         super(ElementList, self).__init__()
         self.parent = parent
@@ -145,6 +145,6 @@ class ElementList(QtGui.QListWidget):
         
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
     sys.exit(app.exec_())
