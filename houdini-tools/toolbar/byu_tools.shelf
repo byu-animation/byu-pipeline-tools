@@ -10,5 +10,7 @@
     <memberTool name="rollback"/>
     <memberTool name="assemble"/>
     <memberTool name="publish"/>
+    <memberTool name="inspire"/>
+    <memberTool name="test_geo"/>
   </toolshelf>
 </shelfDocument>
