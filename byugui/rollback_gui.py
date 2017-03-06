@@ -3,16 +3,16 @@
 import sys
 import os
 from os import listdir
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 300
 
-class RollbackWindow(QtGui.QWidget):
+class RollbackWindow(QtWidgets.QWidget):
     
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.Signal()
     
     def __init__(self, element, parent):
         super(RollbackWindow, self).__init__()
@@ -30,17 +30,17 @@ class RollbackWindow(QtGui.QWidget):
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Rollback Manager')
         
-        self.publish_list = QtGui.QListWidget()
+        self.publish_list = QtWidgets.QListWidget()
         self.publish_list.currentItemChanged.connect(self.update_detail_view)
-        self.infoLabel = QtGui.QLabel()
+        self.infoLabel = QtWidgets.QLabel()
         
-        self.rollbackButton = QtGui.QPushButton('Rollback')
+        self.rollbackButton = QtWidgets.QPushButton('Rollback')
         self.rollbackButton.clicked.connect(self.rollback)
-        self.cancelButton = QtGui.QPushButton('Cancel')
+        self.cancelButton = QtWidgets.QPushButton('Cancel')
         self.cancelButton.clicked.connect(self.close)
         
         #set gui layout
-        self.grid = QtGui.QGridLayout(self)
+        self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
         self.grid.addWidget(self.publish_list, 0, 0, 3, 1)
         self.grid.addWidget(self.infoLabel, 0, 1)
@@ -54,7 +54,7 @@ class RollbackWindow(QtGui.QWidget):
         for p in publishes:
             publish = Publish(p[0], p[1], p[2])
             self.publishes = self.publishes + [publish]
-            item = QtGui.QListWidgetItem(publish.timestamp)
+            item = QtWidgets.QListWidgetItem(publish.timestamp)
             self.publish_list.addItem(item)
             
     def update_detail_view(self):
@@ -84,7 +84,7 @@ class Publish:
         self.comment = comment
         
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = RollbackWindow(app)
     sys.exit(app.exec_())
 

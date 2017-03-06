@@ -1,16 +1,18 @@
 from byugui.reference_gui import ReferenceWindow
 from byuam.environment import Department
 import maya.cmds as cmds
-from PyQt4 import QtCore, QtGui
+from PySide2 import QtWidgets
 import maya.OpenMayaUI as omu
 import os
-import sip
 
 maya_reference_dialog = None
 
 def maya_main_window():
-    ptr = omu.MQtUtil.mainWindow()
-    return sip.wrapinstance(long(ptr), QtCore.QObject)
+    """Return Maya's main window"""
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
     
 def post_reference():
     file_paths = maya_reference_dialog.filePaths
@@ -27,7 +29,7 @@ def post_reference():
 
         if empty:
             empty_str = '\n'.join(empty)
-            error_dialog = QtGui.QErrorMessage(maya_main_window())
+            error_dialog = QtWidgets.QErrorMessage(maya_main_window())
             error_dialog.showMessage("The following elements are empty. Nothing has been published to them, so they can't be referenced.\n"+empty_str)
     # if not done:
     #     go()

@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore
 
 import datetime
 import operator
@@ -13,10 +13,10 @@ from byugui import request_email
 REF_WINDOW_WIDTH = 1080
 REF_WINDOW_HEIGHT = 650
 
-class TreeComboBoxItem(QtGui.QComboBox):
+class TreeComboBoxItem(QtWidgets.QComboBox):
 
     def __init__(self, tree_item, column):
-        QtGui.QComboBox.__init__(self)
+        QtWidgets.QComboBox.__init__(self)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.tree_item = tree_item
         self.column = column
@@ -29,21 +29,21 @@ class TreeComboBoxItem(QtGui.QComboBox):
         e.ignore() # do nothing
 
     def paintEvent(self, pe):
-        painter = QtGui.QPainter()
+        painter = QtWidgets.QPainter()
         painter.begin(self)
-        pen = QtGui.QPen(QtCore.Qt.black)
+        pen = QtWidgets.QPen(QtCore.Qt.black)
         pen.setWidth(1)
         pen.setColor
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
         
-        QtGui.QComboBox.paintEvent(self, pe)
+        QtWidgets.QComboBox.paintEvent(self, pe)
 
-class TreeLineEdit(QtGui.QLineEdit):
+class TreeLineEdit(QtWidgets.QLineEdit):
 
     def __init__(self, contents, tree_item, column):
-        QtGui.QLineEdit.__init__(self, contents)
+        QtWidgets.QLineEdit.__init__(self, contents)
         self.tree_item = tree_item
         self.column = column
         self.editingFinished.connect(self._change_item)
@@ -52,52 +52,52 @@ class TreeLineEdit(QtGui.QLineEdit):
         self.tree_item.setText(self.column, self.text())
 
     def paintEvent(self, pe):
-        painter = QtGui.QPainter()
+        painter = QtWidgets.QPainter()
         painter.begin(self)
-        pen = QtGui.QPen(QtCore.Qt.black)
+        pen = QtWidgets.QPen(QtCore.Qt.black)
         pen.setWidth(1)
         pen.setColor
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
         
-        QtGui.QLineEdit.paintEvent(self, pe)
+        QtWidgets.QLineEdit.paintEvent(self, pe)
 
-class TreeLabel(QtGui.QLabel):
+class TreeLabel(QtWidgets.QLabel):
 
     def __init__(self, text=""):
-        QtGui.QLabel.__init__(self, text)
+        QtWidgets.QLabel.__init__(self, text)
         self.setAutoFillBackground(True)
     
     def paintEvent(self, pe):
-        painter = QtGui.QPainter()
+        painter = QtWidgets.QPainter()
         painter.begin(self)
-        painter.setBrush(self.palette().color(QtGui.QPalette.AlternateBase))
-        pen = QtGui.QPen(QtCore.Qt.black)
+        painter.setBrush(self.palette().color(QtWidgets.QPalette.AlternateBase))
+        pen = QtWidgets.QPen(QtCore.Qt.black)
         pen.setWidth(1)
         pen.setColor
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
         
-        QtGui.QLabel.paintEvent(self, pe)
+        QtWidgets.QLabel.paintEvent(self, pe)
 
-class TreeGridDelegate(QtGui.QStyledItemDelegate):
+class TreeGridDelegate(QtWidgets.QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         painter.save()
-        # painter.setPen(option.palette.color(QtGui.QPalette.Text))
+        # painter.setPen(option.palette.color(QtWidgets.QPalette.Text))
         painter.setPen(QtCore.Qt.black)
         painter.drawRect(option.rect)
         painter.restore()
 
-        QtGui.QStyledItemDelegate.paint(self, painter, option, index)
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
 
 
-class TreeDateEdit(QtGui.QWidget):
+class TreeDateEdit(QtWidgets.QWidget):
     
     def __init__(self, date, tree_item, column, parent=None, type='end'):
-        QtGui.QDateEdit.__init__(self, parent)
+        QtWidgets.QDateEdit.__init__(self, parent)
 
         self.tree_item = tree_item
         self.column = column
@@ -116,7 +116,7 @@ class TreeDateEdit(QtGui.QWidget):
 
         self.empty = DateLineEdit(date, self)
 
-        self.layout = QtGui.QVBoxLayout(parent)
+        self.layout = QtWidgets.QVBoxLayout(parent)
         self.layout.addWidget(self.empty)
         self.layout.addWidget(self.dateedit)
 
@@ -149,28 +149,28 @@ class TreeDateEdit(QtGui.QWidget):
     #     return False
 
 
-class TreeDateLineEdit(QtGui.QDateEdit):
+class TreeDateLineEdit(QtWidgets.QDateEdit):
 
     def __init__(self, parent=None):
-        QtGui.QCalendarWidget.__init__(self, parent)
+        QtWidgets.QCalendarWidget.__init__(self, parent)
     
     def wheelEvent(self, e):
         e.ignore() # do nothing
 
 
-class DateLineEdit(QtGui.QLineEdit):
+class DateLineEdit(QtWidgets.QLineEdit):
 
-    clicked = QtCore.pyqtSignal()
+    clicked = QtCore.Signal()
 
     def __init__(self, date="", parent=None):
-        QtGui.QLineEdit.__init__(self, date, parent)
+        QtWidgets.QLineEdit.__init__(self, date, parent)
 
     def focusInEvent(self, event):
-        QtGui.QLineEdit.focusInEvent(self, event)
+        QtWidgets.QLineEdit.focusInEvent(self, event)
         self.clicked.emit()
 
 
-class ElementBrowser(QtGui.QWidget):
+class ElementBrowser(QtWidgets.QWidget):
 
     ASSETS = "Assets"
     SHOTS = "Shots"
@@ -180,37 +180,37 @@ class ElementBrowser(QtGui.QWidget):
 
     @staticmethod
     def dark_palette():
-        palette = QtGui.QPalette()
-        base_color = QtGui.QColor(39,39,39)
-        alt_color = QtGui.QColor(30,30,30)
-        text_color = QtGui.QColor(192,192,192)
-        highlight_color = QtGui.QColor(57,86,115)
+        palette = QtWidgets.QPalette()
+        base_color = QtWidgets.QColor(39,39,39)
+        alt_color = QtWidgets.QColor(30,30,30)
+        text_color = QtWidgets.QColor(192,192,192)
+        highlight_color = QtWidgets.QColor(57,86,115)
         highlight_text_color = QtCore.Qt.white
-        disabled_alt_color = QtGui.QColor(49,49,49)
-        disabled_base_color = QtGui.QColor(40,40,40)
-        disabled_text_color = QtGui.QColor(100,100,100)
-        palette.setColor(QtGui.QPalette.Window, base_color)
-        palette.setColor(QtGui.QPalette.WindowText, text_color)
-        palette.setColor(QtGui.QPalette.Base, base_color)
-        palette.setColor(QtGui.QPalette.AlternateBase, alt_color)
-        palette.setColor(QtGui.QPalette.ToolTipBase, alt_color)
-        palette.setColor(QtGui.QPalette.ToolTipText, text_color)
-        palette.setColor(QtGui.QPalette.Button, base_color)
-        palette.setColor(QtGui.QPalette.ButtonText, text_color)
-        palette.setColor(QtGui.QPalette.Text, text_color)
-        palette.setColor(QtGui.QPalette.Highlight, highlight_color)
-        palette.setColor(QtGui.QPalette.HighlightedText, highlight_text_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Window, disabled_base_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, disabled_text_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Base, disabled_text_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.AlternateBase, disabled_alt_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Button, disabled_base_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, disabled_text_color)
-        palette.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Text, disabled_text_color)
+        disabled_alt_color = QtWidgets.QColor(49,49,49)
+        disabled_base_color = QtWidgets.QColor(40,40,40)
+        disabled_text_color = QtWidgets.QColor(100,100,100)
+        palette.setColor(QtWidgets.QPalette.Window, base_color)
+        palette.setColor(QtWidgets.QPalette.WindowText, text_color)
+        palette.setColor(QtWidgets.QPalette.Base, base_color)
+        palette.setColor(QtWidgets.QPalette.AlternateBase, alt_color)
+        palette.setColor(QtWidgets.QPalette.ToolTipBase, alt_color)
+        palette.setColor(QtWidgets.QPalette.ToolTipText, text_color)
+        palette.setColor(QtWidgets.QPalette.Button, base_color)
+        palette.setColor(QtWidgets.QPalette.ButtonText, text_color)
+        palette.setColor(QtWidgets.QPalette.Text, text_color)
+        palette.setColor(QtWidgets.QPalette.Highlight, highlight_color)
+        palette.setColor(QtWidgets.QPalette.HighlightedText, highlight_text_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.Window, disabled_base_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.WindowText, disabled_text_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.Base, disabled_text_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.AlternateBase, disabled_alt_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.Button, disabled_base_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.ButtonText, disabled_text_color)
+        palette.setColor(QtWidgets.QPalette.Disabled, QtWidgets.QPalette.Text, disabled_text_color)
         return palette
 
     def __init__(self):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.setWindowTitle("Element Browser")
         self.setGeometry(0, 0, REF_WINDOW_WIDTH, REF_WINDOW_HEIGHT)
         self.palette = self.dark_palette()
@@ -219,33 +219,33 @@ class ElementBrowser(QtGui.QWidget):
         # initialize project
         self.project = Project()
         self.user_list = self.project.list_users()
-        self.user_completer = QtGui.QCompleter(self.user_list)
+        self.user_completer = QtWidgets.QCompleter(self.user_list)
 
         #filters
-        self.filter_label = QtGui.QLabel("Filter by: ")
+        self.filter_label = QtWidgets.QLabel("Filter by: ")
 
-        self.dept_filter_label = QtGui.QLabel("Department")
+        self.dept_filter_label = QtWidgets.QLabel("Department")
         self.dept_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.dept_filter = QtGui.QComboBox()
+        self.dept_filter = QtWidgets.QComboBox()
         self.dept_filter.addItem("all")
         for each in Department.ALL:
             self.dept_filter.addItem(each)
         self.dept_list = Department.ALL
 
-        self.type_filter_label = QtGui.QLabel("Asset Type")
+        self.type_filter_label = QtWidgets.QLabel("Asset Type")
         self.type_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.type_filter = QtGui.QComboBox()
+        self.type_filter = QtWidgets.QComboBox()
         self.type_filter.addItem("all")
         for each in AssetType.ALL:
             self.type_filter.addItem(each)
 
-        self.name_filter_label = QtGui.QLabel("Name")
+        self.name_filter_label = QtWidgets.QLabel("Name")
         self.name_filter_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.name_filter = QtGui.QLineEdit()
+        self.name_filter = QtWidgets.QLineEdit()
 
         # menu bar
-        self.menu_bar = QtGui.QMenuBar()
-        self.view_menu = QtGui.QMenu("View")
+        self.menu_bar = QtWidgets.QMenuBar()
+        self.view_menu = QtWidgets.QMenu("View")
         self.menu_bar.addMenu(self.view_menu)
         self.expand_action = self.view_menu.addAction("Expand All")
         self.user_list_action = self.view_menu.addAction("User Directory")
@@ -253,24 +253,24 @@ class ElementBrowser(QtGui.QWidget):
         self.theme_action.setCheckable(True)
 
         # asset/shot menu
-        self.body_menu = QtGui.QComboBox()
+        self.body_menu = QtWidgets.QComboBox()
         self.body_menu.addItem(self.ASSETS)
         self.body_menu.addItem(self.SHOTS)
         self.current_body = self.ASSETS
         self._set_bodies()
 
         # new button
-        self.new_button = QtGui.QPushButton("New")
+        self.new_button = QtWidgets.QPushButton("New")
 
         # refresh button
-        self.refresh_button = QtGui.QPushButton("Refresh")
+        self.refresh_button = QtWidgets.QPushButton("Refresh")
 
         # tree
-        self.tree = QtGui.QTreeWidget()
+        self.tree = QtWidgets.QTreeWidget()
         self.tree.setItemDelegate(TreeGridDelegate(self.tree))
         self.columnCount = 8
         self.tree.setColumnCount(self.columnCount)
-        tree_header = QtGui.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish", "note"])
+        tree_header = QtWidgets.QTreeWidgetItem(["name", "", "assigned", "status", "start", "end", "publish", "note"])
         self.tree.setHeaderItem(tree_header)
         tree_header_view = self.tree.header()
         tree_header_view.resizeSection(4, 120)
@@ -299,7 +299,7 @@ class ElementBrowser(QtGui.QWidget):
         self.update_tree[7] = self.update_note
         
         # status bar
-        self.status_bar = QtGui.QStatusBar()
+        self.status_bar = QtWidgets.QStatusBar()
 
         # connect events
         self.expand_action.triggered.connect(self._expand_all)
@@ -315,10 +315,10 @@ class ElementBrowser(QtGui.QWidget):
         self.type_filter.currentIndexChanged.connect(self._refresh)
 
         # layout
-        layout = QtGui.QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(5)
         layout.setMargin(6)
-        options_layout = QtGui.QGridLayout()
+        options_layout = QtWidgets.QGridLayout()
         options_layout.addWidget(self.body_menu, 0, 0)
         options_layout.addWidget(self.new_button, 0, 1)
         options_layout.addWidget(self.refresh_button, 0, 3)
@@ -326,7 +326,7 @@ class ElementBrowser(QtGui.QWidget):
         options_layout.setColumnMinimumWidth(1, 100)
         options_layout.setColumnMinimumWidth(3, 100)
         options_layout.setColumnStretch(2, 1)
-        filter_layout = QtGui.QGridLayout()
+        filter_layout = QtWidgets.QGridLayout()
         filter_layout.addWidget(self.filter_label, 0, 0)
         filter_layout.addWidget(self.dept_filter_label, 0, 1)
         filter_layout.addWidget(self.dept_filter, 0, 2)
@@ -358,15 +358,15 @@ class ElementBrowser(QtGui.QWidget):
         tree_state = self.tree.blockSignals(True)
         for body in self.bodies:
             if(str(self.name_filter.text()) in body):
-                tree_item = QtGui.QTreeWidgetItem([body])
+                tree_item = QtWidgets.QTreeWidgetItem([body])
                 self.tree.addTopLevelItem(tree_item)
                 tree_flags = tree_item.flags()
                 tree_item.setFlags(tree_flags | QtCore.Qt.ItemIsEditable)
                 # for col in xrange(self.columnCount):
-                #     tree_item.setBackground(col, QtGui.QColor(30,30,30))
+                #     tree_item.setBackground(col, QtWidgets.QColor(30,30,30))
                 body_obj = self.project.get_body(body)
                 self._load_body(body_obj, tree_item)
-                tree_item.addChild(QtGui.QTreeWidgetItem()) # empty item
+                tree_item.addChild(QtWidgets.QTreeWidgetItem()) # empty item
         self.tree.blockSignals(tree_state)
 
     def _load_body(self, body, item):
@@ -410,7 +410,7 @@ class ElementBrowser(QtGui.QWidget):
         item.takeChildren() # clear children
         for dept, element in elements:
             element_obj = body_obj.get_element(dept, element)
-            child_item = QtGui.QTreeWidgetItem()
+            child_item = QtWidgets.QTreeWidgetItem()
             item.addChild(child_item)
             child_item.setFlags(child_item.flags() | QtCore.Qt.ItemIsEditable)
             for col, init in enumerate(self.init_tree):
@@ -433,7 +433,7 @@ class ElementBrowser(QtGui.QWidget):
         if not checked:
             self.palette = self.dark_palette()
         else:
-            self.palette = QtGui.QPalette()
+            self.palette = QtWidgets.QPalette()
         self.setPalette(self.palette)
 
     def _set_bodies(self):
@@ -622,13 +622,13 @@ class ElementBrowser(QtGui.QWidget):
         element.update_notes(str(item.text(column)))
         self.status_bar.clearMessage()
 
-class UserListDialog(QtGui.QDialog):
+class UserListDialog(QtWidgets.QDialog):
     def __init__(self, parent):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.setWindowTitle("User Directory")
         self.setPalette(parent.palette)
         user_count = len(parent.user_list)
-        self.user_grid = QtGui.QTableWidget(user_count, 3, self)
+        self.user_grid = QtWidgets.QTableWidget(user_count, 3, self)
         self.user_grid.verticalHeader().setVisible(False)
         self.user_grid.horizontalHeader().setVisible(False)
 
@@ -641,13 +641,13 @@ class UserListDialog(QtGui.QDialog):
 
         for i, user_tuple in enumerate(self.user_info_list):
             for j, user_data in enumerate(user_tuple):
-                table_item = QtGui.QTableWidgetItem(user_tuple[j])
+                table_item = QtWidgets.QTableWidgetItem(user_tuple[j])
                 table_flags = table_item.flags()
                 table_item.setFlags(table_flags & (~QtCore.Qt.ItemIsEditable))
                 self.user_grid.setItem(i, j, table_item)
         self.user_grid.resizeColumnsToContents()
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.user_grid)
         self.setLayout(self.layout)
 
@@ -658,7 +658,7 @@ class UserListDialog(QtGui.QDialog):
 if __name__ == '__main__':
 
     import sys
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = ElementBrowser()
     window.show()
     sys.exit(app.exec_())
