@@ -2,15 +2,15 @@
 
 import sys
 import os
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from byuam.project import Project
 
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 200
         
-class CreateWindow(QtGui.QTabWidget):
+class CreateWindow(QtWidgets.QTabWidget):
 
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.Signal()
 
     ASSET_INDEX = 0
     SHOT_INDEX = 1
@@ -39,7 +39,7 @@ class CreateWindow(QtGui.QTabWidget):
         self.close()
 
 
-class NewAssetWindow(QtGui.QWidget):
+class NewAssetWindow(QtWidgets.QWidget):
     def __init__(self, element, parent):
         super(NewAssetWindow, self).__init__()
         self.parent = parent
@@ -49,20 +49,20 @@ class NewAssetWindow(QtGui.QWidget):
     def initUI(self):
         #define gui elements
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.label = QtGui.QLabel('Enter the %s name' % self.element)
-        self.textField = QtGui.QLineEdit()
-        self.okBtn = QtGui.QPushButton('Ok')
+        self.label = QtWidgets.QLabel('Enter the %s name' % self.element)
+        self.textField = QtWidgets.QLineEdit()
+        self.okBtn = QtWidgets.QPushButton('Ok')
         self.okBtn.clicked.connect(self.createAsset)
-        self.cancelBtn = QtGui.QPushButton('Cancel')
+        self.cancelBtn = QtWidgets.QPushButton('Cancel')
         self.cancelBtn.clicked.connect(self.parent.close)
         #set image
-        self.img = QtGui.QLabel()
+        self.img = QtWidgets.QLabel()
         pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/taijitu.jpg')
         scaled = pixmap.scaledToWidth(self.size().width()/3)
         self.img.setPixmap(scaled)
         
         #set gui layout
-        grid = QtGui.QGridLayout(self)
+        grid = QtWidgets.QGridLayout(self)
         self.setLayout(grid)
         grid.addWidget(self.img, 0, 0)
         grid.addWidget(self.label, 0, 1, 0, 2)
@@ -92,6 +92,6 @@ class NewAssetWindow(QtGui.QWidget):
     
         
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = CreateWindow()
     sys.exit(app.exec_())

@@ -3,7 +3,7 @@
 import sys
 import os
 import operator
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.body import Asset
 from byuam.environment import Department, AssetType
@@ -11,9 +11,9 @@ from byuam.environment import Department, AssetType
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 
-class ReferenceWindow(QtGui.QWidget):
+class ReferenceWindow(QtWidgets.QWidget):
     
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.Signal()
     
     def __init__(self, parent, src, dept_list=Department.ALL):
         super(ReferenceWindow, self).__init__()
@@ -29,31 +29,31 @@ class ReferenceWindow(QtGui.QWidget):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Taijitu Reference Manager')
-        self.departmentMenu = QtGui.QComboBox()
+        self.departmentMenu = QtWidgets.QComboBox()
         for i in dept_list:
             self.departmentMenu.addItem(i)
         self.departmentMenu.activated[str].connect(self.setElementType)
         
         self.assetList = AssetListWindow(self)
         for asset in self.project.list_assets():
-            item = QtGui.QListWidgetItem(asset)
+            item = QtWidgets.QListWidgetItem(asset)
             self.assetList.addItem(item)
 
-        self.typeFilterLabel = QtGui.QLabel("Type Filter")
+        self.typeFilterLabel = QtWidgets.QLabel("Type Filter")
         self.typeFilterLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.typeFilter = QtGui.QComboBox()
+        self.typeFilter = QtWidgets.QComboBox()
         self.typeFilter.addItem("all")
         for i in AssetType.ALL:
             self.typeFilter.addItem(i)
             
         self.typeFilter.currentIndexChanged.connect(self.setElementType)
-        self.referenceButton = QtGui.QPushButton('Reference')
+        self.referenceButton = QtWidgets.QPushButton('Reference')
         self.referenceButton.clicked.connect(self.createReference)
-        self.cancelButton = QtGui.QPushButton('Cancel')
+        self.cancelButton = QtWidgets.QPushButton('Cancel')
         self.cancelButton.clicked.connect(self.close)
             
         #set gui layout
-        self.grid = QtGui.QGridLayout(self)
+        self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
         self.grid.addWidget(self.departmentMenu, 0, 0)
         self.grid.addWidget(self.assetList, 1, 0, 1, 0)
@@ -105,7 +105,7 @@ class ReferenceWindow(QtGui.QWidget):
         self.finished.emit()
         event.accept()
         
-class AssetListWindow(QtGui.QListWidget):
+class AssetListWindow(QtWidgets.QListWidget):
     def __init__(self, parent):
         super(AssetListWindow, self).__init__()
         self.parent = parent
@@ -114,11 +114,11 @@ class AssetListWindow(QtGui.QListWidget):
         self.initUI()
         
     def initUI(self):
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         
         
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = ReferenceWindow(app, None)
     sys.exit(app.exec_())
 

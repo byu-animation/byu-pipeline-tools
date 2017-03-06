@@ -2,16 +2,17 @@
 
 import sys
 import os
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 from byuam.project import Project
 from byuam.environment import Department, Environment
+
 
 WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 600
         
-class CheckoutWindow(QtGui.QWidget):
+class CheckoutWindow(QtWidgets.QWidget):
 
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.Signal()
 
     def __init__(self, parent, dept_list=Department.ALL):
         super(CheckoutWindow, self).__init__()
@@ -24,27 +25,27 @@ class CheckoutWindow(QtGui.QWidget):
         #define gui elements
         self.resize(WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Checkout')
-        self.dept_tabs = QtGui.QTabWidget()
+        self.dept_tabs = QtWidgets.QTabWidget()
         self.dept_list = dept_list
         self.result = None
         #create tabs
         for dept in dept_list:
             tab = DepartmentTab(self)
             self.dept_tabs.addTab(tab, dept)
-            tab_layout = QtGui.QHBoxLayout()
-            element_list = QtGui.QListWidget()
-            commentBox = QtGui.QTextEdit()
+            tab_layout = QtWidgets.QHBoxLayout()
+            element_list = QtWidgets.QListWidget()
+            commentBox = QtWidgets.QTextEdit()
             commentBox.setReadOnly(True)
             tab.commentBox = commentBox
 				
             if dept in Department.FRONTEND:
                 for asset in self.project.list_assets():
-                    item = QtGui.QListWidgetItem(asset)
+                    item = QtWidgets.QListWidgetItem(asset)
                     element_list.addItem(item)
                     element_list.currentItemChanged.connect(self.set_current_item)
             elif dept in Department.BACKEND:
                 for shot in self.project.list_shots():
-                    item = QtGui.QListWidgetItem(shot)
+                    item = QtWidgets.QListWidgetItem(shot)
                     element_list.addItem(item)
                     element_list.currentItemChanged.connect(self.set_current_item)
             tab_layout.addWidget(element_list)
@@ -52,23 +53,23 @@ class CheckoutWindow(QtGui.QWidget):
             tab.setLayout(tab_layout)
             
         #create buttons
-        self.checkout_button = QtGui.QPushButton('Checkout')
+        self.checkout_button = QtWidgets.QPushButton('Checkout')
         self.checkout_button.clicked.connect(self.checkout)
-        self.cancel_button = QtGui.QPushButton('Cancel')
+        self.cancel_button = QtWidgets.QPushButton('Cancel')
         self.cancel_button.clicked.connect(self.close)    
 		
         #create button layout
-        button_layout = QtGui.QHBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(self.checkout_button)
         button_layout.addWidget(self.cancel_button)
 
-        self.img = QtGui.QLabel()
+        self.img = QtWidgets.QLabel()
         pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/taijitu.jpg')
         scaled = pixmap.scaledToWidth(self.size().width())
         self.img.setPixmap(scaled)
 
         #create main layout
-        main_layout = QtGui.QVBoxLayout()
+        main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(main_layout)
         main_layout.addWidget(self.img)
         main_layout.setSpacing(5)
@@ -115,13 +116,13 @@ class CheckoutWindow(QtGui.QWidget):
         self.finished.emit()
         event.accept()
         
-class DepartmentTab(QtGui.QWidget):
+class DepartmentTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super(DepartmentTab, self).__init__()
         self.parent = parent
         self.commentBox = None
         
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = CheckoutWindow(app)
     sys.exit(app.exec_())

@@ -1,12 +1,11 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import *
 
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 from pymel.core import *
 # import utilities as amu #asset manager utilities
 import os
-import sip
 import byuam
 from byuam.environment import Environment
 from byuam.project import Project
@@ -15,8 +14,11 @@ WINDOW_WIDTH = 330
 WINDOW_HEIGHT = 300
 
 def maya_main_window():
-    ptr = omu.MQtUtil.mainWindow()
-    return sip.wrapinstance(long(ptr), QObject)
+    """Return Maya's main window"""
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
 
 class AlembicExportDialog(QDialog):
     def __init__(self, parent=maya_main_window()):
@@ -58,8 +60,10 @@ class AlembicExportDialog(QDialog):
 
     def create_connections(self):
         #Connect the buttons
-        self.connect(self.export_button, SIGNAL('clicked()'), self.export_alembic)
-        self.connect(self.cancel_button, SIGNAL('clicked()'), self.close_dialog)
+        #self.connect(self.export_button, SIGNAL('clicked()'), self.export_alembic)
+        #self.connect(self.cancel_button, SIGNAL('clicked()'), self.close_dialog)
+        self.export_button.clicked.connect(self.export_alembic)
+        self.cancel_button.clicked.connect(self.close_dialog)
 
     def create_export_list(self):
         #Remove all items from the list before repopulating
@@ -73,7 +77,7 @@ class AlembicExportDialog(QDialog):
             item.setText(ref)
             self.selection_list.addItem(item)
 
-        self.selection_list.sortItems(0)
+        self.selection_list.sortItems()
 
     def getLoadedReferences(self):
         references = cmds.ls(references=True)

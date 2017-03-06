@@ -1,9 +1,8 @@
 from byuam import Department
 from byugui.publish_gui import PublishWindow
-from PyQt4 import QtCore
+from PySide2 import QtWidgets
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
-import sip
 import alembic_static_exporter
 import os
 import alembic_exporter
@@ -11,8 +10,11 @@ import alembic_exporter
 maya_publish_dialog = None
 
 def maya_main_window():
-    ptr = omu.MQtUtil.mainWindow()
-    return sip.wrapinstance(long(ptr), QtCore.QObject)
+    """Return Maya's main window"""
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
 
 def post_publish():
     element = maya_publish_dialog.result
