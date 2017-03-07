@@ -2,16 +2,18 @@ from byugui.rollback_gui import RollbackWindow
 from byuam.environment import Department
 from byuam.project import Project
 import maya.cmds as cmds
-from PyQt4 import QtCore
+from PySide2 import QtWidgets
 import maya.OpenMayaUI as omu
-import sip
 import os
 
 maya_rollback_dialog = None
 
 def maya_main_window():
-    ptr = omu.MQtUtil.mainWindow()
-    return sip.wrapinstance(long(ptr), QtCore.QObject)
+    """Return Maya's main window"""
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
     
 def rollback():
     filepath = maya_rollback_dialog.result
