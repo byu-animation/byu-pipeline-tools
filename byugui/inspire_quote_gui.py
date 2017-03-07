@@ -6,8 +6,6 @@ import traceback
 import json
 import random
 from PyQt4 import QtGui, QtCore
-from byuam.project import Project
-from byuam.environment import Environment, Department, Status
 
 WINDOW_WIDTH = 400
 WINDOW_HEIGHT = 200
@@ -16,11 +14,8 @@ class QuoteWindow(QtGui.QWidget):
 
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self):
         super(QuoteWindow, self).__init__()
-        self.environment = Environment()
-        self.project = Project()
-        self.parent = parent
         quote_json = file(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/inspire-quotes.json')
         self.quoteData = json.loads(quote_json.read())['quotes']
         self.initUI()
