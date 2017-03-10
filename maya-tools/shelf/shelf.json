@@ -38,7 +38,7 @@
             "python_file":"reference.py"
         }, {
             "icon":"brent.xpm",
-            "annotation":"Get an inspirational quote",
+            "annotation":"Inspirational quote of the day!",
             "python_file":"inspire_quote.py"
         }, {
             "icon":"gnome.xpm",
