@@ -1,7 +1,7 @@
 # Author: Ben DeMann
 
 from byugui.inspire_quote_gui import QuoteWindow
-from PyQt4 import QtCore
+from PySide2 import QtWidgets
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 import sip

@@ -5,14 +5,14 @@ import os
 import traceback
 import json
 import random
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtWidgets, QtCore, QtGui
 
 WINDOW_WIDTH = 400
 WINDOW_HEIGHT = 200
-    
-class QuoteWindow(QtGui.QWidget):
 
-    finished = QtCore.pyqtSignal()
+class QuoteWindow(QtWidgets.QWidget):
+
+    finished = QtCore.Signal()
 
     def __init__(self):
         super(QuoteWindow, self).__init__()
@@ -24,31 +24,31 @@ class QuoteWindow(QtGui.QWidget):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Inspirational Quotes')
-        
-        self.quote = QtGui.QTextEdit()
+
+        self.quote = QtWidgets.QTextEdit()
         self.quote.setReadOnly(True)
-        self.img = QtGui.QLabel()
-        self.returnBtn = QtGui.QPushButton('Return to Work')
+        self.img = QtWidgets.QLabel()
+        self.returnBtn = QtWidgets.QPushButton('Return to Work')
         self.returnBtn.setEnabled(True)
-        self.moreBtn = QtGui.QPushButton('Be More Inspired')
+        self.moreBtn = QtWidgets.QPushButton('Be More Inspired')
         self.moreBtn.setEnabled(True)
-        
+
         self.returnBtn.clicked.connect(self.close)
-	self.moreBtn.clicked.connect(self.populateQuote)
+        self.moreBtn.clicked.connect(self.populateQuote)
 
         self.populateQuote()
-        
+
         #set gui layout
-        self.grid = QtGui.QGridLayout(self)
+        self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
-  
+
         self.grid.addWidget(self.img, 0, 0)
         self.grid.addWidget(self.quote, 0, 1)
         self.grid.addWidget(self.moreBtn, 1, 0)
         self.grid.addWidget(self.returnBtn, 1, 1)
-        
+
         self.show()
-    
+
     def getQuote(self):
         index = random.randrange(0,len(self.quoteData))
         return self.quoteData[index]
@@ -68,6 +68,6 @@ class QuoteWindow(QtGui.QWidget):
         event.accept()
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
     sys.exit(app.exec_())

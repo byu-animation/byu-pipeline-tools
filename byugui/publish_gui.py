@@ -9,7 +9,7 @@ from byuam.environment import Environment, Department, Status
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
-    
+
 class PublishWindow(QtWidgets.QWidget):
 
     finished = QtCore.Signal()
@@ -25,7 +25,7 @@ class PublishWindow(QtWidgets.QWidget):
         self.elementType = None
         self.initUI(dept_list)
         self.published = False
-        
+
     def initUI(self, dept_list):
         #load checkout information
         src_dir = os.path.dirname(self.src)
@@ -48,17 +48,17 @@ class PublishWindow(QtWidgets.QWidget):
             self.departmentMenu.addItem(dept)
             if dept==checkout_dept:
                 checkout_idx = i
-        
+
         self.departmentMenu.activated[str].connect(self.setElementType)
         self.filePath = QtWidgets.QLineEdit()
         self.filePath.setReadOnly(True)
-        self.label = QtGui.QLabel('What did you change?')
-        self.comment = QtGui.QTextEdit()
-        self.lastPublish = QtGui.QTextEdit()
+        self.label = QtWidgets.QLabel('What did you change?')
+        self.comment = QtWidgets.QTextEdit()
+        self.lastPublish = QtWidgets.QTextEdit()
         self.lastPublish.setReadOnly(True)
-        self.publishBtn = QtGui.QPushButton('Publish')
+        self.publishBtn = QtWidgets.QPushButton('Publish')
         self.publishBtn.setEnabled(False)
-        
+
         self.eList.currentItemChanged.connect(self.selectElement)
         self.publishBtn.clicked.connect(self.publish)
 
@@ -66,7 +66,7 @@ class PublishWindow(QtWidgets.QWidget):
             self.departmentMenu.setCurrentIndex(checkout_idx)
         self.setElementType()
         self.eList.setElement(checkout_body_name)
-        
+
         #set gui layout
         self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
@@ -79,9 +79,9 @@ class PublishWindow(QtWidgets.QWidget):
         self.grid.addWidget(self.eList, 1, 0, 3, 1)
         self.grid.addWidget(self.filePath, 4, 0)
         self.grid.addWidget(self.publishBtn, 4, 1)
-        
+
         self.show()
-        
+
     def setElementType(self):
         department = str(self.departmentMenu.currentText())
         if department in Department.FRONTEND:
@@ -89,7 +89,7 @@ class PublishWindow(QtWidgets.QWidget):
         else:
             self.elementType = 'Shot'
         self.eList.refreshList(self.elementType)
-        
+
     def selectElement(self):
         currentItem = self.eList.currentItem()
         if currentItem is not None:
@@ -97,7 +97,7 @@ class PublishWindow(QtWidgets.QWidget):
            self.publishBtn.setEnabled(True)
 
            current_dept = str(self.departmentMenu.currentText())
-           
+
            asset_obj = self.project.get_body(str(currentItem.text()))
            element_obj = asset_obj.get_element(current_dept)
            last_publish = element_obj.get_last_publish()
@@ -113,7 +113,7 @@ class PublishWindow(QtWidgets.QWidget):
         try:
             body = self.project.get_body(str(self.filePath.text()))
             element = body.get_element(str(self.departmentMenu.currentText()))
-        
+
             self.user = self.environment.get_current_username()
             self.comment = str(self.comment.toPlainText())
             self.result = element
@@ -129,26 +129,26 @@ class PublishWindow(QtWidgets.QWidget):
     def closeEvent(self, event):
         self.finished.emit()
         event.accept()
-        
+
 class ElementList(QtWidgets.QListWidget):
     def __init__(self, parent):
         super(ElementList, self).__init__()
         self.parent = parent
         self.project = Project()
         self.elements = self.project.list_assets()
-        self.initUI()       
-        
+        self.initUI()
+
     def initUI(self):
         #define gui elements
         self.refreshList('Asset')
-            
+
     #Update the list based on the input element type
     def refreshList(self, element):
         if element == 'Asset':
             self.elements = self.project.list_assets()
         else:
             self.elements = self.project.list_shots()
-            
+
         self.clear()
         for e in self.elements:
             self.addItem(e)
@@ -159,7 +159,7 @@ class ElementList(QtWidgets.QListWidget):
             if str(eItem.text())==element:
                 self.setCurrentRow(idx)
                 break
-        
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
