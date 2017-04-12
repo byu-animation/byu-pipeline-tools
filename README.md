@@ -1,7 +1,6 @@
-#Asset Management Tools for BYU Animation
+# Asset Management Tools for BYU Animation
 
 ## Installation
----
 To setup a project:
 
 1. Clone the project into the desired directory and navigate into the byu-pipeline-tools directory.
@@ -30,7 +29,6 @@ It would be nice to not have to change that but I don't really know how. Everybo
 1. Let the artist have at it. They will let you know if anything is broken.
 
 ## Explanation of All the Files
----
 ### app-launch-scripts
 Here lies all of of the scripts that load in the custom tools and launches the software. Most of them will be discussed in more detail in the basic overview of the tools.
 #### project_env.sh
@@ -50,7 +48,6 @@ I don't know what is in here or why we have it here.
 These will be discussed in the next section.
 
 ## Basic Overview of the Tools
----
 ### Maya
 All of the Maya tools are located in maya-tools/. When project_maya.sh launches Maya, Maya will look in the maya-tools/shelf/shelf.json for how to make the Maya shelf for the BYU tools.
 
@@ -85,6 +82,5 @@ To add a tool to Nuke:
 The Project Browser give a way to easily create and manage all of the assets. Here you can make assignments and set due dates.
 
 ## Notes
----
 * For the gui elements use PySide2 and a little PyQt
 * These tools are designed for Linux. They are not guaranteed to work on any other operation system.
