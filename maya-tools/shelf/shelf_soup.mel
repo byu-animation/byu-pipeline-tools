@@ -14,6 +14,7 @@ global proc shelf_soup () {
         -preventOverride 0
         -annotation "nodes" 
         -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
         -labelOffset 0
         -rotation 0
@@ -81,6 +82,7 @@ global proc shelf_soup () {
         -preventOverride 0
         -annotation "tools" 
         -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
         -labelOffset 0
         -rotation 0
@@ -122,6 +124,7 @@ global proc shelf_soup () {
         -preventOverride 0
         -annotation "connect" 
         -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
         -align "center" 
         -labelOffset 0
         -rotation 0

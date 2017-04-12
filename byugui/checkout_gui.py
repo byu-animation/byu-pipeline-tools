@@ -9,7 +9,7 @@ from byuam.environment import Department, Environment
 
 WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 600
-        
+
 class CheckoutWindow(QtWidgets.QWidget):
 
     finished = QtCore.Signal()
@@ -20,7 +20,7 @@ class CheckoutWindow(QtWidgets.QWidget):
         self.project = Project()
         self.environment = Environment()
         self.initUI(dept_list)
-        
+
     def initUI(self, dept_list):
         #define gui elements
         self.resize(WINDOW_WIDTH,WINDOW_HEIGHT)
@@ -37,7 +37,7 @@ class CheckoutWindow(QtWidgets.QWidget):
             commentBox = QtWidgets.QTextEdit()
             commentBox.setReadOnly(True)
             tab.commentBox = commentBox
-				
+
             if dept in Department.FRONTEND:
                 for asset in self.project.list_assets():
                     item = QtWidgets.QListWidgetItem(asset)
@@ -51,20 +51,20 @@ class CheckoutWindow(QtWidgets.QWidget):
             tab_layout.addWidget(element_list)
             tab_layout.addWidget(commentBox)
             tab.setLayout(tab_layout)
-            
+
         #create buttons
         self.checkout_button = QtWidgets.QPushButton('Checkout')
         self.checkout_button.clicked.connect(self.checkout)
         self.cancel_button = QtWidgets.QPushButton('Cancel')
-        self.cancel_button.clicked.connect(self.close)    
-		
+        self.cancel_button.clicked.connect(self.close)
+
         #create button layout
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(self.checkout_button)
         button_layout.addWidget(self.cancel_button)
 
         self.img = QtWidgets.QLabel()
-        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/taijitu.jpg')
+        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/film-banner.jpg')
         scaled = pixmap.scaledToWidth(self.size().width())
         self.img.setPixmap(scaled)
 
@@ -76,16 +76,16 @@ class CheckoutWindow(QtWidgets.QWidget):
         main_layout.setMargin(6)
         main_layout.addWidget(self.dept_tabs)
         main_layout.addLayout(button_layout)
-            
+
         self.show()
-            
+
     def set_current_item(self, index):
         current_dept = self.dept_list[self.dept_tabs.currentIndex()]
         if current_dept in Department.FRONTEND:
             self.current_item = str(index.text())
         elif current_dept in Department.BACKEND:
             self.current_item = str(index.text())
-        
+
         asset_obj = self.project.get_body(self.current_item)
         element_obj = asset_obj.get_element(current_dept)
         last_publish = element_obj.get_last_publish()
@@ -96,7 +96,7 @@ class CheckoutWindow(QtWidgets.QWidget):
             last_publish_comment = "No publishes for this element"
         currentTab = self.dept_tabs.currentWidget()
         currentTab.commentBox.setText(last_publish_comment)
-            
+
     def checkout(self):
         """
         Checks out the currently selected item
@@ -110,18 +110,18 @@ class CheckoutWindow(QtWidgets.QWidget):
         if element_path != None:
             self.result = element_path
             self.close()
-            
+
 
     def closeEvent(self, event):
         self.finished.emit()
         event.accept()
-        
+
 class DepartmentTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super(DepartmentTab, self).__init__()
         self.parent = parent
         self.commentBox = None
-        
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     ex = CheckoutWindow(app)
