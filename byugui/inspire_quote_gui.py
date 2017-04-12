@@ -14,8 +14,9 @@ class QuoteWindow(QtWidgets.QWidget):
 
     finished = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, parent):
         super(QuoteWindow, self).__init__()
+        self.parent = parent
         quote_json = file(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/inspire-quotes.json')
         self.quoteData = json.loads(quote_json.read())['quotes']
         self.initUI()

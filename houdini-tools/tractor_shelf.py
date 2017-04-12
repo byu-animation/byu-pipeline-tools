@@ -1,4 +1,4 @@
-from PyQt4.QtGui import *
+from PySide2 import QtGui, QtWidgets, QtCore
 import pyqt_houdini
 from TrHttpRPC import TrHttpRPC
 import getpass
@@ -228,7 +228,7 @@ def go():
 	    if shadow_checkbox > 0:
                 mantra_nodes.append(node.node("dusk_shadow"))
             print "Size of mantra_nodes: ", len(mantra_nodes)
-            
+
 
     # No valid nodes, display error message
     if (len(mantra_nodes) == 0):

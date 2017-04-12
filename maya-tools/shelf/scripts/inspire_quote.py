@@ -14,6 +14,6 @@ def maya_main_window():
     return sip.wrapinstance(long(ptr), QtCore.QObject)
 
 def go():
-    #parent = maya_main_window()
+    parent = maya_main_window()
     global maya_inspire_dialog
-    maya_inspire_dialog = QuoteWindow()
+    maya_inspire_dialog = QuoteWindow(parent)

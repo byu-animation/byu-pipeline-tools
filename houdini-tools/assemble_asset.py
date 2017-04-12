@@ -1,7 +1,7 @@
 import hou
 import os
 # import pyqt_houdini
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtGui, QtWidgets, QtCore
 
 from byuam import Department, Project
 from byugui import CheckoutWindow
@@ -12,7 +12,7 @@ def assemble_hda():
     project = Project()
     username = project.get_current_username()
     asset = project.get_asset(asset_name)
-    
+
     assembly = asset.get_element(Department.ASSEMBLY)
     checkout_file = assembly.checkout(username)
 
@@ -49,9 +49,7 @@ def go():
     #     app = QtGui.QApplication(['houdini'])
     global checkout_window
     checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.ASSEMBLY])
-    checkout_window.finished.connect(assemble_hda)    
+    checkout_window.finished.connect(assemble_hda)
 
     # asset_name = 'hello_world'
     # asset = project.get_asset(asset_name)
-    
-    

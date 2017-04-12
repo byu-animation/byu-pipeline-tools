@@ -1,7 +1,7 @@
 # Author: Trevor Barrus
 import hou
 import os
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtGui, QtWidgets, QtCore
 from byugui import CheckoutWindow
 
 from byuam import Department, Project, Environment, Element
@@ -17,12 +17,12 @@ def checkout_shot():
             hou.hipFile.save()
         else:
             hou.hipFile.load(filepath)
-        
+
 def go():
     global checkout_window
     project = Project()
     environment = Environment()
-    
+
     nodes = hou.selectedNodes()
     if len(nodes) == 1:
         #if selected node is digital asset
@@ -33,12 +33,12 @@ def go():
             asset_name = asset_name[:index]
             src = nodes[0].type().definition().libraryFilePath()
             current_user = environment.get_current_username()
-            
+
             if asset_name in project.list_assets():
                 body = project.get_asset(asset_name)
-                
+
             if os.path.exists(src):
-                if body is not None: 
+                if body is not None:
                     if Element.DEFAULT_NAME in body.list_elements(Department.ASSEMBLY):
                         element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
                         element_path = element.checkout(current_user)
@@ -46,9 +46,9 @@ def go():
                         hou.hda.installFile(element_path)
                         asset.allowEditingOfContents()
                         hou.ui.displayMessage("Checkout Successful!", title='Success!')
-            
+
     elif len(nodes) > 1:
         hou.ui.displayMessage("Only one node can be selected for checkout")
     else:
-        checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])    
+        checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
         checkout_window.finished.connect(checkout_shot)

@@ -1,7 +1,7 @@
 #Author: Trevor Barrus
 import hou
 import os
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtGui, QtWidgets, QtCore
 from byugui import RollbackWindow
 
 from byuam import Project, Department, Environment
@@ -14,13 +14,13 @@ def rollback_hda():
         dst = os.path.join(environment.get_assembly_dir(), asset_name)
         hou.hda.installFile(dst)
         hou.ui.displayMessage("Rollback successful")
-        
+
 def rollback_shot():
     filepath = rollback_window.result
     if filepath is not None:
         hou.hipFile.load(filepath)
         hou.ui.displayMessage("Rollback successful")
-        
+
 def go():
     global rollback_window
     global src
