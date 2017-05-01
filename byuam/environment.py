@@ -30,7 +30,7 @@ class Environment:
 
     def __init__(self):
         """
-        Creates an Environment instance from data in the .project file in the directory defined by the 
+        Creates an Environment instance from data in the .project file in the directory defined by the
         environment variable $BYU_PROJECT_DIR. If this variable is not defined or the .project file does
         not exist inside it, an EnvironmentError is raised. Creates the workspace for the current user
         if it doesn't already exist.
@@ -38,7 +38,7 @@ class Environment:
         self._project_dir = os.getenv(Environment.PROJECT_ENV)
         if self._project_dir is None:
             raise EnvironmentError(Environment.PROJECT_ENV + " is not defined")
-        
+
         project_file = os.path.join(self._project_dir, Environment.PIPELINE_FILENAME)
         if not os.path.exists(project_file):
             raise EnvironmentError(project_file + " does not exist")
@@ -128,14 +128,14 @@ class Environment:
         """
         if(Environment.EMAIL_ADDRESS in self._datadict and Environment.EMAIL_PASSWORD in self._datadict):
             pipeline_io.sendmail(dst_addresses, subject, message,
-                                 self._datadict[Environment.EMAIL_ADDRESS], 
-                                 self._datadict[Environment.EMAIL_PASSWORD], 
+                                 self._datadict[Environment.EMAIL_ADDRESS],
+                                 self._datadict[Environment.EMAIL_PASSWORD],
                                  self.get_project_name()+" Support")
 
 
 class User:
     """
-    The User class holds information about a user, this will be used a lot more for the web site 
+    The User class holds information about a user, this will be used a lot more for the web site
     """
 
     NAME = "name"
@@ -159,23 +159,23 @@ class User:
         if not os.path.exists(self._pipeline_file):
             raise EnvironmentError("invalid user file: " + self._pipeline_file + " does not exist")
         self._datadict = pipeline_io.readfile(self._pipeline_file)
-    
+
     def get_username(self):
-        return self._datadict[self.CSID]    
-    
+        return self._datadict[self.CSID]
+
     def get_fullname(self):
         return self._datadict[self.NAME]
-        
+
     def get_email(self):
         return self._datadict[self.EMAIL]
 
     def has_email(self):
         return self._datadict[self.EMAIL] != ""
-        
-    def update_email(self, new_email): 
+
+    def update_email(self, new_email):
         self._datadict[self.EMAIL] =  new_email
         pipeline_io.writefile(self._pipeline_file, self._datadict)
-        
+
     def update_fullname(self, new_name):
         self._datadict[self.NAME] = new_name
         pipeline_io.writefile(self._pipeline_file, self._datadict)
@@ -199,8 +199,8 @@ class Department:
     LIGHTING = "lighting"
     RENDER = "render"
     COMP = "comp"
-    FRONTEND = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY]
-    BACKEND = [LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
+    ASSET_DEPTS = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY]
+    SHOT_DEPTS = [LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
     ALL = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY, LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
 
 
@@ -242,4 +242,3 @@ class AssetType:
     PROP = "prop"
     ACCESSORY = "accessory"
     ALL = [CHARACTER, SET, PROP, ACCESSORY]
-

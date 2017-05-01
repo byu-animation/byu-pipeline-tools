@@ -84,7 +84,7 @@ class PublishWindow(QtWidgets.QWidget):
 
     def setElementType(self):
         department = str(self.departmentMenu.currentText())
-        if department in Department.FRONTEND:
+        if department in Department.ASSET_DEPTS:
             self.elementType = 'Asset'
         else:
             self.elementType = 'Shot'

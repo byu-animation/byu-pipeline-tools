@@ -6,7 +6,7 @@ from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 
 def simpleBlast(startFrame, endFrame):
-	
+
 	src_dir = os.path.dirname(mc.file(q=True, sceneName=True))
 	project = Project()
 	playblast_element = project.get_checkout_element(src_dir)
@@ -20,7 +20,7 @@ def simpleBlast(startFrame, endFrame):
 		playblast_dept = playblast_element.get_department()
 		playblast_body_name = playblast_element.get_parent()
 	name = os.path.join(playblast_dir, playblast_filename)
-	
+
 	currentPanel = mc.getPanel(wf=True)
 	currentCamera = mc.modelEditor(currentPanel, q=True, camera=True)
 
@@ -101,7 +101,7 @@ def decodeFileName():
 	Decodes the base name of the folder to get the asset name, assetType, and asset directory.
 	@return: Array = [assetName:- the asset name, assetType:- the asset Type, version:- the asset version]
 	'''
-	# get the encoded folder name from the filesystem        
+	# get the encoded folder name from the filesystem
 	encodedFolderName = os.path.basename(os.path.dirname(mc.file(q=True, sceneName=True)))
 
 	# split the string based on underscore delimiters
@@ -124,7 +124,7 @@ def go():
 		showErrorDialog()
 		return
 
-	if not assetType in Department.BACKEND:
+	if not assetType in Department.SHOT_DEPTS:
 		showErrorDialog()
 		return
 

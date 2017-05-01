@@ -36,14 +36,12 @@ class CheckoutWindow(QtWidgets.QWidget):
 
         #create Tabs
         self.createTabs()
-        print "Tabs have been created"
 
         #create buttons
         self.checkout_button = QtWidgets.QPushButton('Checkout')
         self.checkout_button.clicked.connect(self.checkout)
         self.cancel_button = QtWidgets.QPushButton('Cancel')
         self.cancel_button.clicked.connect(self.close)
-        print "Buttons have been created"
 
         #create button layout
         button_layout = QtWidgets.QHBoxLayout()
@@ -64,7 +62,6 @@ class CheckoutWindow(QtWidgets.QWidget):
         main_layout.addWidget(self.dept_tabs)
         main_layout.addWidget(self.show_published)
         main_layout.addLayout(button_layout)
-        print "Layout have been created"
 
         self.show()
 
@@ -75,7 +72,6 @@ class CheckoutWindow(QtWidgets.QWidget):
         self.dept_tabs.clear()
         #create tabs
         for dept in self.dept_list:
-            print "we are looking at " + dept
             tab = DepartmentTab(self)
             self.dept_tabs.addTab(tab, dept)
             tab_layout = QtWidgets.QHBoxLayout()
@@ -84,17 +80,15 @@ class CheckoutWindow(QtWidgets.QWidget):
             commentBox.setReadOnly(True)
             tab.commentBox = commentBox
 
-            if dept in Department.FRONTEND:
+            if dept in Department.ASSET_DEPTS:
                 for asset in self.project.list_assets():
                     if not self.show_published.isChecked() or self.hasPreviousPublish(asset, dept):
-                        print "We passed the first check"
                         item = QtWidgets.QListWidgetItem(asset)
                         element_list.addItem(item)
                         element_list.currentItemChanged.connect(self.set_current_item)
-            elif dept in Department.BACKEND:
+            elif dept in Department.SHOT_DEPTS:
                 for shot in self.project.list_shots():
                     if not self.show_published.isChecked() or self.hasPreviousPublish(shot, dept):
-                        print "We passed the second check"
                         item = QtWidgets.QListWidgetItem(shot)
                         element_list.addItem(item)
                         element_list.currentItemChanged.connect(self.set_current_item)
@@ -106,10 +100,7 @@ class CheckoutWindow(QtWidgets.QWidget):
         self.dept_tabs.setCurrentIndex(currIndex)
 
     def hasPreviousPublish(self, body, department):
-        print body
-        print department
         asset_obj = self.project.get_body(body)
-        print asset_obj
         element_obj = asset_obj.get_element(department)
         last_publish = element_obj.get_last_publish()
         if last_publish is None:
@@ -122,9 +113,9 @@ class CheckoutWindow(QtWidgets.QWidget):
 
     def set_current_item(self, index):
         current_dept = self.dept_list[self.dept_tabs.currentIndex()]
-        if current_dept in Department.FRONTEND:
+        if current_dept in Department.ASSET_DEPTS:
             self.current_item = str(index.text())
-        elif current_dept in Department.BACKEND:
+        elif current_dept in Department.SHOT_DEPTS:
             self.current_item = str(index.text())
 
         asset_obj = self.project.get_body(self.current_item)

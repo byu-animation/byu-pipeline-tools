@@ -64,12 +64,12 @@ class TestBody(TestAssetManager):
 
 	def test_body(self):
 
-		# test shots		
+		# test shots
 		for i in xrange(self.create_count):
 			self.assertEquals(self.shots[i].get_name(), self.shot_names[i])
 			shotpath = os.path.join(self.shots_dir, self.shot_names[i])
 			self.assertTrue(os.path.exists(os.path.join(shotpath, Shot.PIPELINE_FILENAME)))
-			for dept in Department.BACKEND: # should create default elements for all backend departments
+			for dept in Department.SHOT_DEPTS: # should create default elements for all shots departments
 				self.assertTrue(os.path.exists(os.path.join(shotpath, dept, Element.DEFAULT_NAME, Element.PIPELINE_FILENAME)))
 				element = self.shots[i].get_element(dept)
 				self.assertEquals(element.get_name(), Element.DEFAULT_NAME)
@@ -90,7 +90,7 @@ class TestBody(TestAssetManager):
 			self.assertEquals(self.assets[i].get_name(), self.asset_names[i])
 			assetpath = os.path.join(self.assets_dir, self.asset_names[i])
 			self.assertTrue(os.path.exists(os.path.join(assetpath, Asset.PIPELINE_FILENAME)))
-			for dept in Department.FRONTEND: # should create default elements for all frontend departments
+			for dept in Department.ASSET_DEPTS: # should create default elements for all asset departments
 				self.assertTrue(os.path.exists(os.path.join(assetpath, dept, Element.DEFAULT_NAME, Element.PIPELINE_FILENAME)))
 				element = self.assets[i].get_element(dept)
 				self.assertEquals(element.get_name(), Element.DEFAULT_NAME)
@@ -112,7 +112,7 @@ class TestElement(TestAssetManager):
 		self.bodies = []
 		self.bodies.append(self.project.create_shot("a00"))
 		self.bodies.append(self.project.create_asset("asset_name"))
-		self.element_count = len(Department.FRONTEND) + len(Department.BACKEND)
+		self.element_count = len(Department.ASSET_DEPTS) + len(Department.SHOT_DEPTS)
 		self.user = getpass.getuser()
 
 	def test_element(self):
@@ -138,7 +138,7 @@ class TestElement(TestAssetManager):
 
 				# publish empty file
 				empty_file = os.path.join(Environment().get_user_workspace(), "empty.txt")
-				open(empty_file, 'a').close() 
+				open(empty_file, 'a').close()
 				element.publish(self.user, empty_file, "first publish")
 
 				# test checkout
@@ -185,4 +185,3 @@ if __name__ == "__main__":
 		unittest.main()
 	else:
 		raise EnvironmentError("Cannot run automated tests on live project!!!")
-		

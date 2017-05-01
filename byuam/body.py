@@ -20,7 +20,7 @@ class Body:
 	NAME = 'name'
 	REFERENCES = 'references'
 	DESCRIPTION = "description"
-	
+
 	@staticmethod
 	def create_new_dict(name):
 		"""
@@ -70,7 +70,7 @@ class Body:
 		raise NotImplementedError('subclass must implement is_asset')
 
 	def get_description(self):
-		
+
 		return self._datadict[Body.DESCRIPTION]
 
 	# def get_parent_dir(self):
@@ -81,7 +81,7 @@ class Body:
 
 	def get_element(self, department, name=Element.DEFAULT_NAME):
 		"""
-		get the element object for this body from the given department. Raises EnvironmentError 
+		get the element object for this body from the given department. Raises EnvironmentError
 		if no such element exists.
 		department -- the department to get the element from
 		name -- the name of the element to get. Defaults to the name of the
@@ -95,7 +95,7 @@ class Body:
 
 	def create_element(self, department, name):
 		"""
-		create an element for this body from the given department and return the 
+		create an element for this body from the given department and return the
 		resulting element object. Raises EnvironmentError if the element already exists.
 		department -- the department to create the element for
 		name -- the name of the element to create
@@ -130,7 +130,7 @@ class Body:
 
 	def add_reference(self, reference):
 		"""
-		Add the given reference to this body. If it already exists, do nothing. If reference is not a valid 
+		Add the given reference to this body. If it already exists, do nothing. If reference is not a valid
 		body, raise an EnvironmentError.
 		"""
 		ref_asset_path = os.path.join(self._env.get_assets_dir(), reference, Body.PIPELINE_FILENAME)
@@ -178,11 +178,11 @@ class Asset(Body):
 	Class describing an asset body.
 	"""
 
-	TYPE = "type" 
+	TYPE = "type"
 
 	@staticmethod
 	def create_new_dict(name):
-		
+
 		datadict = Body.create_new_dict(name)
 		datadict[Asset.TYPE] = AssetType.ACCESSORY
 		return datadict
@@ -190,7 +190,7 @@ class Asset(Body):
 	@staticmethod
 	def default_departments():
 
-		return Department.FRONTEND
+		return Department.ASSET_DEPTS
 
 	@staticmethod
 	def get_parent_dir():
@@ -198,11 +198,11 @@ class Asset(Body):
 		return Environment().get_assets_dir()
 
 	def is_shot(self):
-		
+
 		return False
 
 	def is_asset(self):
-		
+
 		return True
 
 	def get_type(self):
@@ -228,7 +228,7 @@ class Shot(Body):
 
 	@staticmethod
 	def create_new_dict(name):
-		
+
 		datadict = Body.create_new_dict(name)
 		datadict[Shot.FRAME_RANGE] = 0
 		return datadict
@@ -236,7 +236,7 @@ class Shot(Body):
 	@staticmethod
 	def default_departments():
 
-		return Department.BACKEND
+		return Department.SHOT_DEPTS
 
 	@staticmethod
 	def get_parent_dir():
@@ -244,11 +244,11 @@ class Shot(Body):
 		return Environment().get_shots_dir()
 
 	def is_shot(self):
-		
+
 		return True
 
 	def is_asset(self):
-		
+
 		return False
 
 	def get_frame_range(self):
@@ -259,4 +259,3 @@ class Shot(Body):
 
 		self._datadict[Shot.FRAME_RANGE] = frame_range
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
-
