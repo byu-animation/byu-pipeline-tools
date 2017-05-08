@@ -35,18 +35,29 @@ def assemble_hda():
         name = ''.join(geo_file.split('.')[:-1])
         geo.setName(name, unique_name=True)
 
-    hdaName = project.get_name() + "_" + asset_name
-    subnet.setName(hdaName, unique_name=True)
 
-    asset = subnet.createDigitalAsset(name=assembly.get_long_name())
+    # We problably don't need this anymore now that we are jumping right into digital asset creation.
+    subnet.setName(asset_name, unique_name=True)
+
+    # For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
+    # I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
+    # node by saving it to the "checkout_file" it will put the working copy of the otl in the user folder in the project directory so
+    # the working copy won't clutter up their personal otl space.
+    operatorName = assembly.get_short_name()
+    operatorLabel = (project.get_name() + " " + asset_name).title()
+    saveToLibrary = checkout_file
+
+    asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
     assetTypeDef = asset.type().definition()
     assetTypeDef.setIcon(environment.get_project_dir() + "/byu-pipeline-tools/assets/images/icons/hda-icon.png")
 
-    # TODO: broken for now, need bug fix from sidefx
-    # TODO: I think that the three lines above this should work. I don't know what all of this does. The extra option seem a little unnessary. and I dont' know why we need to copy the type properties. Shouldn't it be that those properties come over when we create the asset in the first place? Why on earth are we trying to install it? It should already show up for the user and he hasn't publihsed it yet so it shouldn't be published for anyone else yet. - Ben DeMann
-    # subnet.createDigitalAsset(name=assembly.get_long_name(), hda_file_name=checkout_file, description=asset_name)
-
+    # Bellow are some lines that were with the old broken version of the code I don't know what they do or why we have them?
+    # TODO figure out what these lines do and keep them if they are important and get rid of them if they are not.
+    # For your convience I have included some of my confustions about them.
+    # My only fear is that they acctually do something important and later this year I will find that this doesn't work (much like I did just now with the description option for the createDigitalAsset function) and I will want to know the fix.
+    # I dont' know why we need to copy the type properties. Shouldn't it be that those properties come over when we create the asset in the first place?
     # subnet.type().definition().copyToHDAFile(checkout_file, new_name=assembly.get_long_name(), new_menu_name=asset_name)
+    # Why on earth are we trying to install it? It should already show up for the user and s/he hasn't publihsed it yet so it shouldn't be published for anyone else yet.
     # hou.hda.installFile(checkout_file)
 
 def go():

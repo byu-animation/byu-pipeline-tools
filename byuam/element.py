@@ -47,7 +47,7 @@ class Checkout:
         self._datadict = pipeline_io.readfile(self._pipeline_file)
 
     def get_body_name(self):
-        
+
         return self._datadict[self.BODY]
 
     def get_department_name(self):
@@ -185,6 +185,15 @@ class Element:
         """
         return self.get_parent()+"_"+self.get_department()+"_"+self.get_name()
 
+    def get_short_name(self):
+        """
+        return a string describing a the name for this asset:
+        {the parent body's name}_{this element's name}
+        in this version the department is not included
+        consider it the name for all parts of the asset
+        """
+        return self.get_parent()+"_"+self.get_name()
+
     def get_status(self):
 
         return self._datadict[self.STATUS]
@@ -270,8 +279,8 @@ class Element:
 
     def get_cache_dir(self):
 
-        # return self._datadict[self.CACHE_FILEPATH] 
-        return os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)     
+        # return self._datadict[self.CACHE_FILEPATH]
+        return os.path.join(self._filepath, self.DEFAULT_CACHE_DIR)
 
     def get_render_dir(self):
 
@@ -363,11 +372,11 @@ class Element:
     def checkout(self, username):
         """
         Copies the element to the given user's work area in a directory with the following name:
-            {the parent body's name}_{this element's department}_{this element's name} 
+            {the parent body's name}_{this element's department}_{this element's name}
         Adds username to the list of checkout users.
         username -- the username (string) of the user performing this action
         Returns the absolute filepath to the copied file. If this element has no app file,
-        the returned filepath will not exist. 
+        the returned filepath will not exist.
         """
         checkout_dir = self.get_checkout_dir(username)
         if not os.path.exists(checkout_dir):
@@ -423,7 +432,7 @@ class Element:
             if comment!="":
                 message += "\ncomment: "+comment
             self._env.sendmail(dst_addresses, subject, message)
-        
+
         return dst
 
     def update_cache(self, src, reference=False):
@@ -476,4 +485,3 @@ class AssetElement(Element):
     """
     Abstract class describing elements that make up an asset.
     """
-
