@@ -244,4 +244,3 @@ if __name__ == "__main__":
 	# command line. Intended to be a new destination for files to go.
 	#dest = sys.argv[1]
 	go()
-

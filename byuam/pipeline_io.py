@@ -30,16 +30,17 @@ def mkdir(dirpath):
 	"""
 	try:
 		os.mkdir(dirpath) # TODO: ensure correct permissions
+		os.chmod(dirpath, 0777)
 	except OSError as e:
 		return False # file already exists
 	return True
 
 def version_file(filepath, zero_pad=3):
 	"""
-	versions up the given file based on other files in the same directory. The given filepath 
-	should not have a version at the end. e.g. given "/tmp/file.txt" this function will return 
-	"/tmp/file000.txt" unless there is already a file000.txt in /tmp, in which case it will 
-	return "/tmp/file001.txt". zero_pad specifies how many digits to include in the version 
+	versions up the given file based on other files in the same directory. The given filepath
+	should not have a version at the end. e.g. given "/tmp/file.txt" this function will return
+	"/tmp/file000.txt" unless there is already a file000.txt in /tmp, in which case it will
+	return "/tmp/file001.txt". zero_pad specifies how many digits to include in the version
 	number--the default is 3.
 	"""
 	if zero_pad < 1:
@@ -65,17 +66,17 @@ def version_file(filepath, zero_pad=3):
 
 def version_dir(dirpath, zero_pad=3):
 	"""
-	versions up the given directory based on other directories in the same directory. The given dirpath 
-	should not have a version at the end. e.g. given "/tmp/v" this function will return 
-	"/tmp/v000" unless there is already a v000 dir in /tmp, in which case it will 
-	return "/tmp/v001". zero_pad specifies how many digits to include in the version 
+	versions up the given directory based on other directories in the same directory. The given dirpath
+	should not have a version at the end. e.g. given "/tmp/v" this function will return
+	"/tmp/v000" unless there is already a v000 dir in /tmp, in which case it will
+	return "/tmp/v001". zero_pad specifies how many digits to include in the version
 	number--the default is 3.
 	"""
 	raise NotImplementedError() # TODO
 
 def alphanumeric(name):
 	"""
-	returns a string of the same length as the given name with all the non-alphanumeric characters 
+	returns a string of the same length as the given name with all the non-alphanumeric characters
 	replaced by underscores and all uppercase letters replaced by lowercase letters
 	name -- string to make alphanumeric
 	"""
@@ -101,7 +102,7 @@ def sendmail(dst_addresses, subject, message, src_address, password, src_name=""
 	dst_addresses -- list of strings destination email addresses
 	subject -- string email subject line
 	message -- string email message
-	src_address -- string gmail account to send email from, 
+	src_address -- string gmail account to send email from,
 				   this account must have allowed "less secure app access"
 	password -- string password to the src_address account
 	src_name -- string (optional) name of the src_address account
@@ -114,11 +115,9 @@ def sendmail(dst_addresses, subject, message, src_address, password, src_name=""
 	client.ehlo()
 	success = True
 	try:
-		client.login(src_address, password)	
+		client.login(src_address, password)
 		client.sendmail(src_address, dst_addresses, email)
 	except (smtplib.SMTPAuthenticationError, smtplib.SMTPRecipientsRefused) as error:
 		sucess = False
 	client.close()
 	return success
-
-	

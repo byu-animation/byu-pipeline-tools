@@ -143,7 +143,7 @@ class Project:
 	def list_assets(self, filter=None):
 		"""
 		returns a list of strings containing the names of all assets in this project
-		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		filter -- a tuple containing an attribute (string) relation (operator) and value
 		          e.g. (Asset.TYPE, operator.eq, AssetType.CHARACTER). Only returns assets whose
 		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
@@ -152,7 +152,7 @@ class Project:
 	def list_shots(self, filter=None):
 		"""
 		returns a list of strings containing the names of all shots in this project
-		filter -- a tuple containing an attribute (string) relation (operator) and value 
+		filter -- a tuple containing an attribute (string) relation (operator) and value
 		          e.g. (Shot.FRAME_RANGE, operator.gt, 100). Only returns shots whose
 		          given attribute has the relation to the given desired value. Defaults to None.
 		"""

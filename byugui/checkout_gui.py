@@ -31,7 +31,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 
         #create checkbox to show only published assets
         self.show_published = QtWidgets.QCheckBox("Display only assets or shots with previous publishes")
-        self.show_published.setCheckState(QtCore.Qt.Checked)
+        self.show_published.setCheckState(QtCore.Qt.Unchecked)
         self.show_published.stateChanged.connect(self.changeBodyCheckoutVisibility)
 
         #create Tabs
