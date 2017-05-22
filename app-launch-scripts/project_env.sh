@@ -2,6 +2,8 @@
 
 dir=`dirname $0`
 
+pwd=$(pwd)
+
 #Get the location of project_env.sh so we can set the environment variables accordingly.
 scriptLocation="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${scriptLocation}
@@ -43,3 +45,5 @@ export PATH=${PATH}:${BYU_TOOLS_DIR}/bin
 export NUKE_LOCATION=/usr/local/Nuke10.0v5
 export NUKE_TOOLS_DIR=${BYU_TOOLS_DIR}/nuke-tools
 export NUKE_PATH=${NUKE_TOOLS_DIR}
+
+cd ${pwd}
