@@ -36,8 +36,8 @@
 				<h1>How to Use the BYU Pipeline Tools (Under Construction)</h1>
 				<p>Hello friend,</p>
 				<p>You are here because you have decided to embark on an epic journey to complete a short film.</p>
-				<p>Look around you. You are in the midst of the most brillent creative minds in the history of the world. Look down. You are one of those creative minds. Now all you need is a set of tools to help unlock your creative prowess and work in harmoney with the titans around you.</p>
-				<p>My friend, if you seek those tools then you have come the right place. These are the BYU Pipeline tools. These tools will help you unlock the mysteries of team work and harmony. And this documentation will be your guide to learning the full potential of these tools and thus uncover the full potential of you!</p>
+				<p>Look around you. You are in the midst of the most brilliant creative minds in the history of the world. Look down. You are one of those creative minds. Now all you need is a set of tools to help unlock your creative prowess and work in harmony with the titans around you.</p>
+				<p>My friend, if you seek those sacred tools then you have come the right place. These are the BYU Pipeline tools. These tools will help you unlock the mysteries of team work and harmony. And this documentation will be your guide to learning the full potential of these tools and thus uncover the full potential of you!</p>
 				<p>Read on and you will master your fate and take control of your destiny!</p>
 				<p>Best of Luck,</p>
 				<p class="signiture">Pipeline Management</p>
@@ -67,7 +67,8 @@
 				<p>The <strong>pipeline tools</strong> are here to help you focus more on the art and less on the saving-the-files-into-the-right-place. It also provides some handy tools to make your life a little easier.</p>
 
 				<h3>Getting Access to the Pipeline Tools</h3>
-				<p>In order to have access to the pipeline you need to be a member of the group. Talk to the director or producer and they will be able to tell you how to get access. Usually it is by talking to Seth or one of the CSRs.</p>
+				<!-- TODO define what "the group" actually means -->
+				<p>In order to have access to the pipeline you need to be a member of "the group". Talk to Seth and he will be able to add you.</p>
 				<p>Once you are part of the group open up a file explorer and naviagate to /groups/FILM/byu-pipeline-tools/. FILM will be the name of the group (ie grendel, dusk, etc). This directory is where all of the tools are located.</p>
 				<p>There will be a number of icons, most of which will be some humorous combination of the film name and the software. These icons will lauch the software and load all of our custom tools.</p>
 				<img src = "images/screenshots/byu-pipeline-tools.png"/>
@@ -92,11 +93,11 @@
 					<a href="#shot-def">Shots</a> are...well shots I guess. The elements that make a shot are <a href="#animation-def">animations</a>, <a href="#cfx-def">character effects</a>, <a href="#comp-def">compositions</a>, <a href="#fx-def">effects</a>, <a href="#layout-def">layouts</a>, <a href="#lighting-def">lighting</a>, and <a href="#render-def">renders</a>.
 				</p>
 				<p>To better understand how the pipeline works you first should understand the life of these bodies. And to understand the life of a body you need to understand these terms:</p>
-				<h4>Body Createtion</h4>
-				<p>In order to do anything you need to create a body. Assets are usually the first bodies to be created and then shots will be made from assets. When you create an asset you will give it a name and the pipeline tools will contruct a bunch of folders to store the various elements of the asset. These folders start out empty so we need to fill them with the asset elements. In order to that we need to publish.</p>
+				<h4>Body Creation</h4>
+				<p>In order to do anything you need to create a body. Assets are usually the first bodies to be created and then shots will be made from assets. When you create an asset you will give it a name and the pipeline tools will construct a bunch of folders to store the various elements of the asset. These folders start out empty so we need to fill them with the asset elements. In order to do that we need to publish the asset.</p>
 				<img src = "images/screenshots/element-creation.png"/>
 				<h4>Publishing</h4>
-				<p>First up is to make a part of the assets. Lets start with a model. Once you have created the model you will need to save it into the pipeline. This is called publishing. When an asset is published, the pipeline tools will make a copy of your file and save it into the pipline. In the case of the model, the pipeline will take your Maya file and make a copy of it to store in the model folder. Once you have published an asset it will be avalible for anyone to see and use. The way to access a file that someone else has published is through checking out the assets.</p>
+				<p>First up is to make a part of the assets: the model. Once you have created the model you will need to save it into the pipeline. This is called publishing. When an asset is published, the pipeline tools will make a copy of your file and save it into the pipline. In the case of the model, the pipeline will take your Maya file and make a copy of it to store in the model folder. Once you have published an asset it will be avalible for anyone to see and use. The way to access a file that someone else has published is through checking out the assets.</p>
 				<img src = "images/screenshots/publish.png"/>
 				<p>When you publish an asset make sure that you leave a good comment about the changes that you made. This makes it easy to track important changes on the asset and will become crutial if ever you need to rollback (discussed later).</p>
 				<h4>Check Out</h4>
@@ -106,7 +107,7 @@
 				<p>
 					Multiple people can checkout the same asset and work on it at the same time. This is nice because it means that multiple people can look at, or do tests on or work on the the same file. However you need to watch out. Imagine a case where two people, Austin and Kalee, both are working on the model for Grendel. Austin is hard at work modeling Grendel's arms; it has taken him hours. Kalee has checked out Grendel's model as well to check on it's progress. Since Austin hasn't published his changes yet Kalee has an old version. She notices that Grendel's eyes are backwards and in a couple of seconds she fixes them. Austin finishes his changes and publish. Moments later Kalee publishes her changes, but her version doesn't include Austin's changes. There is not way to merge the changes, so the pipeline will use the model that was published most recently, in this case Kalee's version that has the eyes the right way but has the wrong arms. So make sure that you are comunicating will all the people that are working on your asset.
 				</p>
-				<p>Now in the case of Austin and Kaylee it is likely that they would actually want to use Austin's version and just apply Kalee's quick changes to it. Thankfully there is a way to revet a production model to a previous version, roll back!</p>
+				<p>Now in the case of Austin and Kaylee it is likely that they would actually want to use Austin's version and just apply Kalee's quick changes to it. Thankfully there is a way to revert a production model to a previous version, roll back!</p>
 				<h4>Rollback</h4>
 				<p>When you publish an asset the pipeline will keep track of the history of that item. So at anytime if you need to revert to a previous verision of the asset you can rollback the changes.</p>
 				<img src = "images/screenshots/roll-back.png"/>
@@ -114,34 +115,34 @@
 
 				<h3>The Life of a Pipeline Element</h3>
 				<p>Now let's see these in context of the life of an asset</p>
-				<!--TODO: Fill in all the missing pieces in the life span of an asset-->
+				<!--TODO: Fill in all the missing pieces in the life span of an asset. Use the information Kalee gave in slack-->
 				<ol>
-					<li>I have no idea what happens in story boarding or how it gets into the pipeline</li>
-					<li>I have no idea what happens in vis dev or how it gets into the pipeline</li>
+					<li>Story artists take the story concept and draw each acting moment and scene in the film.</li>
+					<li>Vis Dev artists develop the look of objects and characters that are needed to help tell the story told by the story artists.</li>
 					<li>I have not idea what happens in previs or how it gets into the pipeline</li>
 					<li>Create asset</li>
 					<li>Make and publish a model for the asset in Maya</li>
 					<li>Make and publish a rig for the asset in Maya</li>
 					<li>Create a shot</li>
-					<li>Refrence the model and rig into the shot and make an animation in Maya and publish it to the shot</li>
-					<li>Layout all of the various props in the scence?? and publish is to the shot</li>
+					<li>Refrence the model and rig into the shot, make an animation in Maya, and publish it to the shot</li>
+					<!--TODO this one is terrible<li> Layout all of the various props in the scence?? and publish is to the shot</li>-->
 					<li>Create textures for the the asset in Mari</li>
-					<li>Assemble an asset in Houdini using the models and textures created earlier and publish it to the asset.</li>
-					<li>Checkout the scene in Houdini</li>
+					<li>Assemble the asset in Houdini using the models and textures created earlier and publish it to the asset.</li>
+					<li>Checkout the shot in Houdini</li>
 					<li>Bring in all of the various props for the shot in Houdini, add lights and then publish it to the shot</li>
 					<li>Render the scene in Houdini</li>
-					<li>Bring renders Houdini into Nuke, and publish the composition to the shot</li>
-					<li>Hand the compositions off to the editor</li>
+					<li>Bring renders from Houdini into Nuke, and publish the composition to the shot</li>
+					<li>Hand the composites off to the editor</li>
 					<li>Wait for the awesome movie to come together</li>
 				</ol>
-				<p>That is the gernal overview of the pipeline and what it is doing. Now we will move into the different tools in the various softwares.</p>
+				<p>That is the general overview of the pipeline and what it is doing. Now we will move on to the different tools in the various softwares.</p>
 			</div>
 		</div>
 		<div class "row" id="maya">
 			<a id="maya-anchor"></a>
 			<div class="twelve columns">
 				<h2>Maya</h2>
-				<p>This is the baisc overview of the whole pipeline</p>
+				<p>This is the basic overview of the whole pipeline</p>
 			</div>
 		</div>
 		<div class "row" id="houdini">
@@ -149,14 +150,14 @@
 			<div class="twelve columns">
 				<a name="houdini"></a>
 				<h2>Houdini</h2>
-				<p>Do you remember all of those neat things you learned back in the Maya section? Well, throw them out. They only partially relate to Houdini and having them tightly coupled in your mind will lead to errors.</p>
+				<p>Do you remember all of those neat things you learned back in the Maya section? Well, throw them out. They only partially relate to the Houdini pipeline tools and having them tightly coupled in your mind will lead to errors.</p>
 				<p>Lets take a look at Houdini</p>
 				<p>Go ahead and open the film verison of Houdini. Now at this point Houdini probably didn't load in the shelf like Maya did. To get there you will need to add it.</p>
 				<img src = "images/screenshots/add-houdini-tools-shelf.png"/>
-				<p>With the tools self added in, let's take a look at all of the tools.</p>
+				<p>With the tools shelf added in, let's take a look at all of the tools.</p>
 				<img src = "images/screenshots/houdini-tools-shelf.png"/>
 				<h3>Create Body</h3>
-				<p>The create body tools here actually is the exact same as the once in Maya, so about forgeting everything what I mean is don't forget this one.</p>
+				<p>The create body tool here is actually the exact same as the one in Maya, so about forgetting everything what I mean is don't forget this one.</p>
 				<h3>Assemble Asset</h3>
 				<p>To understand how the checkout and publish buttons are different we first need to understand how the asseble asset tool works.</p>
 				<p>In Houdini the method of adding geometry to a scene is typicaly by using the tab menu in the Network View. In order to add our geometry to Houdini we first need to make digital assets for them. Once we have we will be able to simply tab in all of our assets into Houdini. The assemble asset tool creates the digital assets for you.</p>
@@ -251,7 +252,7 @@
 					</li>
 					<li>
 						<a id="body-def"></a>
-						Body: bodies are just a way to shorter way to refer to both assets and shots. A shot is a body but not all bodies are shots; same for assets. You probably won't here about them outside of this documentation.
+						Body: bodies are just a shorter way to refer to both assets and shots. A shot is a body but not all bodies are shots; same for assets. You probably won't here about them outside of this documentation.
 					</li>
 					<li>
 						<a id="cfx-def"></a>
@@ -259,7 +260,7 @@
 					</li>
 					<li>
 						<a id="comp-def"></a>
-						Composition
+						Composition (comp)
 					</li>
 					<li>
 						<a id="design-def"></a>
@@ -304,6 +305,10 @@
 					<li>
 						<a id="texture-def"></a>
 						Textures
+					</li>
+					<li>
+						<a id="vis-dev-def"></a>
+						Visual Development (Vis Dev)
 					</li>
 					<li></li>
 					<li></li>
