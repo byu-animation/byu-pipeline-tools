@@ -28,7 +28,7 @@ class ReferenceWindow(QtWidgets.QWidget):
     def initUI(self, dept_list):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
-        self.setWindowTitle('Taijitu Reference Manager')
+        self.setWindowTitle('Reference Manager')
         self.departmentMenu = QtWidgets.QComboBox()
         for i in dept_list:
             self.departmentMenu.addItem(i)
