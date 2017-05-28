@@ -3,7 +3,7 @@
 Version=1.0
 Name=Pipeline Help
 Comment=Grendel Houdini
-Exec=xdg-open /groups/grendel/byu-pipeline-tools/how-to/index.html
+Exec=xdg-open https://byu-animation.github.io/
 Icon=/groups/grendel/byu-pipeline-tools/assets/images/icons/byu-browser.png
 Terminal=false
 Type=Application
