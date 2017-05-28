@@ -1,4 +1,6 @@
 from byuam import Department
+from byuam import Environment
+from byuam import pipeline_io
 from byugui.publish_gui import PublishWindow
 from PySide2 import QtWidgets
 import maya.cmds as cmds
@@ -47,6 +49,12 @@ def post_publish():
 def go():
     parent = maya_main_window()
     filePath = cmds.file(q=True, sceneName=True)
+    if not filePath:
+        filePath = Environment().get_user_workspace()
+        filePath = os.path.join(filePath, 'untitled.mb')
+        filePath = pipeline_io.version_file(filePath)
+        cmds.file(rename=filePath)
+        cmds.file(save=True)
     global maya_publish_dialog
     maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX])
     maya_publish_dialog.finished.connect(post_publish)
