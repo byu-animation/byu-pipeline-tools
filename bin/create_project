@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 import argparse
 import os
+import subprocess
 import sys
 from byuam.environment import Environment
 from  byuam import pipeline_io
 from byuam.project import Project
 
-def create_project(path, name="test"):
+def create_project(path, name="test", email=None, password=None, nickname=None):
 	path = os.path.abspath(path)
 	production = os.path.join(path, "production")
 	if not os.path.exists(production):
@@ -23,9 +24,17 @@ def create_project(path, name="test"):
 	otls = os.path.join(production, "otls")
 	if not os.path.exists(otls):
 		pipeline_io.mkdir(otls)
-	datadict = Environment.create_new_dict(name, assets, shots, users, otls)
+	datadict = Environment.create_new_dict(name, assets, shots, users, otls, email, password)
 	pipeline_file = os.path.join(path, Environment.PIPELINE_FILENAME)
 	pipeline_io.writefile(pipeline_file, datadict)
+
+	# Set up .desktop files
+	iconScript = os.path.join(path, "byu-pipeline-tools/bin/make-icons.sh")
+	if(nickname is not None):
+		subprocess.call(["sh", iconScript, "-n", nickname, name, path])
+	else:
+		subprocess.call(["sh", iconScript, name, path])
+
 	#print "To make this the active project, set the BYU_PROJECT_DIR environment variable:\nexport BYU_PROJECT_DIR=%s" % path
 	print "Project Creation Complete!"
 
@@ -33,6 +42,10 @@ def create_project(path, name="test"):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("directory", type=str, help="location for new project")
+	parser.add_argument("projectName", type=str, help="name of the new project")
+	parser.add_argument("--email", type=str, help="email address for support emails")
+	parser.add_argument("--password", type=str, help="password for email address")
+	parser.add_argument("--nickname", type=str, help="nickname for the software. It will be appended to the end of the software name. Fo")
 	args = parser.parse_args()
 	if not os.path.exists(args.directory):
 		print "The project directory %s does not exist." % args.directory
@@ -47,4 +60,4 @@ if __name__ == "__main__":
 	if os.path.exists(os.path.join(args.directory, Environment.PIPELINE_FILENAME)):
 		print "project already exists"
 	else:
-		create_project(args.directory)
+		create_project(args.directory, name=args.projectName, email=args.email, password=args.password, nickname=args.nickname)
