@@ -56,7 +56,7 @@ function icon {
 	fi
 
 	NOSPACES=${SOFTWARE_NAME// /-}
-	FILENAME=${PROJECT_PATH}"/${NOSPACES,,}-byu"
+	FILENAME=${PROJECT_PATH}"/byu-pipeline-tools/byu-${NOSPACES,,}"
 
 	echo "#!/usr/bin/env xdg-open" > ${FILENAME}.desktop
 	echo "[Desktop Entry]" >> ${FILENAME}.desktop
