@@ -28,7 +28,7 @@ To setup a production project:
 1. Let the artist have at it. They will let you know if anything is broken.
 
 ## Notes
-* For more information be sure to checkout the wiki
+* For more information be sure to checkout [the wiki](https://github.com/byu-animation/byu-pipeline-tools/wiki)
 * Also checkout https://byu-animation.github.io/ for a tutorial of the front-end
 * For the gui elements use PySide2 and a little PyQt
 * These tools are designed for Linux. They are not guaranteed to work on any other operation system. In fact they are not really guaranteed to work out side of the BYU animation lab.
