@@ -8,6 +8,11 @@
 		<!-- Node flags submenu. -->
 		<actionItem id="opmenu.demoButton">
 			<label>Demo</label>
+			<expression>
+import hou
+good = len(hou.selectedNodes())==0
+return good
+			</expression>
 		</actionItem>
 	</menu>
 </menuDocument>

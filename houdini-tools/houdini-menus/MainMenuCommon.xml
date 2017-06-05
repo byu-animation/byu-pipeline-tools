@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Please see ExampleMenu.xml for examples that customise the main menu -->
+<!-- Please see menu.xsd for the menu validation schema. -->
+<mainMenu>
+	<menuBar>
+		<!-- ============================ BYU Tools Menu =========================== -->
+		<subMenu id="tools_menu">
+			<label>BYU Tools</label>
+			<insertBefore>render_menu</insertBefore>
+			<scriptItem id="h.createBody">
+				<label>Create Body</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import new_body
+new_body.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.chekcout">
+				<label>Checkout</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import checkout_asset
+checkout_asset.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.rollback">
+				<label>Rollback</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import rollback_asset
+rollback_asset.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.assembleAsset">
+				<label>Assemble Asset</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import assemble_asset
+assemble_asset.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.publish">
+				<label>Publish</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import publish_asset
+publish_asset.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.inpire">
+				<label>Inspire</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import inspire_quote
+inspire_quote.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.gnome">
+				<label>Gnome</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import test_geo
+test_geo.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+		</subMenu>
+
+		<subMenu id="edit_menu">
+		</subMenu>
+
+
+	</menuBar>
+</mainMenu>
