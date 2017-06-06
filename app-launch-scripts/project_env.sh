@@ -46,4 +46,7 @@ export NUKE_LOCATION=/usr/local/Nuke10.0v5
 export NUKE_TOOLS_DIR=${BYU_TOOLS_DIR}/nuke-tools
 export NUKE_PATH=${NUKE_TOOLS_DIR}
 
+#Mari
+export MARI_LOCATION=/opt
+
 cd ${pwd}

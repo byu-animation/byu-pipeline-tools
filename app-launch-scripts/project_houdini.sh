@@ -25,7 +25,7 @@ source ${DIR}/project_env.sh
 
 export CURRENT_PROG='Houdini'
 
-export JOB=$BYU_PROJECT_DIR
+export JOB=${BYU_PROJECT_DIR}
 HOUDINI_TOOLS=${BYU_TOOLS_DIR}/houdini-tools
 export PYTHONPATH=${PYTHONPATH}:${HOUDINI_TOOLS}
 export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/production;&"
