@@ -3,7 +3,11 @@
 import sys
 import os
 import traceback
-from PySide2 import QtWidgets, QtCore
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 

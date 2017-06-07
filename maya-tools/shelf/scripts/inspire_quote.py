@@ -4,7 +4,6 @@ from byugui.inspire_quote_gui import QuoteWindow
 from PySide2 import QtGui, QtWidgets, QtCore
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
-import sip
 import os
 
 maya_inspire_dialog = None

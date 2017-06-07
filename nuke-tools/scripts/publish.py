@@ -1,6 +1,6 @@
 from byuam import Department
 from byugui.publish_gui import PublishWindow
-from PyQt4 import QtGui
+from PySide import QtGui
 import os
 import nuke
 
@@ -36,4 +36,3 @@ def post_publish():
 
         #print "Exporting Alembic"
         #alembic_static_exporter.go()
-

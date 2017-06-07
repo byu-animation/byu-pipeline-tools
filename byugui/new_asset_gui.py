@@ -2,7 +2,12 @@
 
 import sys
 import os
-from PySide2 import QtWidgets, QtCore, QtGui
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 
 WINDOW_WIDTH = 300

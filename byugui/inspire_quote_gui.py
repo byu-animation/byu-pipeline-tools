@@ -5,7 +5,12 @@ import os
 import traceback
 import json
 import random
-from PySide2 import QtWidgets, QtCore, QtGui
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtGui, QtCore
 
 WINDOW_WIDTH = 400
 WINDOW_HEIGHT = 200

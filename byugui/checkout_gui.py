@@ -2,7 +2,12 @@
 
 import sys
 import os
-from PySide2 import QtWidgets, QtCore, QtGui
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Department, Environment
 
@@ -58,7 +63,7 @@ class CheckoutWindow(QtWidgets.QWidget):
         self.setLayout(main_layout)
         main_layout.addWidget(self.img)
         main_layout.setSpacing(5)
-        main_layout.setMargin(6)
+        # main_layout.setMargin(6)
         main_layout.addWidget(self.dept_tabs)
         main_layout.addWidget(self.show_published)
         main_layout.addLayout(button_layout)

@@ -1,4 +1,8 @@
-from PySide2 import QtWidgets, QtCore
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtCore
 
 import datetime
 import operator
@@ -21,7 +25,7 @@ class TreeComboBoxItem(QtWidgets.QComboBox):
         self.tree_item = tree_item
         self.column = column
         self.currentIndexChanged.connect(self._change_item)
-        
+
     def _change_item(self, index):
         self.tree_item.setText(self.column, self.itemText(index))
 
@@ -37,7 +41,7 @@ class TreeComboBoxItem(QtWidgets.QComboBox):
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
-        
+
         QtWidgets.QComboBox.paintEvent(self, pe)
 
 class TreeLineEdit(QtWidgets.QLineEdit):
@@ -60,7 +64,7 @@ class TreeLineEdit(QtWidgets.QLineEdit):
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
-        
+
         QtWidgets.QLineEdit.paintEvent(self, pe)
 
 class TreeLabel(QtWidgets.QLabel):
@@ -68,7 +72,7 @@ class TreeLabel(QtWidgets.QLabel):
     def __init__(self, text=""):
         QtWidgets.QLabel.__init__(self, text)
         self.setAutoFillBackground(True)
-    
+
     def paintEvent(self, pe):
         painter = QtWidgets.QPainter()
         painter.begin(self)
@@ -79,7 +83,7 @@ class TreeLabel(QtWidgets.QLabel):
         painter.setPen(pen)
         painter.drawRect(pe.rect())
         painter.end()
-        
+
         QtWidgets.QLabel.paintEvent(self, pe)
 
 class TreeGridDelegate(QtWidgets.QStyledItemDelegate):
@@ -95,7 +99,7 @@ class TreeGridDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class TreeDateEdit(QtWidgets.QWidget):
-    
+
     def __init__(self, date, tree_item, column, parent=None, type='end'):
         QtWidgets.QDateEdit.__init__(self, parent)
 
@@ -128,7 +132,7 @@ class TreeDateEdit(QtWidgets.QWidget):
             self.dateedit.setDate(self.today)
             self.empty.setVisible(True)
             self.dateedit.setVisible(False)
-    
+
         self.setLayout(self.layout)
         self.empty.clicked.connect(self._show_date)
         self.dateedit.dateChanged.connect(self._change_date)
@@ -153,7 +157,7 @@ class TreeDateLineEdit(QtWidgets.QDateEdit):
 
     def __init__(self, parent=None):
         QtWidgets.QCalendarWidget.__init__(self, parent)
-    
+
     def wheelEvent(self, e):
         e.ignore() # do nothing
 
@@ -297,7 +301,7 @@ class ElementBrowser(QtWidgets.QWidget):
         self.update_tree[5] = self.update_end_date
         self.update_tree[6] = self.update_last_publish
         self.update_tree[7] = self.update_note
-        
+
         # status bar
         self.status_bar = QtWidgets.QStatusBar()
 
@@ -341,13 +345,13 @@ class ElementBrowser(QtWidgets.QWidget):
         filter_layout.setColumnMinimumWidth(4, 100)
         filter_layout.setColumnMinimumWidth(5, 100)
         filter_layout.setColumnMinimumWidth(6, 100)
-        
+
         filter_layout.setColumnStretch(7, 1)
         layout.addWidget(self.menu_bar)
         layout.addLayout(options_layout)
         layout.addWidget(self.tree)
         layout.addLayout(filter_layout)
-        
+
         layout.addWidget(self.status_bar)
         self.setLayout(layout)
 
@@ -423,7 +427,7 @@ class ElementBrowser(QtWidgets.QWidget):
         for i in xrange(count):
             item = self.tree.topLevelItem(i)
             self.tree.expandItem(item)
-    
+
     def _show_user_directory(self):
         user_directory = UserListDialog(self)
         user_directory.show()
@@ -465,7 +469,7 @@ class ElementBrowser(QtWidgets.QWidget):
                 self._update_body_data(body_obj, item)
             elif column==self.BODY_DESCRIPTION_COLUMN:
                 self._update_body_description(body_obj, item)
-                
+
 
     def _refresh(self): # TODO: maintain expanded rows on refresh
         self._set_bodies()
@@ -653,7 +657,7 @@ class UserListDialog(QtWidgets.QDialog):
 
     def sizeHint(self):
         return QtCore.QSize(540, 800)
-            
+
 
 if __name__ == '__main__':
 

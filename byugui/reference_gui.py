@@ -3,7 +3,11 @@
 import sys
 import os
 import operator
-from PySide2 import QtWidgets, QtCore
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.body import Asset
 from byuam.environment import Department, AssetType

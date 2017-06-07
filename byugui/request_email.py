@@ -1,4 +1,8 @@
-from PySide2 import QtWidgets, QtCore
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtCore
 
 import re
 
@@ -26,7 +30,7 @@ class RequestEmailDialog(QtWidgets.QDialog):
         self.username = self.project.get_current_username()
         self.user = self.project.get_user(self.username)
         self.user_fullname = self.user.get_fullname()
-        
+
         request_str = '<span style=" font-size:12pt; font-weight:600;">Please input your email address</span>'
         info_str = "username: "+self.username+"\nfull name: "+self.user_fullname
         self.request_label = QtWidgets.QLabel(request_str)
@@ -67,4 +71,4 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     window = RequestEmailDialog()
     window.show()
-    sys.exit(app.exec_())    
+    sys.exit(app.exec_())

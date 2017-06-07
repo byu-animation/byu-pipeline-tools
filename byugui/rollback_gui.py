@@ -3,7 +3,11 @@
 import sys
 import os
 from os import listdir
-from PySide2 import QtWidgets, QtCore
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtCore
+except ImportError:
+	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment
 
@@ -11,9 +15,9 @@ WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 300
 
 class RollbackWindow(QtWidgets.QWidget):
-    
+
     finished = QtCore.Signal()
-    
+
     def __init__(self, element, parent):
         super(RollbackWindow, self).__init__()
         self.element = element
@@ -24,21 +28,21 @@ class RollbackWindow(QtWidgets.QWidget):
         self.result = None
         self.initUI()
         self.list_publishes()
-        
+
     def initUI(self):
         #define gui elements
         self.setGeometry(300,300,WINDOW_WIDTH,WINDOW_HEIGHT)
         self.setWindowTitle('Rollback Manager')
-        
+
         self.publish_list = QtWidgets.QListWidget()
         self.publish_list.currentItemChanged.connect(self.update_detail_view)
         self.infoLabel = QtWidgets.QLabel()
-        
+
         self.rollbackButton = QtWidgets.QPushButton('Rollback')
         self.rollbackButton.clicked.connect(self.rollback)
         self.cancelButton = QtWidgets.QPushButton('Cancel')
         self.cancelButton.clicked.connect(self.close)
-        
+
         #set gui layout
         self.grid = QtWidgets.QGridLayout(self)
         self.setLayout(self.grid)
@@ -46,9 +50,9 @@ class RollbackWindow(QtWidgets.QWidget):
         self.grid.addWidget(self.infoLabel, 0, 1)
         self.grid.addWidget(self.rollbackButton, 3, 0)
         self.grid.addWidget(self.cancelButton, 3, 1)
-        
+
         self.show()
-        
+
     def list_publishes(self):
         publishes = self.element.list_publishes();
         for p in publishes:
@@ -56,11 +60,11 @@ class RollbackWindow(QtWidgets.QWidget):
             self.publishes = self.publishes + [publish]
             item = QtWidgets.QListWidgetItem(publish.timestamp)
             self.publish_list.addItem(item)
-            
+
     def update_detail_view(self):
         selectedVersion = self.publishes[self.publish_list.currentRow()]
         self.infoLabel.setText("Author: {0} \nTimestamp: {1} \n\nComment: {2}".format(selectedVersion.author, selectedVersion.timestamp, selectedVersion.comment))
-        
+
     def rollback(self):
         selectedVersion = self.publishes[self.publish_list.currentRow()]
         versionDir = self.element.get_version_dir(self.publish_list.currentRow())
@@ -72,19 +76,18 @@ class RollbackWindow(QtWidgets.QWidget):
         #checkout element again to user to remove errors upon multiple uses of rollback
         self.result = self.element.checkout(user)
         self.close()
-        
+
     def closeEvent(self, event):
         self.finished.emit()
         event.accept()
-        
+
 class Publish:
     def __init__(self, author, timestamp, comment):
         self.author = author
         self.timestamp = timestamp
         self.comment = comment
-        
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     ex = RollbackWindow(app)
     sys.exit(app.exec_())
-

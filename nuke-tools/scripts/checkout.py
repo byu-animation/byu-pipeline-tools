@@ -1,6 +1,6 @@
 from byuam import Department
 from byugui.checkout_gui import CheckoutWindow
-from PyQt4 import QtGui
+from PySide import QtGui
 import os
 import nuke
 
@@ -31,4 +31,3 @@ def post_checkout():
 #            cmds.file(filepath, open=True, force=True)
             print "open file "+filepath
             nuke.scriptOpen(filepath)
-

@@ -1,6 +1,7 @@
 import os
 import mari
 import PySide
+import sys
 
 def init():
     toolbar = mari.app.findToolBar("BYU Tools")
@@ -9,3 +10,5 @@ def init():
         toolbar.addWidget(label)
 
 init()
+
+sys.path.append('/users/animation/bdemann/Documents/grendel-dev/byu-pipeline-tools/mari-tools/scripts/')
