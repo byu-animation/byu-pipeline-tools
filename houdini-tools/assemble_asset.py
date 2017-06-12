@@ -4,10 +4,13 @@ import os
 from PySide2 import QtGui, QtWidgets, QtCore
 
 from byuam import Department, Project, Environment
-from byugui import CheckoutWindow
+from byugui.assemble_gui import AssembleWindow
 
 def assemble_hda():
-	asset_name = checkout_window.current_item
+	asset_name = checkout_window.result
+
+	if asset_name is None:
+		return
 
 	project = Project()
 	environment = Environment()
@@ -86,7 +89,7 @@ def go():
 	# if app is None:
 	#	 app = QtGui.QApplication(['houdini'])
 	global checkout_window
-	checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.ASSEMBLY])
+	checkout_window = AssembleWindow(hou.ui.mainQtWindow(), [Department.ASSEMBLY])
 	checkout_window.finished.connect(assemble_hda)
 
 	# asset_name = 'hello_world'
