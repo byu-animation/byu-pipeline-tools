@@ -120,7 +120,7 @@ class AssembleWindow(QtWidgets.QWidget):
 		element_obj = asset_obj.get_element(current_dept)
 		element_path = element_obj.checkout(current_user)
 		if element_path != None:
-			self.result = element_path
+			self.result = self.current_item
 			self.close()
 
 
