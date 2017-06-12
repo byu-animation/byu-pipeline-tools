@@ -109,6 +109,14 @@ class AssembleWindow(QtWidgets.QWidget):
 			last_publish_comment = "No publishes for this element"
 		currentTab = self.dept_tabs.currentWidget()
 
+	def hasPreviousPublish(self, body, department):
+		asset_obj = self.project.get_body(body)
+		element_obj = asset_obj.get_element(department)
+		last_publish = element_obj.get_last_publish()
+		if last_publish is None:
+			return False
+		return True
+
 	def assemble(self):
 		"""
 		Checks out the currently selected item
@@ -116,13 +124,33 @@ class AssembleWindow(QtWidgets.QWidget):
 		"""
 		current_user = self.environment.get_current_username()
 		current_dept = self.dept_list[self.dept_tabs.currentIndex()]
-		asset_obj = self.project.get_body(self.current_item)
-		element_obj = asset_obj.get_element(current_dept)
-		element_path = element_obj.checkout(current_user)
-		if element_path != None:
-			self.result = self.current_item
-			self.close()
 
+		# Make sure that the asset hasn't been assemble yet
+		startAssembling = False
+		if self.hasPreviousPublish(self.current_item, current_dept):
+			msgBox = QtWidgets.QMessageBox()
+			msgBox.setText(self.tr("This asset has already been assembled for " + current_dept + ".\n Are you sure you want to assemble it again?"))
+			noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
+			yesButton = msgBox.addButton(QtWidgets.QMessageBox.Yes)
+
+			msgBox.exec_()
+
+			if msgBox.clickedButton() == yesButton:
+				startAssembling = True
+			elif msgBox.clickedButton() == noButton:
+				startAssembling = False
+		else:
+			startAssembling = True
+
+		if startAssembling is True:
+			asset_obj = self.project.get_body(self.current_item)
+			element_obj = asset_obj.get_element(current_dept)
+			element_path = element_obj.checkout(current_user)
+			if element_path != None:
+				self.result = self.current_item
+				self.close()
+		else:
+			return
 
 	def closeEvent(self, event):
 		self.finished.emit()
