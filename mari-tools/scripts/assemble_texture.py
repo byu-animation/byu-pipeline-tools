@@ -22,26 +22,34 @@ def post_assemble():
 	if asset_name is None:
 		return
 
+	# Set up the project and environment
 	project = Project()
 	environment = Environment()
+	# get the username and asset
 	username = project.get_current_username()
 	asset = project.get_asset(asset_name)
 
+	# get the texture element and check it out
 	texture = asset.get_element(Department.TEXTURE)
 	checkout_file = texture.checkout(username)
 
 	# Get the path to the directory with all of the alembics
-	element = asset.get_element(Department.MODEL)
-	cache = element.get_cache_dir()
+	model = asset.get_element(Department.MODEL)
+	cache = model.get_cache_dir()
 
-	# TODO: only load files whose extension matches element.get_cache_ext()
-	geo_files = [x for x in os.listdir(element.get_cache_dir()) if not os.path.isdir(x)]
+	geo_files = [x for x in os.listdir(model.get_cache_dir()) if not os.path.isdir(x)]
+	# Remove anything that is not an alemibic file
+	for file_path in list(geo_files):
+		if(not str(file_path).lower().endswith('.abc')):
+			geo_files.remove(file_path)
 
-	geo = geo_files[0]
-	mari.projects.create("testmultiple", geo ,[],[],dict())
+	geo_file_path = os.path.join(cache, geo_files[0])
+	mari.projects.create(texture.get_short_name(), geo_file_path ,[],[],dict())
 
-	for geo_file in geo_files:
-		mari.geo.load("/users/animation/bdemann/Documents/grendel-dev/production/assets/ben/model/main/cache/psphere1.abc")
+	for i in range(1, len(geo_files)):
+		geo_file_path = os.path.join(cache, geo_files[i])
+		mari.geo.load(geo_file_path)
+		print "Loaded " + geo_file_path
 
 	if True:
 		return

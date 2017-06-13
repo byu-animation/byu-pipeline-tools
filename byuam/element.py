@@ -270,7 +270,7 @@ class Element:
         """
         return os.path.join(self._filepath, ".v%03d" % version)
 
-    def get_cache_ext(self): # TODO: is this needed?
+    def get_cache_ext(self):
         """
         return the extension of the cache files for this element (including the period)
         e.g. the result for an element that uses alembic caches would return ".abc"
