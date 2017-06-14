@@ -44,7 +44,7 @@ def post_assemble():
 			geo_files.remove(file_path)
 
 	geo_file_path = os.path.join(cache, geo_files[0])
-	mari.projects.create(texture.get_short_name(), geo_file_path ,[],[],dict())
+	mari.projects.create(texture.get_long_name(), geo_file_path ,[],[],dict())
 
 	for i in range(1, len(geo_files)):
 		geo_file_path = os.path.join(cache, geo_files[i])
