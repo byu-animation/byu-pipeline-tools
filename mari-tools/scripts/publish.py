@@ -13,9 +13,6 @@ def go():
 	mari_publish_dialog = PublishWindow(filepath, parent, [Department.TEXTURE])
 	mari_publish_dialog.finished.connect(post_publish)
 
-def exportTex():
-	print "Export Texutre"
-
 def post_publish():
 	element = mari_publish_dialog.result
 

@@ -3,10 +3,11 @@ import inspire
 import checkout
 import publish
 import assemble_texture
+import export_images
 
 inpire_button = mari.actions.create('Inspirational Quote', 'inspire.go()')
 checkout_button = mari.actions.create('Checkout', 'checkout.go()')
-export_button = mari.actions.create('Export Tex', 'publish.exportTex()')
+export_button = mari.actions.create('Export Tex', 'export_images.go()')
 assemble_button = mari.actions.create('Assemble Texuture', 'assemble_texture.go()')
 publish_button = mari.actions.create('Publish', 'publish.go()')
 
