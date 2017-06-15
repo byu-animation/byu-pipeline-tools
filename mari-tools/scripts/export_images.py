@@ -1,5 +1,5 @@
 from byuam import Department, Project
-from byugui.assemble_gui import AssembleWindow
+from byugui.selection_gui import SelectionWindow
 from PySide import QtGui
 import os
 import subprocess
@@ -8,70 +8,79 @@ import mari
 ALL = "all"
 SELECTED_GEO = "geo"
 SELECTED_CHANNEL = "channel"
-mari_assemble_dialog = None
+mari_selection_dialog = None
 
 def go(scope = ALL):
-	global mari_assemble_dialog
-	asset_name = get_asset_name()
-	if asset_name is None:
+	global mari_selection_dialog
+	texture = get_texture()
+	if texture is None:
 		parent = QtGui.QApplication.activeWindow()
-		mari_assemble_dialog = AssembleWindow(parent, [Department.TEXTURE])
+		mari_selection_dialog = SelectionWindow(parent, [Department.TEXTURE])
 		if scope is SELECTED_GEO:
-			mari_assemble_dialog.finished.connect(export_selected_geo_to_tex)
+			mari_selection_dialog.finished.connect(export_selected_geo_to_tex)
 		elif scope is SELECTED_CHANNEL:
-			mari_assemble_dialog.finished.connect(export_selected_channel_to_tex)
+			mari_selection_dialog.finished.connect(export_selected_channel_to_tex)
 		else:
-			mari_assemble_dialog.finished.connect(export_all_to_tex)
+			mari_selection_dialog.finished.connect(export_all_to_tex)
 	else:
 		if scope is SELECTED_GEO:
-			export_selected_geo_to_tex(asset_name)
+			export_selected_geo_to_tex(texture)
 		elif scope is SELECTED_CHANNEL:
-			export_selected_channel_to_tex(asset_name)
+			export_selected_channel_to_tex(texture)
 		else:
-			export_all_to_tex(asset_name)
+			export_all_to_tex(texture)
 
-def get_asset_name():
+def get_texture():
 	project_name = mari.projects.current().name()
 	index = project_name.find("_texture")
 	if index > 0:
-		return project_name[:index]
+		asset_name = project_name[:index]
+		project = Project()
+		asset = project.get_asset(asset_name)
+		return asset.get_element(Department.TEXTURE)
 	else:
 		return None
 
-def get_texture(asset_name):
-	# Set up the project
-	project = Project()
-	# get asset body
-	asset = project.get_asset(asset_name)
-	# return the texture element
-	return asset.get_element(Department.TEXTURE)
-
-def export_selected_geo_to_tex(asset_name = None):
-	texture = get_texture(get_asset_name())
+def export_selected_geo_to_tex(texture = None):
+	if texture is None:
+		texture = mari_selection_dialog.result
+		if texture is None:
+			return
+	if not(texture.get_department() == Department.TEXTURE):
+		print "Invalid element: Expecting " + str(Department.TEXTURE) + " and got " + str(texture.get_department())
+		return
 	geo = mari.geo.current()
 
 	export_geo_to_tex(geo, texture)
-	print "Exported .tex for selected geo"
+	print "Exported tex file for selected geo"
 
-def export_selected_channel_to_tex(asset_name = None):
-	texture = get_texture(get_asset_name())
+def export_selected_channel_to_tex(texture = None):
+	if texture is None:
+		texture = mari_selection_dialog.result
+		if texture is None:
+			return
+	if not(texture.get_department() == Department.TEXTURE):
+		print "Invalid element: Expecting " + str(Department.TEXTURE) + " and got " + str(texture.get_department())
+		return
 	channel = mari.geo.current().currentChannel()
 
 	export_channel_to_tex(channel, texture)
-	print "Export for selected Channel"
+	print "Export tex file for selected Channel"
 
-def export_all_to_tex(asset_name = None):
-	if asset_name is None:
-		asset_name = mari_assemble_dialog.result
-		if asset_name is None:
+def export_all_to_tex(texture = None):
+	if texture is None:
+		texture = mari_selection_dialog.result
+		if texture is None:
 			return
+	if not(texture.get_department() == Department.TEXTURE):
+		print "Invalid element: Expecting " + str(Department.TEXTURE) + " and got " + str(texture.get_department())
+		return
 
-	texture = get_texture(asset_name)
 	geo_list = mari.geo.list()
 
 	for geo in geo_list:
 		export_geo_to_tex(geo, texture)
-	print "Export all Textures"
+	print "Exported all Textures tex files"
 
 def makeTex(tif, tex):
 	subprocess.call(["txmake", tif, tex])
