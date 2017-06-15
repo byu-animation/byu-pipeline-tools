@@ -101,6 +101,8 @@ def export_channel_to_tex(channel, texture):
 	# get the layers from the channel and cound the uvIndices in each layer
 	layers = channel.layerList()
 	for layer in layers:
+		if not layer.isPaintableLayer():
+			continue
 		uvIndices = layer.imageSet().uvIndices()
 		for uvIndex in uvIndices:
 			uvIndexList.add(uvIndex)
