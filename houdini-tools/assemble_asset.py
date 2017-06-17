@@ -23,8 +23,11 @@ def assemble_hda():
 	element = asset.get_element(Department.MODEL)
 	cache = element.get_cache_dir()
 	cache = cache.replace(project.get_project_dir(), '$JOB')
-	# TODO: only load files whose extension matches element.get_cache_ext()
 	geo_files = [x for x in os.listdir(element.get_cache_dir()) if not os.path.isdir(x)]
+	# Remove anything that is not an alembic files
+	for file_path in list(geo_files):
+		if(not str(file_path).lower().endswith('.abc')):
+			geo_files.remove(file_path)
 
 	obj = hou.node('/obj')
 	subnet = obj.createNode('subnet')
