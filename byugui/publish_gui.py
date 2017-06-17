@@ -116,7 +116,7 @@ class PublishWindow(QtWidgets.QWidget):
 
 		if str(self.comment.toPlainText()) == "":
 			msgBox = QtWidgets.QMessageBox()
-			msgBox.setText(self.tr("Please add a publish comment."))
+			msgBox.setText(self.tr("Please add a publish comment.\nComments help to track the progress."))
 			noButton = msgBox.addButton(QtWidgets.QMessageBox.Ok)
 			msgBox.exec_()
 			return
