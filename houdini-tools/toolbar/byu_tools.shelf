@@ -13,5 +13,6 @@
     <memberTool name="publish"/>
     <memberTool name="inspire"/>
     <memberTool name="test_geo"/>
+    <memberTool name="renderman_setup"/>
   </toolshelf>
 </shelfDocument>

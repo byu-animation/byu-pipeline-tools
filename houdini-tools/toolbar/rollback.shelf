@@ -6,7 +6,7 @@
  a single file. -->
 
   <tool name="rollback" label="Rollback" icon="PLASMA_App">
-    <helpText><![CDATA[= Publish Asset =
+    <helpText><![CDATA[= Rollback Asset =
 
 """Rollback an asset or shot to a previous version."""
 

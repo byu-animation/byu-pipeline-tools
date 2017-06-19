@@ -11,6 +11,7 @@ SELECTED_CHANNEL = "channel"
 mari_selection_dialog = None
 
 def go(scope = ALL):
+	print "Start export"
 	global mari_selection_dialog
 	texture = get_texture()
 	if texture is None:
@@ -98,9 +99,24 @@ def export_channel_to_tex(channel, texture):
 	# find out which uv indices are being used in the channel
 	# record them so we can keep track of their output files
 	uvIndexList = set()
-	# get the layers from the channel and cound the uvIndices in each layer
+	# get the layers from the channel
 	layers = channel.layerList()
-	for layer in layers:
+
+	# break up all the groups
+	allLayers = list()
+	while len(layers) > 0:
+		temp_layers = list()
+		for layer in list(layers):
+			if layer.isPaintableLayer():
+				allLayers.append(layer)
+			elif layer.isGroupLayer():
+				sublayers = layer.layerStack().layerList()
+				temp_layers.extend(sublayers)
+			layers.remove(layer)
+		layers = temp_layers
+
+	# count the uvIndices in each layer
+	for layer in allLayers:
 		if not layer.isPaintableLayer():
 			continue
 		uvIndices = layer.imageSet().uvIndices()
@@ -115,6 +131,9 @@ def export_channel_to_tex(channel, texture):
 	file_name = file_base + "-" + "$UDIM.tif"
 	file_path = os.path.join(baseDir, file_name)
 	channel.exportImagesFlattened(file_path, 0, uvIndexList, None)
+
+	if len(uvIndexList) < 1:
+		print "There was a problem with the uvIndex list. It is emptyp"
 
 	# find each exported file and convert it to a .tex file
 	for i in uvIndexList:

@@ -2,6 +2,7 @@ import os
 import mari
 import PySide
 import sys
+from byuam import Project
 
 def init():
     toolbar = mari.app.findToolBar("BYU Tools")
@@ -11,4 +12,8 @@ def init():
 
 init()
 
-sys.path.append('/users/animation/bdemann/Documents/grendel-dev/byu-pipeline-tools/mari-tools/scripts/')
+project = Project()
+
+script_path = os.path.join(project.get_project_dir(), 'byu-pipeline-tools/mari-tools/scripts/')
+
+sys.path.append(script_path)

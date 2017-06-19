@@ -71,6 +71,15 @@ test_geo.go()
 					]]>
 				</scriptCode>
 			</scriptItem>
+			<scriptItem id="h.rendermanSetup">
+				<label>Basic Renderman Setup</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import renderman_setup
+renderman_setup.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
 		</subMenu>
 
 		<subMenu id="edit_menu">
