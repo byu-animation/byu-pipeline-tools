@@ -11,7 +11,6 @@ SELECTED_CHANNEL = "channel"
 mari_selection_dialog = None
 
 def go(scope = ALL):
-	print "Start export"
 	global mari_selection_dialog
 	texture = get_texture()
 	if texture is None:

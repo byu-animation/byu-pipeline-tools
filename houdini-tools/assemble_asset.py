@@ -31,20 +31,67 @@ def assemble_hda():
 
 	obj = hou.node('/obj')
 	subnet = obj.createNode('subnet')
+	shop = subnet.createNode('shopnet', asset_name + '_shopnet')
 	for geo_file in geo_files:
+		geo_file_path = os.path.join(cache, geo_file)
+		name = ''.join(geo_file.split('.')[:-1])
+
+		risnet = shop.createNode('risnet')
+		risnet.setName('risnet_' + name, unique_name=True)
+		surface = risnet.createNode('pxrsurface')
+		diffuse = surface.createInputNode(2, 'pxrtexture')
+
+		displaceTex = risnet.createNode('pxrtexture')
+		pxrtofloat = displaceTex.createOutputNode('pxrtofloat')
+		pxrdisplace = risnet.createNode('pxrdisplace')
+
+		pxrdisplace.setInput(1, pxrtofloat, 0)
+		risnet.layoutChildren()
+
 		geo = subnet.createNode('geo')
 
 		# Get the paramter template group from the current geo node
 		hou_parm_template_group = geo.parmTemplateGroup()
 
-		# Create a new parameter for Render Man "Render as Subdivision" option
-		hou_parm_template = hou.ToggleParmTemplate("ri_rendersubd", "Polygons as Subdivision (RIB)", default_value=False)
-		hou_parm_template.setHelp("RiSubdivisionMesh")
-		hou_parm_template.setTags({"spare_category": "Geometry"})
-		hou_parm_template_group.append(hou_parm_template)
+		# Create a folder for the RenderMan parameters
+		renderman_folder = hou_parm_template = hou.FolderParmTemplate('stdswitcher4_1', 'RenderMan', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+
+		# Create a new parameter for RenderMan 'Displacement Shader'
+		displacement_shader = hou.StringParmTemplate('shop_displacepath', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+		displacement_shader.setHelp('RiDisplace')
+		displacement_shader.setTags({'opfilter': '!!SHOP/DISPLACEMENT!!', 'oprelative': '.', 'spare_category': 'Shaders'})
+		renderman_folder.addParmTemplate(displacement_shader)
+
+		# Create a new parameter for RenderMan 'Displacement Bound'
+		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+		displacement_bound.setHelp('Attribute: displacementbound/sphere')
+		displacement_bound.setTags({'spare_category': 'Shading'})
+		renderman_folder.addParmTemplate(displacement_bound)
+
+		# Create a new parameter for Render Man 'Render as Subdivision' option
+		rendersubd = hou.ToggleParmTemplate('ri_rendersubd', 'Polygons as Subdivision (RIB)', default_value=False)
+		rendersubd.setHelp('RiSubdivisionMesh')
+		rendersubd.setTags({'spare_category': 'Geometry'})
+		renderman_folder.addParmTemplate(rendersubd)
+
+		hou_parm_template_group.append(renderman_folder)
+
 		geo.setParmTemplateGroup(hou_parm_template_group)
 
-		hou_parm = geo.parm("ri_rendersubd")
+		# Code for /obj/geo1/shop_displacepath parm
+		hou_parm = geo.parm('shop_displacepath')
+		hou_parm.lock(False)
+		hou_parm.set(pxrdisplace.path())
+		hou_parm.setAutoscope(False)
+
+		# Code for ri_dbound parm
+		hou_parm = geo.parm('ri_dbound')
+		hou_parm.lock(False)
+		hou_parm.set(0)
+		hou_parm.setAutoscope(False)
+
+		# Code for ri_dbound parm
+		hou_parm = geo.parm('ri_rendersubd')
 		hou_parm.lock(False)
 		hou_parm.set(1)
 		hou_parm.setAutoscope(False)
@@ -52,30 +99,29 @@ def assemble_hda():
 		for child in geo.children():
 			child.destroy()
 		abc = geo.createNode('alembic')
+		abc.parm('fileName').set(geo_file_path)
 		convert = abc.createOutputNode('convert')
 		convert.setDisplayFlag(True)
 		convert.setRenderFlag(True)
-		geo_file_path = os.path.join(cache, geo_file)
-		abc.parm('fileName').set(geo_file_path)
-		name = ''.join(geo_file.split('.')[:-1])
 		geo.setName(name, unique_name=True)
 
 
 	subnet.layoutChildren()
+	shop.layoutChildren()
 	# We problably don't need this anymore now that we are jumping right into digital asset creation.
 	subnet.setName(asset_name, unique_name=True)
 
 	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
 	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
-	# node by saving it to the "checkout_file" it will put the working copy of the otl in the user folder in the project directory so
+	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
 	# the working copy won't clutter up their personal otl space.
 	operatorName = assembly.get_short_name()
-	operatorLabel = (project.get_name() + " " + asset_name).title()
+	operatorLabel = (project.get_name() + ' ' + asset_name).title()
 	saveToLibrary = checkout_file
 
 	asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
 	assetTypeDef = asset.type().definition()
-	assetTypeDef.setIcon(environment.get_project_dir() + "/byu-pipeline-tools/assets/images/icons/hda-icon.png")
+	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
 
 	# Bellow are some lines that were with the old broken version of the code I don't know what they do or why we have them?
 	# TODO figure out what these lines do and keep them if they are important and get rid of them if they are not.
