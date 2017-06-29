@@ -17,23 +17,29 @@ def assemble_hda():
 	username = project.get_current_username()
 	asset = project.get_asset(asset_name)
 
+	# Get assembly, model, and rig elements
 	assembly = asset.get_element(Department.ASSEMBLY)
+	rig = asset.get_element(Department.RIG)
+	model = asset.get_element(Department.MODEL)
+
+	# Checkout assembly
 	checkout_file = assembly.checkout(username)
 
-	element = asset.get_element(Department.MODEL)
-	cache = element.get_cache_dir()
-	cache = cache.replace(project.get_project_dir(), '$JOB')
-	geo_files = [x for x in os.listdir(element.get_cache_dir()) if not os.path.isdir(x)]
+	# Get all of the static geo
+	model_cache = model.get_cache_dir()
+	model_cache = model_cache.replace(project.get_project_dir(), '$JOB')
+	geo_files = [x for x in os.listdir(model.get_cache_dir()) if not os.path.isdir(x)]
 	# Remove anything that is not an alembic files
 	for file_path in list(geo_files):
 		if(not str(file_path).lower().endswith('.abc')):
 			geo_files.remove(file_path)
 
+	# Set up the nodes
 	obj = hou.node('/obj')
 	subnet = obj.createNode('subnet')
 	shop = subnet.createNode('shopnet', asset_name + '_shopnet')
 	for geo_file in geo_files:
-		geo_file_path = os.path.join(cache, geo_file)
+		geo_file_path = os.path.join(model_cache, geo_file)
 		name = ''.join(geo_file.split('.')[:-1])
 
 		risnet = shop.createNode('risnet')
@@ -54,7 +60,7 @@ def assemble_hda():
 		hou_parm_template_group = geo.parmTemplateGroup()
 
 		# Create a folder for the RenderMan parameters
-		renderman_folder = hou_parm_template = hou.FolderParmTemplate('stdswitcher4_1', 'RenderMan', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+		renderman_folder = hou.FolderParmTemplate('stdswitcher4_1', 'RenderMan', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
 
 		# Create a new parameter for RenderMan 'Displacement Shader'
 		displacement_shader = hou.StringParmTemplate('shop_displacepath', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
@@ -98,9 +104,40 @@ def assemble_hda():
 
 		for child in geo.children():
 			child.destroy()
-		abc = geo.createNode('alembic')
-		abc.parm('fileName').set(geo_file_path)
-		convert = abc.createOutputNode('convert')
+		abcStatic = geo.createNode('alembic')
+		abcStatic.parm('fileName').set(geo_file_path)
+		geo_file_name = os.path.basename(geo_file_path)
+
+		switch = abcStatic.createOutputNode('switch')
+		switchExpression = '''{
+			if ( strcmp(chs("../../shot"),"static") ) {
+				return 1;
+			}
+			return 0;
+		}'''
+		switch.parm('input').setExpression(switchExpression)
+
+		# Get all of the animated geo
+		# Some of the animated geo is going to be from rigs and some is going to be from models so we need to plan for either to happen. Later we will add an expression that will use the alemibic that has geo in it.
+		rig_reference = "/" + rig.get_long_name() + "_" + os.path.splitext(geo_file_name)[0]
+		model_reference = "/" + model.get_long_name() + "_" + os.path.splitext(geo_file_name)[0]
+		dynSwitch = switch.createInputNode(1, 'switch')
+		abcDynRig = dynSwitch.createInputNode(0, 'alembic')
+		abcDynRig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '.abc"')
+		abcDynRig.parm('objectPath').set(rig_reference)
+		abcDynModel = dynSwitch.createInputNode(1, 'alembic')
+		abcDynModel.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '.abc"')
+		abcDynModel.parm('objectPath').set(model_reference)
+		# Set the switch to select the input with the most geo (theoretically this comparition should be between nothing and something or nothing and nothing. It is not meant to handle if there is geo on both sides)
+		dynSwitchExpression = '''{
+		    if ( npoints(opinputpath(".", 0)) > npoints(opinputpath(".", 1)) ) {
+		        return 0;
+		    }
+		    return 1;
+		}'''
+		dynSwitch.parm('input').setExpression(dynSwitchExpression)
+
+		convert = switch.createOutputNode('convert')
 		convert.setDisplayFlag(True)
 		convert.setRenderFlag(True)
 		geo.setName(name, unique_name=True)
@@ -131,6 +168,32 @@ def assemble_hda():
 	# subnet.type().definition().copyToHDAFile(checkout_file, new_name=assembly.get_long_name(), new_menu_name=asset_name)
 	# Why on earth are we trying to install it? It should already show up for the user and s/he hasn't publihsed it yet so it shouldn't be published for anyone else yet.
 	# hou.hda.installFile(checkout_file)
+
+	parmGroup = asset.parmTemplateGroup()
+	projectFolder = hou.FolderParmTemplate('stdswitcher4_1', project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+	script = '''
+from byuam.project import Project
+
+project = Project()
+directory_list = list()
+
+shots = project.list_shots()
+
+directory_list.append("static")
+directory_list.append("static")
+
+for shot in shots:
+	directory_list.append(shot)
+	directory_list.append(shot)
+
+return directory_list
+	'''
+	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal)
+	projectFolder.addParmTemplate(shot)
+	parmGroup.addParmTemplate(projectFolder)
+	asset.type().definition().setParmTemplateGroup(parmGroup)
+	asset.parm('shot').set('static')
+
 
 def go():
 	# checkout_window = CheckoutWindow()

@@ -10,7 +10,7 @@ then
     # If working on the new image, update the houdini directory
     if [ ! -d "${HFS}" ]
     then
-        export HFS=/opt/hfs15.5.480
+        export HFS=/opt/hfs16.0
     fi
 fi
 
