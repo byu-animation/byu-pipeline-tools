@@ -1,21 +1,21 @@
 {
 	"buttons":[
-        {
-            "icon":"checkout.xpm",
-            "annotation":"Checkout a model, rig or animation",
-            "python_file":"checkout.py"
-        }, {
-            "icon":"new.xpm",
-            "annotation":"Create a new asset",
-            "python_file":"new_asset.py"
-        }, {
-            "icon":"publish.xpm",
-            "annotation":"Publish a model, rig or animation",
-            "python_file":"publish.py"
-        }, {
-            "icon":"frame_range.xpm",
-            "annotation":"Set the correct frame range for the current shot",
-            "python_file":"frame_range.py"
+		{
+			"icon":"checkout.xpm",
+			"annotation":"Checkout a model, rig or animation",
+			"python_file":"checkout.py"
+		}, {
+			"icon":"new.xpm",
+			"annotation":"Create a new body",
+			"python_file":"newbody.py"
+		}, {
+			"icon":"publish.xpm",
+			"annotation":"Publish a model, rig or animation",
+			"python_file":"publish.py"
+		}, {
+			"icon":"frame_range.xpm",
+			"annotation":"Set the correct frame range for the current shot",
+			"python_file":"frame_range.py"
 		}, {
 			"icon":"playblast.xpm",
 			"annotation":"Playblast this shot",
@@ -32,22 +32,22 @@
 			"icon":"alembic_untagger.xpm",
 			"annotation":"Untag Selected Objects for Export",
 			"python_file":"alembic_untagger.py"
-        }, {
-            "icon":"reference.xpm",
-            "annotation":"Reference a model or rig",
-            "python_file":"reference.py"
-        }, {
-            "icon":"brent.xpm",
-            "annotation":"Inspirational quote of the day!",
-            "python_file":"inspire_quote.py"
-        }, {
-            "icon":"gnome.xpm",
-            "annotation":"Gnomic Test Geo",
-            "python_file":"import_test_geo.py"
-        }, {
-            "icon":"rollback.xpm",
-            "annotation":"Rollback body to previous version",
-            "python_file":"rollback.py"
-        }
+		}, {
+			"icon":"reference.xpm",
+			"annotation":"Reference a model or rig",
+			"python_file":"reference.py"
+		}, {
+			"icon":"brent.xpm",
+			"annotation":"Inspirational quote of the day!",
+			"python_file":"inspire_quote.py"
+		}, {
+			"icon":"gnome.xpm",
+			"annotation":"Gnomic Test Geo",
+			"python_file":"import_test_geo.py"
+		}, {
+			"icon":"rollback.xpm",
+			"annotation":"Rollback body to previous version",
+			"python_file":"rollback.py"
+		}
 	]
 }

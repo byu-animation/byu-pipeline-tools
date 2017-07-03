@@ -501,8 +501,8 @@ class ElementBrowser(QtWidgets.QWidget):
         #         self.tree.takeTopLevelItem(i)
 
     def _new_body(self):
-        from byugui import new_asset_gui
-        self.new_body_dialog = new_asset_gui.CreateWindow(self)
+        from byugui import new_body_gui
+        self.new_body_dialog = new_body_gui.CreateWindow(self)
         if self.current_body == self.ASSETS:
             self.new_body_dialog.setCurrentIndex(self.new_body_dialog.ASSET_INDEX)
         elif self.current_body == self.SHOTS:

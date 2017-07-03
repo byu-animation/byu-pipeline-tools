@@ -4,7 +4,7 @@ import shutil
 from .body import Body, Asset, Shot
 # from .department import Department
 from .element import Checkout, Element
-from .environment import Department, Environment, User
+from .environment import Department, Environment, User, AssetType
 from . import pipeline_io
 from .registry import Registry
 
@@ -93,6 +93,9 @@ class Project:
 		return body
 
 	def _create_body(self, name, bodyobj):
+		"""
+		If a body with that name already exists, raises EnvironmentError.
+		"""
 		name = pipeline_io.alphanumeric(name)
 		filepath = os.path.join(bodyobj.get_parent_dir(), name)
 		if name in self.list_bodies():
@@ -107,18 +110,18 @@ class Project:
 			new_body.create_element(dept, Element.DEFAULT_NAME)
 		return new_body
 
-	def create_asset(self, name):
+	def create_asset(self, name, asset_type=AssetType.ACCESSORY):
 		"""
-		creates a new shot with the given name, and returns the resulting shot object.
-		If a shot with that name already exists, raises EnvironmentError.
-		name -- the name of the new shot to create
+		creates a new asset with the given name, and returns the resulting asset object.
+		name -- the name of the new asset to create
 		"""
-		return self._create_body(name, Asset)
+		asset = self._create_body(name, Asset)
+		asset.update_type(asset_type)
+		return asset
 
 	def create_shot(self, name):
 		"""
 		creates a new shot with the given name, and returns the resulting shot object.
-		If a shot with that name already exists, raises EnvironmentError.
 		name -- the name of the new shot to create
 		"""
 		return self._create_body(name, Shot)

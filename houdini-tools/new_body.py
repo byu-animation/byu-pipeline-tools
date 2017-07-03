@@ -1,4 +1,4 @@
-from byugui.new_asset_gui import CreateWindow, NewAssetWindow
+from byugui.new_body_gui import CreateWindow, NewBodyWindow
 from PySide2 import QtWidgets
 import hou
 import os
