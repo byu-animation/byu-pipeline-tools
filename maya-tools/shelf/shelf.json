@@ -7,7 +7,7 @@
 		}, {
 			"icon":"new.xpm",
 			"annotation":"Create a new body",
-			"python_file":"newbody.py"
+			"python_file":"new_body.py"
 		}, {
 			"icon":"publish.xpm",
 			"annotation":"Publish a model, rig or animation",
