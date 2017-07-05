@@ -74,6 +74,12 @@ def assemble_hda():
 		displacement_bound.setTags({'spare_category': 'Shading'})
 		renderman_folder.addParmTemplate(displacement_bound)
 
+		# Create a new parameter for RenderMan 'Interpolate Boundary'
+		interpolate_boundary = hou.ToggleParmTemplate("ri_interpolateboundary", "Interpolate Boundary", default_value=False)
+		interpolate_boundary.setHelp("RiSubdivisionMesh - interpolateboundary")
+		interpolate_boundary.setTags({"spare_category": "Geometry"})
+		renderman_folder.addParmTemplate(interpolate_boundary)
+
 		# Create a new parameter for Render Man 'Render as Subdivision' option
 		rendersubd = hou.ToggleParmTemplate('ri_rendersubd', 'Polygons as Subdivision (RIB)', default_value=False)
 		rendersubd.setHelp('RiSubdivisionMesh')
@@ -96,7 +102,13 @@ def assemble_hda():
 		hou_parm.set(0)
 		hou_parm.setAutoscope(False)
 
-		# Code for ri_dbound parm
+		# Code for ri_interpolateboundary parm
+		hou_parm = geo.parm("ri_interpolateboundary")
+		hou_parm.lock(False)
+		hou_parm.set(1)
+		hou_parm.setAutoscope(False)
+
+		# Code for ri_rendersubd parm
 		hou_parm = geo.parm('ri_rendersubd')
 		hou_parm.lock(False)
 		hou_parm.set(1)
