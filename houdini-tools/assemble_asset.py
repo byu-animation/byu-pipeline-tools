@@ -5,6 +5,7 @@ from PySide2 import QtGui, QtWidgets, QtCore
 
 from byuam import Department, Project, Environment
 from byugui.assemble_gui import AssembleWindow
+from byuam.environment import AssetType
 
 def assemble_hda():
 	asset_name = checkout_window.result
@@ -16,14 +17,125 @@ def assemble_hda():
 	environment = Environment()
 	username = project.get_current_username()
 	asset = project.get_asset(asset_name)
-
-	# Get assembly, model, and rig elements
 	assembly = asset.get_element(Department.ASSEMBLY)
-	rig = asset.get_element(Department.RIG)
-	model = asset.get_element(Department.MODEL)
-
 	# Checkout assembly
 	checkout_file = assembly.checkout(username)
+
+	if asset.get_type() == AssetType.SET:
+		assemble_set(project, environment, assembly, asset, checkout_file)
+	else:
+		assemble(project, environment, assembly, asset, checkout_file)
+
+def create_shot_menu():
+	script = '''
+from byuam.project import Project
+
+project = Project()
+directory_list = list()
+
+shots = project.list_shots()
+
+#directory_list.append("static")
+#directory_list.append("static")
+
+for shot in shots:
+	directory_list.append(shot)
+	directory_list.append(shot)
+
+return directory_list
+	'''
+	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal)
+	return shot
+
+def assemble_set(project, environment, assembly, asset, checkout_file):
+	print "This is a set"
+	model = asset.get_element(Department.MODEL)
+
+	# Get all of the static geo
+	model_cache = model.get_cache_dir()
+	model_cache = model_cache.replace(project.get_project_dir(), '$JOB')
+	geo_files = [x for x in os.listdir(model.get_cache_dir()) if not os.path.isdir(x)]
+
+	# Remove anything that is not an alembic files
+	for file_path in list(geo_files):
+		if(not str(file_path).lower().endswith('.abc')):
+			geo_files.remove(file_path)
+
+	# Set up the nodes
+	obj = hou.node('/obj')
+	subnet = obj.createNode('subnet')
+
+	# Set up the set parameters
+	# Get the paramter template group from the current geo node
+	hou_parm_template_group = subnet.parmTemplateGroup()
+	# Create a folder for the set parameters
+	set_folder = hou.FolderParmTemplate('stdswitcher4_1', 'Set Options', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+	set_folder.addParmTemplate(create_shot_menu())
+
+	used_hdas = set()
+	for geo_file in geo_files:
+		geo_file_path = os.path.join(model_cache, geo_file)
+		name = ''.join(geo_file.split('.')[:-1])
+		print name
+		# TODO : what if it is a rig?
+		index = name.find("_model")
+		if(index < 0):
+			index = name.find("_rig")
+		if(index < 0):
+			print "We couldn't find either a rig or a model for this asset. That means something went wrong or I need to rethink this tool."
+		asset_name = name[:index]
+		print asset_name
+		if(asset_name in used_hdas):
+			print used_hdas
+			continue
+		try:
+			hda = subnet.createNode(asset_name + "_main")
+		except:
+			msgBox = QtWidgets.QMessageBox()
+			msgBox.setText(msgBox.tr("There is not asset named " + asset_name + ". You may need to assemble it first."))
+			msgBox.addButton(QtWidgets.QMessageBox.Ok)
+
+			msgBox.exec_()
+			print "There is not asset named " + asset_name + ". You may need to assemble it first."
+			subnet.destroy()
+			return
+		used_hdas.add(asset_name)
+		label_text = asset_name.replace('_', ' ').title()
+		geo_label = hou.LabelParmTemplate(asset_name, label_text)
+		hide_check_name = "hide_" + asset_name
+		hide_check = hou.ToggleParmTemplate(hide_check_name, "Hide")
+		animated_toggle_name = "animate_" + asset_name
+		animated_toggle = hou.ToggleParmTemplate(animated_toggle_name, "Animated")
+		set_folder.addParmTemplate(geo_label)
+		set_folder.addParmTemplate(hide_check)
+		set_folder.addParmTemplate(animated_toggle)
+		hda.parm('hide').setExpression('ch("../' + hide_check_name + '")')
+		hda.parm('animate').setExpression('ch("../' + animated_toggle_name + '")')
+		hda.parm('shot').setExpression('chs("../shot")')
+
+	hou_parm_template_group.append(set_folder)
+	subnet.layoutChildren()
+	# We problably don't need this anymore now that we are jumping right into digital asset creation.
+	subnet.setName(asset.get_name(), unique_name=True)
+
+	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
+	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
+	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
+	# the working copy won't clutter up their personal otl space.
+	operatorName = assembly.get_short_name()
+	operatorLabel = (project.get_name() + ' ' + asset.get_name()).title()
+	saveToLibrary = checkout_file
+
+	asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
+	assetTypeDef = asset.type().definition()
+	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
+	assetTypeDef.setParmTemplateGroup(hou_parm_template_group)
+
+
+def assemble(project, environment, assembly, asset, checkout_file):
+	# Get assembly, model, and rig elements
+	rig = asset.get_element(Department.RIG)
+	model = asset.get_element(Department.MODEL)
 
 	# Get all of the static geo
 	model_cache = model.get_cache_dir()
@@ -37,7 +149,7 @@ def assemble_hda():
 	# Set up the nodes
 	obj = hou.node('/obj')
 	subnet = obj.createNode('subnet')
-	shop = subnet.createNode('shopnet', asset_name + '_shopnet')
+	shop = subnet.createNode('shopnet', asset.get_name() + '_shopnet')
 	for geo_file in geo_files:
 		geo_file_path = os.path.join(model_cache, geo_file)
 		name = ''.join(geo_file.split('.')[:-1])
@@ -117,17 +229,21 @@ def assemble_hda():
 		for child in geo.children():
 			child.destroy()
 		abcStatic = geo.createNode('alembic')
+		abcStatic.setName("staticAlembic")
 		abcStatic.parm('fileName').set(geo_file_path)
+		# name groups in the alembic after the transfrom node names
+		abcStatic.parm("groupnames").set(4)
 		geo_file_name = os.path.basename(geo_file_path)
 
 		switch = abcStatic.createOutputNode('switch')
-		switchExpression = '''{
-			if ( strcmp(chs("../../shot"),"static") ) {
-				return 1;
-			}
-			return 0;
-		}'''
-		switch.parm('input').setExpression(switchExpression)
+		# switchExpression = '''{
+		# 	if ( strcmp(chs("../../shot"),"static") ) {
+		# 		return 1;
+		# 	}
+		# 	return 0;
+		# }'''
+		# switchExpression = 'ch("../../animate")'
+		switch.parm('input').setExpression('ch("../../animate")')
 
 		# Get all of the animated geo
 		# Some of the animated geo is going to be from rigs and some is going to be from models so we need to plan for either to happen. Later we will add an expression that will use the alemibic that has geo in it.
@@ -150,22 +266,37 @@ def assemble_hda():
 		dynSwitch.parm('input').setExpression(dynSwitchExpression)
 
 		convert = switch.createOutputNode('convert')
-		convert.setDisplayFlag(True)
-		convert.setRenderFlag(True)
+
+		hide_switch = convert.createOutputNode('switch')
+		blast = convert.createOutputNode('blast')
+		hide_switch.setInput(1, blast)
+		hide_switch.parm('input').setExpression('ch("../../hide")')
+		out = hide_switch.createOutputNode('null')
+
+		out.setDisplayFlag(True)
+		out.setRenderFlag(True)
+
+		groups = out.geometry().primGroups()
+		for group in groups:
+			print group
+			# TODO figure out how to make the material thing for each group
+			# TODO take all of this out of the for each geo file loop
+			print group.name()
+
 		geo.setName(name, unique_name=True)
 
 
 	subnet.layoutChildren()
 	shop.layoutChildren()
 	# We problably don't need this anymore now that we are jumping right into digital asset creation.
-	subnet.setName(asset_name, unique_name=True)
+	subnet.setName(asset.get_name(), unique_name=True)
 
 	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
 	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
 	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
 	# the working copy won't clutter up their personal otl space.
 	operatorName = assembly.get_short_name()
-	operatorLabel = (project.get_name() + ' ' + asset_name).title()
+	operatorLabel = (project.get_name() + ' ' + asset.get_name()).title()
 	saveToLibrary = checkout_file
 
 	asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
@@ -183,25 +314,11 @@ def assemble_hda():
 
 	parmGroup = asset.parmTemplateGroup()
 	projectFolder = hou.FolderParmTemplate('stdswitcher4_1', project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
-	script = '''
-from byuam.project import Project
-
-project = Project()
-directory_list = list()
-
-shots = project.list_shots()
-
-directory_list.append("static")
-directory_list.append("static")
-
-for shot in shots:
-	directory_list.append(shot)
-	directory_list.append(shot)
-
-return directory_list
-	'''
-	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal)
-	projectFolder.addParmTemplate(shot)
+	projectFolder.addParmTemplate(create_shot_menu())
+	hide_check = hou.ToggleParmTemplate("hide", "Hide")
+	animated_toggle = hou.ToggleParmTemplate("animate", "Animated")
+	projectFolder.addParmTemplate(hide_check)
+	projectFolder.addParmTemplate(animated_toggle)
 	parmGroup.addParmTemplate(projectFolder)
 	asset.type().definition().setParmTemplateGroup(parmGroup)
 	asset.parm('shot').set('static')
