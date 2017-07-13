@@ -45,6 +45,14 @@
 			"annotation":"Gnomic Test Geo",
 			"python_file":"import_test_geo.py"
 		}, {
+			"icon":"alembic_exporter.xpm",
+			"annotation":"Static Alembic Exporter",
+			"python_file":"alembic_static_exporter.py"
+		}, {
+			"icon":"reload.xpm",
+			"annotation":"Reload Scripts",
+			"python_file":"reload_scripts.py"
+		}, {
 			"icon":"rollback.xpm",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"

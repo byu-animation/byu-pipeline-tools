@@ -6,7 +6,7 @@ import shutil
 from pymel.core import *
 
 import byuam.pipeline_io as pio
-from byuam.environment import Environment
+from byuam.environment import Environment, AssetType
 from byuam.project import Project
 #from ui_tools import ui, messageSeverity
 
@@ -73,8 +73,71 @@ def abcExport(selected, path):
 
 	return abcfiles
 
+def getLoadedReferences():
+	references = mc.ls(references=True)
+	loaded=[]
+	print "Loaded References: "
+	for ref in references:
+		print "Checking status of " + ref
+		try:
+			if cmds.referenceQuery(ref, isLoaded=True):
+				loaded.append(ref)
+		except:
+			print "Warning: " + ref + " was not associated with a reference file"
+	return loaded
+
+def abcExportLoadedReferences(path):
+	if not os.path.exists(path):
+		os.makedirs(path)
+
+	abcfiles = []
+
+	loadPlugin('AbcExport')
+	for ref in getLoadedReferences():
+		print ref
+		refNodes = mc.referenceQuery(unicode(ref), nodes=True)
+		rootNode = ls(refNodes[0])
+		roots_string = ""
+		#TODO check if the root has been tagged
+		# if not check to see if its children have been tagged
+		# At this point we have a node that is ready for export
+		for alem_obj in rootNode:
+			roots_string += (" -root %s"%(alem_obj))
+
+		print "roots_string: " + roots_string
+
+		abcFile = formatFilename(ref) + ".abc"
+		abcFilePath = os.path.join(path, abcFile)
+		print abcFilePath
+		command = 'AbcExport -j "%s -frameRange 1 1 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, abcFilePath)
+		Mel.eval(command)
+		abcfiles.append(abcFilePath)
+
+	return abcfiles
+
+
+def abcExportAll(name, path):
+	if not os.path.exists(path):
+		os.makedirs(path)
+
+	abcFile = name + ".abc"
+	abcFilePath = os.path.join(path, abcFile)
+
+	loadPlugin('AbcExport')
+
+	command = 'AbcExport -j "-writeVisibility -noNormals -uvWrite -worldSpace -file ' + abcFilePath + '";'
+	Mel.eval(command)
+
+	abcFiles = []
+
+	abcFiles.append(abcFilePath)
+
+	return abcFiles
+
+
 def formatFilename(filename):
 	filename = filename.replace("Shape", "")
+	filename = filename.replace("RN", "")
 	filename = pio.alphanumeric(filename)
 	return filename
 
@@ -229,7 +292,17 @@ def generateGeometry(path=''):
 	#if not len(checkFiles(objs)) == 0:
 	#	return False
 
-	abcs = abcExport(selection_long, ABCPATH)
+	# We decided to try exporting all the geo into one alembic file instead of many. This is the line that does many
+	# abcs = abcExport(selection_long, ABCPATH)
+	if body.is_asset():
+		if body.get_type() == AssetType.SET:
+			abcs = abcExportLoadedReferences(ABCPATH)
+		else:
+			abcs = abcExportAll(elem.get_long_name(), ABCPATH)
+	else:
+		abcs = abcExportAll(elem.get_long_name(), ABCPATH)
+	print str(body.is_asset()) + " it is an asset"
+	print "The type is " + body.get_type()
 	if not len(checkFiles(abcs)) == 0:
 		return False
 

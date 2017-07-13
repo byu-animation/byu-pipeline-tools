@@ -10,6 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
+import error_gui
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
@@ -115,10 +116,7 @@ class PublishWindow(QtWidgets.QWidget):
 	def publish(self):
 
 		if str(self.comment.toPlainText()) == "":
-			msgBox = QtWidgets.QMessageBox()
-			msgBox.setText(self.tr("Please add a publish comment.\nComments help to track the progress."))
-			noButton = msgBox.addButton(QtWidgets.QMessageBox.Ok)
-			msgBox.exec_()
+			error_gui.error("Please add a publish comment.\nComments help to track the progress.")
 			return
 
 		self.elementType = str(self.menu.currentText())

@@ -161,6 +161,13 @@ class Project:
 		"""
 		return self._list_bodies_in_dir(self._env.get_shots_dir(), filter)
 
+	def list_sets(self):
+		"""
+		returns a list of strings containing the names of all sets in this project
+		"""
+		import operator
+		return self._list_bodies_in_dir(self._env.get_assets_dir(), (Asset.TYPE, operator.eq, AssetType.SET))
+
 	def list_bodies(self):
 		"""
 		returns a list of strings containing the names of all bodies (assets and shots)
