@@ -93,7 +93,8 @@ def abcExportLoadedReferences(path):
 	abcfiles = []
 
 	loadPlugin('AbcExport')
-	for ref in getLoadedReferences():
+	loadedRefs = getLoadedReferences()
+	for i, ref in enumerate(loadedRefs):
 		print ref
 		refNodes = mc.referenceQuery(unicode(ref), nodes=True)
 		rootNode = ls(refNodes[0])
@@ -108,11 +109,14 @@ def abcExportLoadedReferences(path):
 
 		abcFile = formatFilename(ref) + ".abc"
 		abcFilePath = os.path.join(path, abcFile)
-		print abcFilePath
+		print "The file path: " + str(abcFilePath)
 		command = 'AbcExport -j "%s -frameRange 1 1 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, abcFilePath)
+		print "The command: " + command
 		Mel.eval(command)
+		print "Export successful! " + str(i) + " of " + str(len(loadedRefs))
 		abcfiles.append(abcFilePath)
 
+	print "all exports complete"
 	return abcfiles
 
 

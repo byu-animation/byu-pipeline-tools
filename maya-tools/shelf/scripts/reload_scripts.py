@@ -9,7 +9,6 @@ import import_test_geo
 import new_body
 import playblast
 import publish
-import referenceQuery
 import rollback
 
 def go():
@@ -23,5 +22,4 @@ def go():
 	reload(new_body)
 	reload(playblast)
 	reload(publish)
-	reload(referenceQuery)
 	reload(rollback)
