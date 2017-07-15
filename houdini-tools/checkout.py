@@ -1,0 +1,71 @@
+# Author: Trevor Barrus
+import hou
+import os
+from PySide2 import QtGui, QtWidgets, QtCore
+from byugui import CheckoutWindow
+
+from byuam import Department, Project, Environment, Element
+
+def checkout_shot():
+	filepath = checkout_window.result
+	if filepath is not None:
+		if not os.path.exists(filepath):
+			print "Filepath doesn't exist"
+			filepath += ".hipnc"
+			hou.hipFile.clear()
+			hou.hipFile.setName(filepath)
+			hou.hipFile.save()
+		else:
+			hou.hipFile.load(filepath)
+
+def checkout_hda(hda, project, environment):
+	'''
+	hda - an hda to checkout
+	Returns the element_path if the checkout was successful. Otherwise return None
+	'''
+	#if node is digital asset
+	if hda.type().definition() is not None:
+		asset_name = hda.type().name() #get name of hda
+		index = asset_name.find("_main")
+		asset_name = asset_name[:index]
+		src = hda.type().definition().libraryFilePath()
+		current_user = environment.get_current_username()
+
+		if asset_name in project.list_assets():
+			body = project.get_asset(asset_name)
+
+		if os.path.exists(src):
+			if body is not None:
+				if Element.DEFAULT_NAME in body.list_elements(Department.ASSEMBLY):
+					element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
+					element_path = element.checkout(current_user)
+					hou.hda.uninstallFile(src, change_oplibraries_file=False)
+					hou.hda.installFile(element_path)
+					hda.allowEditingOfContents()
+					return element_path
+	return None
+
+def checkout_asset():
+	global checkout_window
+	project = Project()
+	environment = Environment()
+	nodes = hou.selectedNodes()
+	if len(nodes) == 1:
+		result = checkout_hda(nodes[0], project, environment)
+		if result is not None:
+			hou.ui.displayMessage('Checkout Successful!', title='Success!')
+		else:
+			hou.ui.displayMessage('Checkout Failed', title='Failure :()')
+
+	elif len(nodes) > 1:
+		hou.ui.displayMessage("Only one node can be selected for checkout")
+	else:
+		hou.ui.displayMessage("You need to select an asset node to checkout")
+
+def go():
+	global checkout_window
+	project = Project()
+	environment = Environment()
+
+	checkout_window = CheckoutWindow(hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
+	checkout_window.finished.connect(checkout_shot)

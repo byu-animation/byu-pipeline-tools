@@ -8,6 +8,15 @@
 		<subMenu id="tools_menu">
 			<label>BYU Tools</label>
 			<insertBefore>render_menu</insertBefore>
+			<scriptItem id="h.reassemble">
+				<label>Reassemble</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import assemble_asset
+assemble_asset.rego()
+					]]>
+				</scriptCode>
+			</scriptItem>
 			<scriptItem id="h.createBody">
 				<label>Create Body</label>
 				<scriptCode scriptType="python">
@@ -18,11 +27,20 @@ new_body.go()
 				</scriptCode>
 			</scriptItem>
 			<scriptItem id="h.chekcout">
-				<label>Checkout</label>
+				<label>Checkout Shot</label>
 				<scriptCode scriptType="python">
 					<![CDATA[
 import checkout_asset
 checkout_asset.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+			<scriptItem id="h.chekcoutAsset">
+				<label>Checkout Asset</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import checkout_asset
+checkout_asset.checkout_asset()
 					]]>
 				</scriptCode>
 			</scriptItem>

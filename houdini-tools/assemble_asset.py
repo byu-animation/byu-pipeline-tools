@@ -7,6 +7,46 @@ from byuam import Department, Project, Environment
 from byugui.assemble_gui import AssembleWindow
 from byuam.environment import AssetType
 from byugui import error_gui
+import checkout
+
+def rego():
+	'''
+	reassembles the currently selected node. That means leaving all of the shop nets in place but throwing out the geo and bringing it in fresh.
+	'''
+
+	selection = hou.selectedNodes()
+
+	if len(selection) > 1:
+		error_gui.error("Please only select one item")
+		return
+	if len(selection) <1:
+		error_gui.error("Please select an item to be reassembled")
+		return
+
+	hda = selection[0]
+
+	name = hda.name()
+	index = name.rfind("_")
+	main = name[index:]
+	asset_name = name[:index]
+
+	if main.find("_main") == -1:
+		error_gui.error("There was something wrong with the name. Try tabbing in the asset again and trying one more time.")
+		return
+
+	# asset_name = name[0]
+	print str(hda.name()) + " is the hda name"
+	print str(name) + " is the name"
+	print str(asset_name) + " is the asset_name"
+
+	project = Project()
+	environment = Environment()
+	username = project.get_current_username()
+	asset = project.get_asset(asset_name)
+	assembly = asset.get_element(Department.ASSEMBLY)
+	# Checkout assembly
+	checkout_file = checkout.checkout_hda(hda, project, environment)
+	reassemble(hda, project, environment, assembly, asset, checkout_file)
 
 def assemble_hda():
 	asset_name = checkout_window.result
@@ -117,13 +157,9 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 		geo_label = hou.LabelParmTemplate(asset_name, label_text)
 		hide_check_name = "hide_" + asset_name
 		hide_check = hou.ToggleParmTemplate(hide_check_name, "Hide")
-		animated_toggle_name = "animate_" + asset_name
-		animated_toggle = hou.ToggleParmTemplate(animated_toggle_name, "Animated")
 		set_folder.addParmTemplate(geo_label)
 		set_folder.addParmTemplate(hide_check)
-		set_folder.addParmTemplate(animated_toggle)
 		hda.parm('hide').setExpression('ch("../' + hide_check_name + '")')
-		hda.parm('animate').setExpression('ch("../' + animated_toggle_name + '")')
 		hda.parm('shot').setExpression('chs("../shot")')
 
 	hou_parm_template_group.append(set_folder)
@@ -143,7 +179,6 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 	assetTypeDef = asset.type().definition()
 	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
 	assetTypeDef.setParmTemplateGroup(hou_parm_template_group)
-
 
 def addMaterialOptions(geo, groups):
 	hou_parm_template_group = geo.parmTemplateGroup()
@@ -184,9 +219,9 @@ try:
 except:
 	print "Error while cooking set_model_alembic"
 try:
-	hou.node("./animaged_rig").cook(force=True)
+	hou.node("./animated_rig").cook(force=True)
 except:
-	print "Error while cooking animaged_rig"
+	print "Error while cooking animated_rig"
 try:
 	hou.node("./animated_model").cook(force=True)
 except:
@@ -203,7 +238,7 @@ hou.node("./shot_switch").cook(force=True)
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
-def add_renderman_settings(geo, pxrdisplace):
+def add_renderman_settings(geo, pxrdisplace=None):
 	# Get the paramter template group from the current geo node
 	hou_parm_template_group = geo.parmTemplateGroup()
 
@@ -241,7 +276,8 @@ def add_renderman_settings(geo, pxrdisplace):
 	# Code for /obj/geo1/shop_displacepath parm
 	hou_parm = geo.parm('shop_displacepath')
 	hou_parm.lock(False)
-	hou_parm.set(pxrdisplace.path())
+	if pxrdisplace is not None:
+		hou_parm.set(pxrdisplace.path())
 	hou_parm.setAutoscope(False)
 
 	# Code for ri_dbound parm
@@ -271,7 +307,7 @@ def clean_file_list(file_paths, ext):
 			file_paths.remove(file_path)
 	return file_paths
 
-def set_up_ristnet(shop, name):
+def ristnet_set_up(shop, name):
 	risnet = shop.createNode('risnet')
 	risnet.setName('risnet_' + name, unique_name=True)
 	surface = risnet.createNode('pxrsurface')
@@ -307,11 +343,96 @@ return prefix + str(hou.ch("../''' + group + '''"))
 	'''
 	return expression
 
-def assemble(project, environment, assembly, asset, checkout_file):
-	# Get assembly, model, and rig elements
-	rig = asset.get_element(Department.RIG)
-	model = asset.get_element(Department.MODEL)
+def create_hda(asset, assembly, project, environment, checkout_file):
+	# Set up the nodes
+	obj = hou.node('/obj')
+	subnet = obj.createNode('subnet')
+	subnet.setName(asset.get_name(), unique_name=True)
 
+	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
+	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
+	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
+	# the working copy won't clutter up their personal otl space.
+	operatorName = assembly.get_short_name()
+	operatorLabel = (project.get_name() + ' ' + asset.get_name()).title()
+	saveToLibrary = checkout_file
+
+	hda = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
+	assetTypeDef = hda.type().definition()
+	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
+
+	# Bellow are some lines that were with the old broken version of the code I don't know what they do or why we have them?
+	# TODO figure out what these lines do and keep them if they are important and get rid of them if they are not.
+	# For your convience I have included some of my confustions about them.
+	# My only fear is that they acctually do something important and later this year I will find that this doesn't work (much like I did just now with the description option for the createDigitalAsset function) and I will want to know the fix.
+	# I dont' know why we need to copy the type properties. Shouldn't it be that those properties come over when we create the asset in the first place?
+	# subnet.type().definition().copyToHDAFile(checkout_file, new_name=assembly.get_long_name(), new_menu_name=asset_name)
+	# Why on earth are we trying to install it? It should already show up for the user and s/he hasn't publihsed it yet so it shouldn't be published for anyone else yet.
+	# hou.hda.installFile(checkout_file)
+	return hda
+
+def assemble(project, environment, assembly, asset, checkout_file):
+	hda = create_hda(asset, assembly, project, environment, checkout_file)
+
+	shop = hda.createNode('shopnet', asset.get_name() + '_shopnet')
+
+	risnet_nodes = ristnet_set_up(shop, asset.get_name())
+	shop.layoutChildren()
+
+	# Set up geo node
+	geo = geo_setup(hda, asset, project, risnet_nodes=risnet_nodes)
+
+	# Finish setting up the hda
+	hda.layoutChildren()
+	hda = hda_parameter_setup(hda, geo, project)
+
+def reassemble(hda, project, environment, assembly, asset, checkout_file):
+	shop = hda.node(asset.get_name() + "_shopnet")
+
+	geos = [c for c in hda.children() if c.type().name() == "geo"]
+	for geo in geos:
+		geo.destroy()
+
+	geo = geo_setup(hda, asset, project)
+
+	hda.layoutChildren()
+	hda = reset_parameters(hda)
+	hda = hda_parameter_setup(hda, geo, project)
+
+def reset_parameters(hda):
+	subnet = hou.node("obj").createNode('subnet')
+	parmGroup = subnet.parmTemplateGroup()
+	hda.type().definition().setParmTemplateGroup(parmGroup)
+	subnet.destroy()
+	return hda
+
+def hda_parameter_setup(hda, geo, project):
+	parmGroup = hda.parmTemplateGroup()
+	projectName = project.get_name().lower().replace(" ", "_")
+	projectFolder = hou.FolderParmTemplate(projectName, project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+
+	source_menu = hou.MenuParmTemplate('source', 'Source', ('set', 'animated', 'object_space'), menu_labels=('Set', 'Animated', 'Object Space'))
+	source_menu_index = hou.IntParmTemplate('source_index', 'Source Index', 1, is_hidden=True)
+
+	projectFolder.addParmTemplate(source_menu)
+	projectFolder.addParmTemplate(source_menu_index)
+	cook_script='hou.node("./' + geo.name() + '").parm("cook").pressButton()'
+	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1', callback_script=cook_script))
+	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0', callback_script=cook_script))
+	hide_check = hou.ToggleParmTemplate("hide", "Hide")
+	projectFolder.addParmTemplate(hide_check)
+	parmGroup.addParmTemplate(projectFolder)
+	hda.type().definition().setParmTemplateGroup(parmGroup)
+
+	# since the shot and set parms are technially srings and not really menus we need to set them to be the first string so they don't come in blank
+	first_shot = str(project.list_shots()[0])
+	first_set = str(project.list_sets()[0])
+	hda.parm('shot').set(first_shot)
+	hda.parm('set').set(first_set)
+	hda.parm('source_index').setExpression('ch("source")')
+	return hda
+
+def get_model_alembic_cache(model, project):
 	# Get all of the static geo
 	model_cache = model.get_cache_dir()
 	model_cache = model_cache.replace(project.get_project_dir(), '$JOB')
@@ -323,28 +444,28 @@ def assemble(project, environment, assembly, asset, checkout_file):
 		error_gui.error("There was a problem importing the geo. Please re-export the geo from maya.")
 		return
 
-	geo_file = geo_files[0]
+	return geo_files[0]
 
-	# Set up the nodes
-	obj = hou.node('/obj')
-	subnet = obj.createNode('subnet')
-	shop = subnet.createNode('shopnet', asset.get_name() + '_shopnet')
-	name = ''.join(geo_file.split('.')[:-1])
+def geo_setup(parentNode, asset, project, risnet_nodes=None):
+	# Get assembly, model, and rig elements
+	rig = asset.get_element(Department.RIG)
+	model = asset.get_element(Department.MODEL)
 
-	risnet_nodes = set_up_ristnet(shop, name)
+	geo_file = get_model_alembic_cache(model, project)
+	geo_file_path = os.path.join(model.get_cache_dir(), geo_file)
 
-	# Set up geo node
-	geo_file_path = os.path.join(model_cache, geo_file)
+	geo = parentNode.createNode('geo')
 
-	geo = subnet.createNode('geo')
-
-	geo = add_renderman_settings(geo, risnet_nodes['pxrdisplace'])
+	if risnet_nodes is None:
+		geo = add_renderman_settings(geo)
+	else:
+		geo = add_renderman_settings(geo, risnet_nodes['pxrdisplace'])
 
 	for child in geo.children():
 		child.destroy()
 
 	# Get rig or model info for each reference
-	geo_file_name = os.path.basename(geo_file_path)
+	# geo_file_name = os.path.basename(geo_file_path)
 	# Some of the referenced geo is going to be from rigs and some is going to be from models so we need to plan for either to happen. Later we will add an expression that will use the alemibic that has geo in it.
 
 	#I think these two lines where just from when we were still doing seperated peices
@@ -380,7 +501,7 @@ def assemble(project, environment, assembly, asset, checkout_file):
 	rig_model_switch.setName("shot_switch")
 
 	abc_anim_rig = rig_model_switch.createInputNode(0, 'alembic')
-	abc_anim_rig.setName('animaged_rig')
+	abc_anim_rig.setName('animated_rig')
 	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '.abc"')
 	abc_anim_rig.parm("groupnames").set(4)
 	# abc_anim_rig.parm('objectPath').set(rig_reference)
@@ -447,69 +568,20 @@ for node in switch.inputs():
 		group_num = str(i + 1)
 		geo.parm('group' + group_num).set(group.name())
 		groupExpression = generate_groups_expression('group' + group_num, model.get_long_name(), rig.get_long_name())
-		print groupExpression
-		# geo.parm('group' + group_num).setExpression(groupExpression)
 		mat.parm('group' + group_num).setExpression(groupExpression, language=hou.exprLanguage.Python)
 		mat.parm('shop_materialpath' + group_num).setExpression('chsop("../mat_path' + group_num + '")')
 
-	geo.setName(name, unique_name=True)
+	geo.setName(asset.get_name(), unique_name=True)
 	geo.layoutChildren()
-
-	cook_script='hou.node("./' + name + '").parm("cook").pressButton()'
-	print cook_script
-
-	# Finish setting up the subnet and create digital asset
-	subnet.layoutChildren()
-	shop.layoutChildren()
-	# We problably don't need this anymore now that we are jumping right into digital asset creation.
-	subnet.setName(asset.get_name(), unique_name=True)
-
-	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
-	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
-	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
-	# the working copy won't clutter up their personal otl space.
-	operatorName = assembly.get_short_name()
-	operatorLabel = (project.get_name() + ' ' + asset.get_name()).title()
-	saveToLibrary = checkout_file
-
-	asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
-	assetTypeDef = asset.type().definition()
-	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
-
-	# Bellow are some lines that were with the old broken version of the code I don't know what they do or why we have them?
-	# TODO figure out what these lines do and keep them if they are important and get rid of them if they are not.
-	# For your convience I have included some of my confustions about them.
-	# My only fear is that they acctually do something important and later this year I will find that this doesn't work (much like I did just now with the description option for the createDigitalAsset function) and I will want to know the fix.
-	# I dont' know why we need to copy the type properties. Shouldn't it be that those properties come over when we create the asset in the first place?
-	# subnet.type().definition().copyToHDAFile(checkout_file, new_name=assembly.get_long_name(), new_menu_name=asset_name)
-	# Why on earth are we trying to install it? It should already show up for the user and s/he hasn't publihsed it yet so it shouldn't be published for anyone else yet.
-	# hou.hda.installFile(checkout_file)
-
-	parmGroup = asset.parmTemplateGroup()
-	projectName = project.get_name().lower().replace(" ", "_")
-	projectFolder = hou.FolderParmTemplate(projectName, project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
-
-	source_menu = hou.MenuParmTemplate('source', 'Source', ('set', 'animated', 'object_space'), menu_labels=('Set', 'Animated', 'Object Space'))
-	source_menu_index = hou.IntParmTemplate('source_index', 'Source Index', 1, is_hidden=True)
-
-	projectFolder.addParmTemplate(source_menu)
-	projectFolder.addParmTemplate(source_menu_index)
-	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1', callback_script=cook_script))
-	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0', callback_script=cook_script))
-	hide_check = hou.ToggleParmTemplate("hide", "Hide")
-	animated_toggle = hou.ToggleParmTemplate("animate", "Animated")
-	projectFolder.addParmTemplate(hide_check)
-	projectFolder.addParmTemplate(animated_toggle)
-	parmGroup.addParmTemplate(projectFolder)
-	asset.type().definition().setParmTemplateGroup(parmGroup)
-
-	# since the shot and set parms are technially srings and not really menus we need to set them to be the first string so they don't come in blank
-	first_shot = str(project.list_shots()[0])
-	first_set = str(project.list_sets()[0])
-	asset.parm('shot').set(first_shot)
-	asset.parm('set').set(first_set)
-	asset.parm('source_index').setExpression('ch("source")')
-
+	try:
+		rig_model_set_switch.cook()
+	except:
+		try:
+			rig_model_switch.cook()
+		except:
+			print "There was a problem with one of the things but I think that is okay"
+	geo.cook()
+	return geo
 
 def go():
 	# checkout_window = CheckoutWindow()
