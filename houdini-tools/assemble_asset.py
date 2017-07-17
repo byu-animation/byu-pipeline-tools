@@ -34,11 +34,6 @@ def rego():
 		error_gui.error("There was something wrong with the name. Try tabbing in the asset again and trying one more time.")
 		return
 
-	# asset_name = name[0]
-	print str(hda.name()) + " is the hda name"
-	print str(name) + " is the name"
-	print str(asset_name) + " is the asset_name"
-
 	project = Project()
 	environment = Environment()
 	username = project.get_current_username()
@@ -67,7 +62,7 @@ def assemble_hda():
 	else:
 		assemble(project, environment, assembly, asset, checkout_file)
 
-def create_set_menu(hideWhen=None, callback_script=None):
+def create_set_menu(hideWhen=None, callback_script=None, hidden=False, value=None):
 	item_gen_script='''
 from byuam.project import Project
 
@@ -82,7 +77,14 @@ for set in sets:
 
 return set_list
 	'''
-	set_menu = hou.StringParmTemplate('set', 'Set', 1, item_generator_script=item_gen_script, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python)
+	project = Project()
+	if(value == None):
+		default_set = (str(project.list_sets()[0]),)
+	else:
+		default_set = (value,)
+	print default_set
+	set_menu = hou.StringParmTemplate('set', 'Set', 1, item_generator_script=item_gen_script, is_hidden=hidden, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python, default_value=default_set)
+	print set_menu.defaultValue()
 	if hideWhen is not None:
 		set_menu.setConditional( hou.parmCondType.HideWhen, "{ " + hideWhen + " }")
 	return set_menu
@@ -102,12 +104,17 @@ for shot in shots:
 
 return directory_list
 	'''
-	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python)
+	project = Project()
+	first_shot = (str(project.list_shots()[0]),)
+	print first_shot
+	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python, default_value=first_shot)
+	print shot.defaultValue()
 	if hideWhen is not None:
 		shot.setConditional( hou.parmCondType.HideWhen, "{ " + hideWhen + " }")
 	return shot
 
 def assemble_set(project, environment, assembly, asset, checkout_file):
+	set_hda = create_hda(asset, assembly, project, environment, checkout_file)
 	print "This is a set"
 	model = asset.get_element(Department.MODEL)
 
@@ -118,16 +125,11 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 
 	geo_files = clean_file_list(geo_files, '.abc')
 
-	# Set up the nodes
-	obj = hou.node('/obj')
-	subnet = obj.createNode('subnet')
-
 	# Set up the set parameters
-	# Get the paramter template group from the current geo node
-	hou_parm_template_group = subnet.parmTemplateGroup()
 	# Create a folder for the set parameters
 	set_folder = hou.FolderParmTemplate('set_options', 'Set Options', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
-	set_folder.addParmTemplate(create_set_menu())
+	set_folder.addParmTemplate(create_set_menu(hidden=True, value=asset.get_name()))
+	set_folder.addParmTemplate(create_shot_menu())
 
 	used_hdas = set()
 	for geo_file in geo_files:
@@ -146,7 +148,7 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 			print used_hdas
 			continue
 		try:
-			hda = subnet.createNode(asset_name + "_main")
+			hda = set_hda.createNode(asset_name + "_main")
 		except:
 			print "There is not asset named " + asset_name + ". You may need to assemble it first."
 			error_gui.error("There is not asset named " + asset_name + ". You may need to assemble it first.")
@@ -155,30 +157,27 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 		used_hdas.add(asset_name)
 		label_text = asset_name.replace('_', ' ').title()
 		geo_label = hou.LabelParmTemplate(asset_name, label_text)
-		hide_check_name = "hide_" + asset_name
-		hide_check = hou.ToggleParmTemplate(hide_check_name, "Hide")
+		hide_toggle_name = "hide_" + asset_name
+		hide_toggle = hou.ToggleParmTemplate(hide_toggle_name, "Hide")
+		animate_toggle_name = "animate_" + asset_name
+		animate_toggle = hou.ToggleParmTemplate(animate_toggle_name, "Animate")
+		animate_toggle_to_int_name = "animate_toggle_to_int_" + asset_name
+		animate_toggle_to_int = hou.IntParmTemplate(animate_toggle_to_int_name, 'Toggle To Int', 1, is_hidden=True, default_expression=('ch("' + animate_toggle_name + '")',))
 		set_folder.addParmTemplate(geo_label)
-		set_folder.addParmTemplate(hide_check)
-		hda.parm('hide').setExpression('ch("../' + hide_check_name + '")')
+		set_folder.addParmTemplate(hide_toggle)
+		set_folder.addParmTemplate(animate_toggle)
+		set_folder.addParmTemplate(animate_toggle_to_int)
+		hda.parm('hide').setExpression('ch("../' + hide_toggle_name + '")')
 		hda.parm('shot').setExpression('chs("../shot")')
+		hda.parm('set').setExpression('chs("../set")')
+		hda.parm('source').setExpression('chs("../' + animate_toggle_to_int_name + '")')
 
-	hou_parm_template_group.append(set_folder)
-	subnet.layoutChildren()
-	# We problably don't need this anymore now that we are jumping right into digital asset creation.
-	subnet.setName(asset.get_name(), unique_name=True)
+	assetTypeDef = set_hda.type().definition()
+	hda_parm_group = assetTypeDef.parmTemplateGroup()
+	hda_parm_group.append(set_folder)
+	assetTypeDef.setParmTemplateGroup(hda_parm_group)
 
-	# For your convience the variables are labeled as they appear in the create new digital asset dialogue box in Houdini
-	# I know at least for me it was dreadfully unclear that the description was going to be the name that showed up in the tab menu.
-	# node by saving it to the 'checkout_file' it will put the working copy of the otl in the user folder in the project directory so
-	# the working copy won't clutter up their personal otl space.
-	operatorName = assembly.get_short_name()
-	operatorLabel = (project.get_name() + ' ' + asset.get_name()).title()
-	saveToLibrary = checkout_file
-
-	asset = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
-	assetTypeDef = asset.type().definition()
-	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
-	assetTypeDef.setParmTemplateGroup(hou_parm_template_group)
+	set_hda.layoutChildren()
 
 def addMaterialOptions(geo, groups):
 	hou_parm_template_group = geo.parmTemplateGroup()
@@ -231,7 +230,7 @@ hou.node("./set_switch").cook(force=True)
 hou.node("./shot_switch").cook(force=True)
 	'''
 	hou_parm_template_group = geo.parmTemplateGroup()
-	cook = hou.ButtonParmTemplate('cook', 'ReCook', script_callback=script, script_callback_language=hou.scriptLanguage.Python)
+	cook = hou.ButtonParmTemplate('cook', 'Refresh', script_callback=script, script_callback_language=hou.scriptLanguage.Python)
 	trouble_shoot_folder = hou.FolderParmTemplate('trouble_shoot', 'Trouble Shooting', folder_type=hou.folderType.Tabs)
 	trouble_shoot_folder.addParmTemplate(cook)
 	hou_parm_template_group.append(trouble_shoot_folder)
@@ -411,25 +410,21 @@ def hda_parameter_setup(hda, geo, project):
 	projectName = project.get_name().lower().replace(" ", "_")
 	projectFolder = hou.FolderParmTemplate(projectName, project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
 
-	source_menu = hou.MenuParmTemplate('source', 'Source', ('set', 'animated', 'object_space'), menu_labels=('Set', 'Animated', 'Object Space'))
-	source_menu_index = hou.IntParmTemplate('source_index', 'Source Index', 1, is_hidden=True)
+	source_menu = hou.MenuParmTemplate('source', 'Source', ('set', 'animated', 'object_space'), menu_labels=('Set', 'Animated', 'Object Space'), default_value=2)
+	source_menu_index = hou.IntParmTemplate('source_index', 'Source Index', 1, is_hidden=True, default_expression=('ch("source")',))
 
 	projectFolder.addParmTemplate(source_menu)
 	projectFolder.addParmTemplate(source_menu_index)
-	cook_script='hou.node("./' + geo.name() + '").parm("cook").pressButton()'
+	cook_script='hou.node("./' + geo.name() + '").parm("cook").pressButton()\nprint "Asset Refreshed"'
 	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1', callback_script=cook_script))
 	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0', callback_script=cook_script))
-	hide_check = hou.ToggleParmTemplate("hide", "Hide")
-	projectFolder.addParmTemplate(hide_check)
+	hide_toggle = hou.ToggleParmTemplate("hide", "Hide")
+	projectFolder.addParmTemplate(hide_toggle)
+	recook = hou.ButtonParmTemplate("re_cook_hda", "Reload", script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
+	projectFolder.addParmTemplate(recook)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
 
-	# since the shot and set parms are technially srings and not really menus we need to set them to be the first string so they don't come in blank
-	first_shot = str(project.list_shots()[0])
-	first_set = str(project.list_sets()[0])
-	hda.parm('shot').set(first_shot)
-	hda.parm('set').set(first_set)
-	hda.parm('source_index').setExpression('ch("source")')
 	return hda
 
 def get_model_alembic_cache(model, project):
@@ -476,15 +471,15 @@ def geo_setup(parentNode, asset, project, risnet_nodes=None):
 	rig_model_set_switch = geo.createNode('switch')
 	rig_model_set_switch.setName("set_switch")
 
-	abc_set_rig = rig_model_set_switch.createInputNode(0, 'alembic')
-	abc_set_rig.setName('set_rig_alembic')
-	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '.abc"')
-	abc_set_rig.parm("groupnames").set(4)
-
-	abc_set_model = rig_model_set_switch.createInputNode(1, 'alembic')
+	abc_set_model = rig_model_set_switch.createInputNode(0, 'alembic')
 	abc_set_model.setName('set_model_alembic')
 	abc_set_model.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + model.get_long_name() + '.abc"')
 	abc_set_model.parm("groupnames").set(4)
+
+	abc_set_rig = rig_model_set_switch.createInputNode(1, 'alembic')
+	abc_set_rig.setName('set_rig_alembic')
+	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '.abc"')
+	abc_set_rig.parm("groupnames").set(4)
 
 	null_set = rig_model_set_switch.createInputNode(2, 'null')
 	null_set.setName('no_set_model_found')
@@ -500,17 +495,17 @@ def geo_setup(parentNode, asset, project, risnet_nodes=None):
 	rig_model_switch = geo.createNode('switch')
 	rig_model_switch.setName("shot_switch")
 
-	abc_anim_rig = rig_model_switch.createInputNode(0, 'alembic')
-	abc_anim_rig.setName('animated_rig')
-	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '.abc"')
-	abc_anim_rig.parm("groupnames").set(4)
-	# abc_anim_rig.parm('objectPath').set(rig_reference)
-
-	abc_anim_model = rig_model_switch.createInputNode(1, 'alembic')
+	abc_anim_model = rig_model_switch.createInputNode(0, 'alembic')
 	abc_anim_model.setName("animated_model")
 	abc_anim_model.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '.abc"')
 	abc_anim_model.parm("groupnames").set(4)
 	# abc_anim_model.parm('objectPath').set(model_reference)
+
+	abc_anim_rig = rig_model_switch.createInputNode(1, 'alembic')
+	abc_anim_rig.setName('animated_rig')
+	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '.abc"')
+	abc_anim_rig.parm("groupnames").set(4)
+	# abc_anim_rig.parm('objectPath').set(rig_reference)
 
 	null_shot = rig_model_switch.createInputNode(2, 'null')
 	null_shot.setName('no_shot_model_found')
