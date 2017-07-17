@@ -8,4 +8,4 @@ def go():
 	ris = out.createNode('ris')
 
 	dome = obj.createNode('pxrdomelight')
-	dome.setParms({'lightColorMap':'$JOB/byu-pipeline-tools/assets/lights/footprint-court.tex'})
+	dome.setParms({'lightColorMap':'$JOB/byu-pipeline-tools/assets/lights/default-hdr.tex'})
