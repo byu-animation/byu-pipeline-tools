@@ -27,6 +27,7 @@ class Registry:
 		self._registrydict[Department.RENDER] = self.shot_element_factory
 		self._registrydict[Department.COMP] = self.shot_element_factory
 		self._registrydict[Department.RENDER] = self.shot_element_factory
+		self._registrydict[Department.HDA] = self.hda_element_factory
 
 	def element_factory(self, filepath):
 		return Element(filepath)
@@ -47,7 +48,7 @@ class Registry:
 
 	def create_element(self, department, filepath=None):
 		"""
-		create an object of the proper sublclass of element for the given department stored 
+		create an object of the proper sublclass of element for the given department stored
 		at the given filepath. If no filepath is given the resulting object will be empty.
 		"""
 		return self._registrydict[department](filepath)

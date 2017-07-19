@@ -69,6 +69,10 @@ class Body:
 
 		raise NotImplementedError('subclass must implement is_asset')
 
+	def is_tool(self):
+
+		raise NotImplementedError('subclass must implemtn is_tool')
+
 	def get_description(self):
 
 		return self._datadict[Body.DESCRIPTION]
@@ -214,8 +218,6 @@ class Asset(Body):
 		self._datadict[Asset.TYPE] = new_type
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
-from body import Body
-
 """
 shot module
 """
@@ -259,3 +261,36 @@ class Shot(Body):
 
 		self._datadict[Shot.FRAME_RANGE] = frame_range
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
+
+class Tool(Body):
+	"""
+	Class describing a tool body.
+	"""
+
+	@staticmethod
+	def create_new_dict(name):
+
+		datadict = Body.create_new_dict(name)
+		return datadict
+
+	@staticmethod
+	def default_departments():
+
+		return Department.TOOL_DEPTS
+
+	@staticmethod
+	def get_parent_dir():
+
+		return Environment().get_tools_dir()
+
+	def is_shot(self):
+
+		return False
+
+	def is_asset(self):
+
+		return False
+
+	def is_tool(self):
+
+		return True

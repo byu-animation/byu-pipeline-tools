@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from .body import Body, Asset, Shot
+from .body import Body, Asset, Shot, Tool
 # from .department import Department
 from .element import Checkout, Element
 from .environment import Department, Environment, User, AssetType
@@ -125,6 +125,13 @@ class Project:
 		name -- the name of the new shot to create
 		"""
 		return self._create_body(name, Shot)
+
+	def create_tool(self, name):
+		"""
+		creates a new tool with the given name, and returns the resulting tool object.
+		name -- the name of the new tool to create
+		"""
+		return self._create_body(name, Tool)
 
 	def _list_bodies_in_dir(self, filepath, filter=None):
 		dirlist = os.listdir(filepath)

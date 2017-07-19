@@ -13,17 +13,19 @@ class Environment:
 	PRODUCTION_DIR = "production_dir"
 	ASSETS_DIR = "assets_dir"
 	SHOTS_DIR = "shots_dir"
+	TOOLS_DIR = "tools_dir"
 	USERS_DIR = "users_dir"
 	ASSEMBLY_DIR = "assembly_dir"
 	EMAIL_ADDRESS = "email_address"
 	EMAIL_PASSWORD = "email_password"
 
 	@staticmethod
-	def create_new_dict(name, assets_dir, shots_dir, users_dir, assembly_dir, email_address=None, email_password=None):
+	def create_new_dict(name, assets_dir, shots_dir, tools_dir, users_dir, assembly_dir, email_address=None, email_password=None):
 		datadict = {}
 		datadict[Environment.PROJECT_NAME] = name
 		datadict[Environment.ASSETS_DIR] = assets_dir
 		datadict[Environment.SHOTS_DIR] = shots_dir
+		datadict[Environment.TOOLS_DIR] = tools_dir
 		datadict[Environment.USERS_DIR] = users_dir
 		datadict[Environment.ASSEMBLY_DIR] = assembly_dir
 		if(email_address is not None and email_password is not None):
@@ -73,6 +75,12 @@ class Environment:
 		return the absolute filepath to the shots directory of the current project
 		"""
 		return os.path.abspath(self._datadict[Environment.SHOTS_DIR])
+
+	def get_tools_dir(self):
+		"""
+		return the absolute filepath to the tools directory of the current project
+		"""
+		return os.path.abspath(self._datadict[Environment.TOOLS_DIR])
 
 	def get_assembly_dir(self):
 		"""
@@ -202,9 +210,11 @@ class Department:
 	LIGHTING = "lighting"
 	RENDER = "render"
 	COMP = "comp"
+	HDA = "hda"
 	ASSET_DEPTS = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY]
 	SHOT_DEPTS = [LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
-	ALL = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY, LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP]
+	TOOL_DEPTS = [HDA]
+	ALL = [DESIGN, MODEL, RIG, TEXTURE, MATERIAL, ASSEMBLY, LAYOUT, ANIM, CFX, FX, LIGHTING, RENDER, COMP, HDA]
 
 
 class Status:

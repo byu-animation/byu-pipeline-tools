@@ -10,6 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import AssetType
+from byugui import error_gui
 
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 200
@@ -20,6 +21,7 @@ class CreateWindow(QtWidgets.QTabWidget):
 
 	ASSET_INDEX = 0
 	SHOT_INDEX = 1
+	TOOL_INDEX = 2
 
 	def __init__(self, parent):
 		super(CreateWindow, self).__init__()
@@ -34,9 +36,11 @@ class CreateWindow(QtWidgets.QTabWidget):
 		#create tabs
 		assetTab = NewBodyWindow('asset', self)
 		shotTab = NewBodyWindow('shot', self)
+		toolsTab = NewBodyWindow('tool', self)
 
 		self.insertTab(self.ASSET_INDEX, assetTab, 'Asset')
 		self.insertTab(self.SHOT_INDEX, shotTab, 'Shot')
+		self.insertTab(self.TOOL_INDEX, toolsTab, 'Tool')
 
 		self.show()
 
@@ -107,8 +111,12 @@ class NewBodyWindow(QtWidgets.QWidget):
 
 				print asset_type + " is the asset type"
 				asset = project.create_asset(name, asset_type)
-			else:
+			elif self.element == 'shot':
 				shot = project.create_shot(name)
+			elif self.element == 'tool':
+				tool = project.create_tool(name)
+			else:
+				error_gui.error(self.element + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
 			self.parent.accept()
 		except EnvironmentError, e:
 			print e
