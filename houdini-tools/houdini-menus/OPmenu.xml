@@ -5,14 +5,187 @@
 		implicitly "root_menu"
 	-->
 	<menu>
-		<!-- Node flags submenu. -->
-		<actionItem id="opmenu.demoButton">
-			<label>Demo</label>
+		<scriptItem id="opmenu.checkoutTool">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Checkout</label>
 			<expression>
-import hou
-good = len(hou.selectedNodes())==0
-return good
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_tools():
+				return 1
+				print "This is the Checkout Tool MenuItem"
+return 0
 			</expression>
-		</actionItem>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import checkout
+node = kwargs.get('node', None)
+if node:
+	checkout.checkout_tool_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+		<scriptItem id="opmenu.publishTool">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Publish</label>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if not node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_tools():
+				return 1
+				print "This is the Publish Tool MenuItem"
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import publish
+node = kwargs.get('node', None)
+if node:
+	publish.publish_tool_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+		<scriptItem id="opmenu.rollbackTool">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Rollback</label>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_tools():
+				return 1
+				print "This is the Rollback Tool MenuItem"
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import rollback
+node = kwargs.get('node', None)
+if node:
+	rollback.rollback_tool_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+
+
+		<scriptItem id="opmenu.checkoutAsset">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Checkout</label>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_assets():
+				return 1
+				print "This is the Checkout Asset MenuItem"
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import checkout
+node = kwargs.get('node', None)
+if node:
+	checkout.checkout_tool_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+		<scriptItem id="opmenu.publishAsset">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Publish</label>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if not node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_assets():
+				return 1
+				print "This is the Publish Asset MenuItem"
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import publish
+node = kwargs.get('node', None)
+if node:
+	publish.publish_asset_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+		<scriptItem id="opmenu.rollbackAsset">
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<label>Rollback</label>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_assets():
+				return 1
+				print "This is the Rollback Asset MenuItem"
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import rollback
+node = kwargs.get('node', None)
+if node:
+	rollback.rollback_asset_go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+
+		<scriptItem id="opmenu.createTool">
+			<label>Create BYU Digital Asset...</label>
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<expression>
+node = kwargs.get('node', None)
+if node:
+	return node.canCreateDigitalAsset()
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import create_tool_hda
+node = kwargs.get('node', None)
+if node:
+	create_tool_hda.go(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
 	</menu>
+
+    <removeItem id="opmenu.create_hda"/>
+	<removeItem id="opmenu.unsynchronize"/>
+	<removeItem id="opmenu.saveoptype"/>
+	<!--<removeItem id="opmenu.synchronize"/>-->
 </menuDocument>

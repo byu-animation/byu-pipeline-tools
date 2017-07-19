@@ -14,59 +14,34 @@ def publish_hda():
 		user = publish_window.user
 		comment = publish_window.comment
 
-		if is_asset:
-			if hda_name in project.list_assets():
-				body = project.get_asset(hda_name)
+		if hda_name in project.list_assets():
+			body = project.get_asset(hda_name)
+			department = Department.ASSEMBLY
+			element_type = "assembly"
+		elif hda_name in project.list_tools():
+			body = project.get_tool(hda_name)
+			department = Department.HDA
+			element_type = "hda"
 
-			if os.path.exists(src):
-				if body is not None:
-					if Element.DEFAULT_NAME in body.list_elements(Department.ASSEMBLY):
-						#save node definition
-						asset.type().definition().updateFromNode(asset)
-						asset.matchCurrentDefinition()
-						element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
-						dst = element.publish(user, src, comment)
-						#Ensure file has correct permissions
-						try:
-							os.chmod(dst, 0660)
-						except:
-							pass
-						hou.hda.uninstallFile(src, change_oplibraries_file=False)
-						saveFile = hda_name + "_assembly_main.hdanc"
-						dst = os.path.join(environment.get_hda_dir(), saveFile)
-						hou.hda.installFile(dst)
-			else:
-				hou.ui.displayMessage("File does not exist")
-
-def publish_tool():
-	project = Project()
-	environment = Environment()
-
-	if publish_window.published:
-		user = publish_window.user
-		comment = publish_window.comment
-
-		if is_tool:
-			if hda_name in project.list_tools():
-				body = project.get_tool(hda_name)
-
-			if os.path.exists(src):
-				if body is not None:
-					if Element.DEFAULT_NAME in body.list_elements(Department.HDA):
-						asset.type().definition().updateFromNode(asset)
-						asset.matchCurrentDefinition()
-						element = body.get_element(Department.HDA, Element.DEFAULT_NAME)
-						dst = element.publish(user, src, comment)
-						try:
-							os.chmod(dst, 0660)
-						except:
-							pass
-						hou.hda.uninstallFile(src, change_oplibraries_file=False)
-						saveFile = hda_name + "_hda_main.hdanc"
-						dst = os.path.join(environment.get_hda_dir(), saveFile)
-						hou.hda.installFile(dst)
-			else:
-				hou.ui.displayMessage("File does not exit")
+		if os.path.exists(src):
+			if body is not None:
+				if Element.DEFAULT_NAME in body.list_elements(department):
+					#save node definition
+					asset.type().definition().updateFromNode(asset)
+					asset.matchCurrentDefinition()
+					element = body.get_element(department, Element.DEFAULT_NAME)
+					dst = element.publish(user, src, comment)
+					#Ensure file has correct permissions
+					try:
+						os.chmod(dst, 0660)
+					except:
+						pass
+					hou.hda.uninstallFile(src, change_oplibraries_file=False)
+					saveFile = hda_name + "_" + element_type + "_main.hdanc"
+					dst = os.path.join(environment.get_hda_dir(), saveFile)
+					hou.hda.installFile(dst)
+		else:
+			hou.ui.displayMessage("File does not exist")
 
 def publish_shot():
 	element = publish_window.result
@@ -80,61 +55,39 @@ def publish_shot():
 		comment = publish_window.comment
 		element.publish(user, src, comment)
 
-def publish_asset_go():
+def publish_hda_go(hda=None):
 	global publish_window
 	global asset
 	global hda_name
 	global src
-	global is_asset
-	is_asset = True
 
-	nodes = hou.selectedNodes()
-	if len(nodes) == 1:
-		if nodes[0].type().definition() is not None:
-			is_asset = True
-			asset = nodes[0]
-			hda_name = nodes[0].type().name() #get name of asset
-			index = hda_name.find("_main")
-			if index > 0:
-				hda_name = hda_name[:index]
-			src = nodes[0].type().definition().libraryFilePath()
-			publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.ASSEMBLY])
+	if hda is None:
+		nodes = hou.selectedNodes()
+		if len(nodes) == 1:
+			hda = nodes[0]
+		elif len(nodes) > 1:
+			error_gui.error("Please select only one node.")
 		else:
-			hou.ui.displayMessage("Node is not a digital asset")
-			return
-		publish_window.finished.connect(publish_hda)
-	elif len(nodes) > 1:
-		error_gui.error("Please select only one node.")
-	else:
-		error_gui.error("Please select a node.")
+			error_gui.error("Please select a node.")
 
-def publish_tool_go():
-	global publish_window
-	global asset
-	global hda_name
-	global src
-	global is_tool
-	is_tool = True
-
-	nodes = hou.selectedNodes()
-	if len(nodes) == 1:
-		if nodes[0].type().definition() is not None:
-			asset = nodes[0]
-			hda_name = nodes[0].type().name() #get name of asset
-			index = hda_name.find("_main")
-			if index > 0:
-				hda_name = hda_name[:index]
-			src = nodes[0].type().definition().libraryFilePath()
-			print src + " is the src"
-			publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.HDA])
-		else:
-			hou.ui.displayMessage("Node is not a digital asset")
-			return
-		publish_window.finished.connect(publish_tool)
-	elif len(nodes) > 1:
-		error_gui.error("Please select only one node.")
+	if hda.type().definition() is not None:
+		asset = hda
+		hda_name = asset.type().name() #get name of asset
+		index = hda_name.find("_main")
+		if index > 0:
+			hda_name = hda_name[:index]
+		src = asset.type().definition().libraryFilePath()
+		publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.ASSEMBLY])
 	else:
-		error_gui.error("Please select a node.")
+		hou.ui.displayMessage("Node is not a digital asset")
+		return
+	publish_window.finished.connect(publish_hda)
+
+def publish_tool_go(node=None):
+	publish_hda_go(hda=node)
+
+def publish_asset_go(node=None):
+	publish_hda_go(hda=node)
 
 def publish_shot_go():
 	global publish_window

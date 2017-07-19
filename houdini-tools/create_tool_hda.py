@@ -9,20 +9,23 @@ from byuam.environment import AssetType
 from byugui import error_gui
 import checkout
 
-def go():
+def go(node=None):
 	global create_window
+	global hda
+	hda = node
 	create_window = AssembleWindow(hou.ui.mainQtWindow(), [Department.HDA])
 	create_window.finished.connect(create_hda)
 
 def create_hda():
 
-	selection = hou.selectedNodes()
+	if hda is None:
+		selection = hou.selectedNodes()
+		if len(selection) != 1:
+			error_gui.error('Please select only one node')
+			return
+			node = selection[0]
 
-	if len(selection) != 1:
-		error_gui.error('Please select only one node')
-		return
-
-	node = selection[0]
+	node = hda
 	if not node.canCreateDigitalAsset():
 		error_gui.error('You can\'t make a digital asset from the selected node')
 		return

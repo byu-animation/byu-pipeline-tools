@@ -54,28 +54,34 @@ def checkout_hda(hda, project, environment):
 				return element_path
 	return None
 
-def checkout_hda_go():
+def checkout_hda_go(hda=None):
 	global checkout_window
 	project = Project()
 	environment = Environment()
-	nodes = hou.selectedNodes()
-	if len(nodes) == 1:
-		result = checkout_hda(nodes[0], project, environment)
+	if hda is None:
+		nodes = hou.selectedNodes()
+		if len(nodes) == 1:
+			hda = nodes[0]
+		elif len(nodes) > 1:
+			hou.ui.displayMessage("Only one node can be selected for checkout")
+		else:
+			hou.ui.displayMessage("You need to select an asset node to checkout")
+
+	if hda.type().definition() is not None:
+		result = checkout_hda(hda, project, environment)
 		if result is not None:
 			hou.ui.displayMessage('Checkout Successful!', title='Success!')
 		else:
 			hou.ui.displayMessage('Checkout Failed', title='Failure :()')
-
-	elif len(nodes) > 1:
-		hou.ui.displayMessage("Only one node can be selected for checkout")
 	else:
-		hou.ui.displayMessage("You need to select an asset node to checkout")
+		hou.ui.displayMessage("Node is not a digital asset")
+		return
 
-def checkout_tool_go():
-	checkout_hda_go()
+def checkout_tool_go(node=None):
+	checkout_hda_go(hda=node)
 
-def checkout_asset_go():
-	checkout_hda_go()
+def checkout_asset_go(node=None):
+	checkout_hda_go(hda=node)
 
 def checkout_shot_go():
 	global checkout_window

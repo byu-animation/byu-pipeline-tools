@@ -11,12 +11,12 @@
 
 			<subMenu id="checkout_menu">
 				<label>Checkout</label>
-				<scriptItem id="h.chekcout">
-					<label>Checkout Shot</label>
+				<scriptItem id="h.chekcoutAsset">
+					<label>Checkout Asset</label>
 					<scriptCode scriptType="python">
 						<![CDATA[
 import checkout
-checkout.checkout_shot_go()
+checkout.checkout_asset_go()
 						]]>
 					</scriptCode>
 				</scriptItem>
@@ -29,12 +29,12 @@ checkout.checkout_tool_go()
 						]]>
 					</scriptCode>
 				</scriptItem>
-				<scriptItem id="h.chekcoutAsset">
-					<label>Checkout Asset</label>
+				<scriptItem id="h.chekcout">
+					<label>Checkout Shot</label>
 					<scriptCode scriptType="python">
 						<![CDATA[
 import checkout
-checkout.checkout_asset_go()
+checkout.checkout_shot_go()
 						]]>
 					</scriptCode>
 				</scriptItem>
@@ -53,6 +53,11 @@ publish.publish_asset_go()
 				</scriptItem>
 				<scriptItem id="h.publishTool">
 					<label>Publish Tool</label>
+					<expression>
+import hou
+good = len(hou.selectedNodes())==0
+return good
+					</expression>
 					<scriptCode scriptType="python">
 						<![CDATA[
 import publish
