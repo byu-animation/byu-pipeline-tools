@@ -82,6 +82,16 @@ class Project:
 			return None
 		return Shot(filepath)
 
+	def get_tool(self, name):
+		"""
+		returns the tool object associated with the given name.
+		name -- the name of the tool
+		"""
+		filepath = os.path.join(self._env.get_tools_dir(), name)
+		if not os.path.exists(filepath):
+			return None
+		return Tool(filepath)
+
 	def get_body(self, name):
 		"""
 		returns the body object associated with the given name.
@@ -90,6 +100,8 @@ class Project:
 		body = self.get_shot(name)
 		if body is None:
 			body = self.get_asset(name)
+		if body is None:
+			body = self.get_tool(name)
 		return body
 
 	def _create_body(self, name, bodyobj):
@@ -167,6 +179,12 @@ class Project:
 		          given attribute has the relation to the given desired value. Defaults to None.
 		"""
 		return self._list_bodies_in_dir(self._env.get_shots_dir(), filter)
+
+	def list_tools(self):
+		"""
+		returns a list of strings containing the names of all shots in this project
+		"""
+		return self._list_bodies_in_dir(self._env.get_tools_dir())
 
 	def list_sets(self):
 		"""

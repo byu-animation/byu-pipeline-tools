@@ -25,7 +25,7 @@ def rego():
 
 	hda = selection[0]
 
-	name = hda.name()
+	name = hda.type().name()
 	index = name.rfind("_")
 	main = name[index:]
 	asset_name = name[:index]

@@ -21,7 +21,7 @@ class HDAElement(Element):
         calls parent publish method. If a symbolic link to this element does not exist in the assembly dir, one is created.
         """
         Element.publish(self, username, src, comment, status)
-        assembly_path = os.path.join(self._env.get_assembly_dir(), self.get_app_filename())
+        assembly_path = os.path.join(self._env.get_hda_dir(), self.get_app_filename())
         if not os.path.exists(assembly_path):
             # create sym link
             os.symlink(self.get_app_filepath(), assembly_path)
@@ -35,4 +35,3 @@ class HDAElement(Element):
     #     which needs to be called otls
     #     """
     #     return os.path.join(self._env.get_users_dir(), username, 'otls')
-        

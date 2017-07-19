@@ -33,19 +33,28 @@ def checkout_hda(hda, project, environment):
 
 		if asset_name in project.list_assets():
 			body = project.get_asset(asset_name)
+		elif asset_name in project.list_tools():
+			body = project.get_tool(asset_name)
+		else:
+			error_gui.error("We could not find " + asset_name + " in the list of things you can checkout.")
 
 		if os.path.exists(src):
 			if body is not None:
 				if Element.DEFAULT_NAME in body.list_elements(Department.ASSEMBLY):
 					element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
-					element_path = element.checkout(current_user)
-					hou.hda.uninstallFile(src, change_oplibraries_file=False)
-					hou.hda.installFile(element_path)
-					hda.allowEditingOfContents()
-					return element_path
+				elif Element.DEFAULT_NAME in body.list_elements(Department.HDA):
+					element = body.get_element(Department.HDA, Element.DEFAULT_NAME)
+				else:
+					error_gui.error("There was a problem checking out the selected hda")
+					return None
+				element_path = element.checkout(current_user)
+				hou.hda.uninstallFile(src, change_oplibraries_file=False)
+				hou.hda.installFile(element_path)
+				hda.allowEditingOfContents()
+				return element_path
 	return None
 
-def checkout_asset():
+def checkout_hda_go():
 	global checkout_window
 	project = Project()
 	environment = Environment()
@@ -62,7 +71,13 @@ def checkout_asset():
 	else:
 		hou.ui.displayMessage("You need to select an asset node to checkout")
 
-def go():
+def checkout_tool_go():
+	checkout_hda_go()
+
+def checkout_asset_go():
+	checkout_hda_go()
+
+def checkout_shot_go():
 	global checkout_window
 	project = Project()
 	environment = Environment()

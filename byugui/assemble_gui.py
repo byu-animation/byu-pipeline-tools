@@ -87,6 +87,11 @@ class AssembleWindow(QtWidgets.QWidget):
 					item = QtWidgets.QListWidgetItem(shot)
 					element_list.addItem(item)
 					element_list.currentItemChanged.connect(self.set_current_item)
+			elif dept in Department.TOOL_DEPTS:
+				for tool in self.project.list_tools():
+					item = QtWidgets.QListWidgetItem(tool)
+					element_list.addItem(item)
+					element_list.currentItemChanged.connect(self.set_current_item)
 			tab_layout.addWidget(element_list)
 			tab.setLayout(tab_layout)
 
@@ -98,6 +103,8 @@ class AssembleWindow(QtWidgets.QWidget):
 		if current_dept in Department.ASSET_DEPTS:
 			self.current_item = str(index.text())
 		elif current_dept in Department.SHOT_DEPTS:
+			self.current_item = str(index.text())
+		elif current_dept in Department.TOOL_DEPTS:
 			self.current_item = str(index.text())
 
 		asset_obj = self.project.get_body(self.current_item)

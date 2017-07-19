@@ -15,19 +15,19 @@ class Environment:
 	SHOTS_DIR = "shots_dir"
 	TOOLS_DIR = "tools_dir"
 	USERS_DIR = "users_dir"
-	ASSEMBLY_DIR = "assembly_dir"
+	HDA_DIR = "hda_dir"
 	EMAIL_ADDRESS = "email_address"
 	EMAIL_PASSWORD = "email_password"
 
 	@staticmethod
-	def create_new_dict(name, assets_dir, shots_dir, tools_dir, users_dir, assembly_dir, email_address=None, email_password=None):
+	def create_new_dict(name, assets_dir, shots_dir, tools_dir, users_dir, hda_dir, email_address=None, email_password=None):
 		datadict = {}
 		datadict[Environment.PROJECT_NAME] = name
 		datadict[Environment.ASSETS_DIR] = assets_dir
 		datadict[Environment.SHOTS_DIR] = shots_dir
 		datadict[Environment.TOOLS_DIR] = tools_dir
 		datadict[Environment.USERS_DIR] = users_dir
-		datadict[Environment.ASSEMBLY_DIR] = assembly_dir
+		datadict[Environment.HDA_DIR] = hda_dir
 		if(email_address is not None and email_password is not None):
 			datadict[Environment.EMAIL_ADDRESS] = email_address
 			datadict[Environment.EMAIL_PASSWORD] = email_password
@@ -82,12 +82,12 @@ class Environment:
 		"""
 		return os.path.abspath(self._datadict[Environment.TOOLS_DIR])
 
-	def get_assembly_dir(self):
+	def get_hda_dir(self):
 		"""
 		return the absolute filepath to the assembly directory of the current project
 		(in a houdini pipeline, this is the otls directory)
 		"""
-		return os.path.abspath(self._datadict[Environment.ASSEMBLY_DIR])
+		return os.path.abspath(self._datadict[Environment.HDA_DIR])
 
 	def _create_user(self, username):
 		workspace = os.path.join(self.get_users_dir(), username)

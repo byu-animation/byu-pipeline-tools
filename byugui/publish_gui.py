@@ -91,8 +91,12 @@ class PublishWindow(QtWidgets.QWidget):
 		department = str(self.departmentMenu.currentText())
 		if department in Department.ASSET_DEPTS:
 			self.elementType = 'Asset'
-		else:
+		elif department in Department.SHOT_DEPTS:
 			self.elementType = 'Shot'
+		elif department in Department.TOOL_DEPTS:
+			self.elementType = 'Tool'
+		else:
+			error_gui.error('There was an error loading the ' + str(department) + ' department')
 		self.eList.refreshList(self.elementType)
 
 	def selectElement(self):
@@ -156,9 +160,13 @@ class ElementList(QtWidgets.QListWidget):
 	def refreshList(self, element):
 		if element == 'Asset':
 			self.elements = self.project.list_assets()
-		else:
+		elif element == 'Shot':
 			self.elements = self.project.list_shots()
-
+		elif element == 'Tool':
+			self.elements = self.project.list_tools()
+		else:
+			self.elements = list()
+			error_gui.error("There was a problem loading in the elements from of " + element  + " type.")
 		self.clear()
 		for e in self.elements:
 			self.addItem(e)

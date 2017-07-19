@@ -8,15 +8,131 @@
 		<subMenu id="tools_menu">
 			<label>BYU Tools</label>
 			<insertBefore>render_menu</insertBefore>
-			<scriptItem id="h.reassemble">
-				<label>Reassemble</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
+
+			<subMenu id="checkout_menu">
+				<label>Checkout</label>
+				<scriptItem id="h.chekcout">
+					<label>Checkout Shot</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import checkout
+checkout.checkout_shot_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.chekcoutTool">
+					<label>Checkout Tool</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import checkout
+checkout.checkout_tool_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.chekcoutAsset">
+					<label>Checkout Asset</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import checkout
+checkout.checkout_asset_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+			</subMenu>
+
+			<subMenu id="publish_menu">
+				<label>Publish</label>
+				<scriptItem id="h.publishAsset">
+					<label>Publish Asset</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import publish
+publish.publish_asset_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.publishTool">
+					<label>Publish Tool</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import publish
+publish.publish_tool_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.publishShot">
+					<label>Publish Shot</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import publish
+publish.publish_shot_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+			</subMenu>
+
+			<subMenu>
+				<label>Rollback</label>
+				<scriptItem id="h.rollbackAsset">
+					<label>Rollback Asset</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import rollback
+rollback.rollback_asset_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.rollbackTool">
+					<label>Rollback Tool</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import rollback
+rollback.rollback_tool_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.rollbackShot">
+					<label>Rollback Shot</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import rollback
+rollback.rollback_shot_go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+			</subMenu>
+
+			<subMenu>
+				<label>Assembly</label>
+				<scriptItem id="h.assembleAsset">
+					<label>Assemble Asset</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import assemble_asset
+assemble_asset.go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.createTool">
+					<label>Create Grendel Digital Asset</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import create_tool_hda
+create_tool_hda.go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+				<scriptItem id="h.reassemble">
+					<label>Reassemble</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
 import assemble_asset
 assemble_asset.rego()
-					]]>
-				</scriptCode>
-			</scriptItem>
+						]]>
+					</scriptCode>
+				</scriptItem>
+			</subMenu>
+
 			<scriptItem id="h.createBody">
 				<label>Create Body</label>
 				<scriptCode scriptType="python">
@@ -26,51 +142,7 @@ new_body.go()
 					]]>
 				</scriptCode>
 			</scriptItem>
-			<scriptItem id="h.chekcout">
-				<label>Checkout Shot</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
-import checkout_asset
-checkout_asset.go()
-					]]>
-				</scriptCode>
-			</scriptItem>
-			<scriptItem id="h.chekcoutAsset">
-				<label>Checkout Asset</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
-import checkout_asset
-checkout_asset.checkout_asset()
-					]]>
-				</scriptCode>
-			</scriptItem>
-			<scriptItem id="h.rollback">
-				<label>Rollback</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
-import rollback_asset
-rollback_asset.go()
-					]]>
-				</scriptCode>
-			</scriptItem>
-			<scriptItem id="h.assembleAsset">
-				<label>Assemble Asset</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
-import assemble_asset
-assemble_asset.go()
-					]]>
-				</scriptCode>
-			</scriptItem>
-			<scriptItem id="h.publish">
-				<label>Publish</label>
-				<scriptCode scriptType="python">
-					<![CDATA[
-import publish_asset
-publish_asset.go()
-					]]>
-				</scriptCode>
-			</scriptItem>
+
 			<scriptItem id="h.inpire">
 				<label>Inspire</label>
 				<scriptCode scriptType="python">
