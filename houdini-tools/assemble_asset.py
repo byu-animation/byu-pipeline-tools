@@ -185,21 +185,25 @@ def addMaterialOptions(geo, groups):
 	num_materials_folder = hou.FolderParmTemplate('num_materials', 'Number of Materials', folder_type=hou.folderType.MultiparmBlock)
 	num_materials_folder.setDefaultValue(len(groups))
 
-	script='''
-	menu = ("one", "one", "two", "two")
-	return menu
-
-	'''
-
 	group_names = list()
 	for group in groups:
 		group_names.append(group.name())
 
 	groups = hou.StringParmTemplate('group#', 'Group', 1, menu_items=group_names, menu_type=hou.menuType.StringToggle)
 	materials = hou.StringParmTemplate("mat_path#", "Material", 1, default_value=([""]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	# Create a new parameter for RenderMan 'Displacement Shader'
+	displacement_shader = hou.StringParmTemplate('shop_displacepath#', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	displacement_shader.setHelp('RiDisplace')
+	displacement_shader.setTags({'opfilter': '!!SHOP/DISPLACEMENT!!', 'oprelative': '.', 'spare_category': 'Shaders'})
+	# Create a new parameter for RenderMan 'Displacement Bound'
+	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+	displacement_bound.setHelp('Attribute: displacementbound/sphere')
+	displacement_bound.setTags({'spare_category': 'Shading'})
 
 	num_materials_folder.addParmTemplate(groups)
 	num_materials_folder.addParmTemplate(materials)
+	num_materials_folder.addParmTemplate(displacement_shader)
+	num_materials_folder.addParmTemplate(displacement_bound)
 
 	material_folder.addParmTemplate(num_materials_folder)
 
@@ -237,7 +241,7 @@ hou.node("./shot_switch").cook(force=True)
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
-def add_renderman_settings(geo, pxrdisplace=None):
+def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None):
 	# Get the paramter template group from the current geo node
 	hou_parm_template_group = geo.parmTemplateGroup()
 
@@ -277,12 +281,16 @@ def add_renderman_settings(geo, pxrdisplace=None):
 	hou_parm.lock(False)
 	if pxrdisplace is not None:
 		hou_parm.set(pxrdisplace.path())
+	if pxrdisplaceexpr is not None:
+		hou_parm.setExpression(pxrdisplaceexpr)
 	hou_parm.setAutoscope(False)
 
 	# Code for ri_dbound parm
 	hou_parm = geo.parm('ri_dbound')
 	hou_parm.lock(False)
 	hou_parm.set(0)
+	if riboundExpr is not None:
+		hou_parm.setExpression(riboundExpr)
 	hou_parm.setAutoscope(False)
 
 	# Code for ri_interpolateboundary parm
@@ -576,6 +584,39 @@ for node in switch.inputs():
 		except:
 			print "There was a problem with one of the things but I think that is okay"
 	geo.cook()
+
+
+	# Here is the temporary solution to the can't-assign-renderman-displacement-by-group-problem
+	subnet = geo.parent().createNode("subnet")
+	for i, group in enumerate(groups):
+		group_num = str(i + 1)
+		group_geo = subnet.createNode("geo")
+		group_geo.setName(group.name())
+		mat_path_expr = 'ch("../../' + geo.name() + '/mat_path' + group_num + '")'
+		displacePathExpr = 'ch("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
+		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
+		# displacePathExpr = 'ch("../../a_gnome/shop_displacepath1")'
+		# riBoundExpr = 'ch("../../a_gnome/ri_dbound1")'
+		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr)
+		group_geo.parm("shop_materialpath").setExpression('')
+
+		for child in group_geo.children():
+			child.destroy()
+		obj_merge = group_geo.createNode("object_merge")
+		obj_merge.parm("objpath1").set("../../../" + geo.name() + "/" + out.name())
+		blast = obj_merge.createOutputNode("blast")
+		blast.parm("group").set(group.name())
+		blast.parm("group").setExpression(group.name())# TODO: I need to figure out what the expression really should be so that I can get the right one every time
+		blast.parm("negate").set(True)
+		blast.setRenderFlag(True)
+		blast.setDisplayFlag(True)
+
+	subnet.layoutChildren()
+	subnet.setName("dont_touch_this_subnet")
+	tempHideDisplay = geo.createNode("null")
+	tempHideDisplay.setRenderFlag(True)
+	tempHideDisplay.setDisplayFlag(True)
+
 	return geo
 
 def go():
