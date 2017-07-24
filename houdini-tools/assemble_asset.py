@@ -592,8 +592,8 @@ for node in switch.inputs():
 		group_num = str(i + 1)
 		group_geo = subnet.createNode("geo")
 		group_geo.setName(group.name())
-		mat_path_expr = 'ch("../../' + geo.name() + '/mat_path' + group_num + '")'
-		displacePathExpr = 'ch("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
+		mat_path_expr = 'chsop("../../' + geo.name() + '/mat_path' + group_num + '")'
+		displacePathExpr = 'chsop("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
 		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
 		# displacePathExpr = 'ch("../../a_gnome/shop_displacepath1")'
 		# riBoundExpr = 'ch("../../a_gnome/ri_dbound1")'
