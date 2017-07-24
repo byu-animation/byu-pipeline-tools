@@ -341,7 +341,7 @@ elif source == 1:
 else:
 	return hou.ch("../''' + group + '''")
 
-if input == 1:
+if input == 0:
 	prefix = "''' + model_name + '''_"
 else:
 	prefix = "''' + rig_name + '''_"
@@ -598,7 +598,7 @@ for node in switch.inputs():
 		# displacePathExpr = 'ch("../../a_gnome/shop_displacepath1")'
 		# riBoundExpr = 'ch("../../a_gnome/ri_dbound1")'
 		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr)
-		group_geo.parm("shop_materialpath").setExpression('')
+		group_geo.parm("shop_materialpath").setExpression(mat_path_expr)
 
 		for child in group_geo.children():
 			child.destroy()
@@ -606,7 +606,7 @@ for node in switch.inputs():
 		obj_merge.parm("objpath1").set("../../../" + geo.name() + "/" + out.name())
 		blast = obj_merge.createOutputNode("blast")
 		blast.parm("group").set(group.name())
-		blast.parm("group").setExpression(group.name())# TODO: I need to figure out what the expression really should be so that I can get the right one every time
+		blast.parm("group").setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)# TODO: I need to figure out what the expression really should be so that I can get the right one every time
 		blast.parm("negate").set(True)
 		blast.setRenderFlag(True)
 		blast.setDisplayFlag(True)
@@ -618,6 +618,29 @@ for node in switch.inputs():
 	tempHideDisplay.setDisplayFlag(True)
 
 	return geo
+
+def generate_groups_expression_renameMe(group, model_name, rig_name, asset_name):
+	expression = '''
+prefix = ""
+
+source = hou.ch("../../../source")
+input = hou.ch("../../../''' + asset_name + '''/set_switch/input")
+
+if source == 0:
+    input = hou.ch("../../../''' + asset_name + '''/set_switch/input")
+elif source == 1:
+    input = hou.ch("../../../''' + asset_name + '''/shot_switch/input")
+else:
+    return "''' + str(group) + '''"
+
+if input == 0:
+    prefix = "''' + model_name + '''_"
+else:
+    prefix = "''' + rig_name + '''_"
+
+return prefix + "''' + str(group) + '''"
+	'''
+	return expression
 
 def go():
 	# checkout_window = CheckoutWindow()
