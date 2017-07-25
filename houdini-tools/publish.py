@@ -55,7 +55,7 @@ def publish_shot():
 		comment = publish_window.comment
 		element.publish(user, src, comment)
 
-def publish_hda_go(hda=None):
+def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 	global publish_window
 	global asset
 	global hda_name
@@ -77,17 +77,17 @@ def publish_hda_go(hda=None):
 		if index > 0:
 			hda_name = hda_name[:index]
 		src = asset.type().definition().libraryFilePath()
-		publish_window = PublishWindow("", hou.ui.mainQtWindow(), [Department.ASSEMBLY])
+		publish_window = PublishWindow("", hou.ui.mainQtWindow(), departments)
 	else:
 		hou.ui.displayMessage("Node is not a digital asset")
 		return
 	publish_window.finished.connect(publish_hda)
 
 def publish_tool_go(node=None):
-	publish_hda_go(hda=node)
+	publish_hda_go(hda=node, departments=[Department.HDA])
 
 def publish_asset_go(node=None):
-	publish_hda_go(hda=node)
+	publish_hda_go(hda=node, departments=[Department.ASSEMBLY])
 
 def publish_shot_go():
 	global publish_window

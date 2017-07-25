@@ -66,7 +66,7 @@ def rollback_tool_go(node=None):
 	global asset_name
 	global src
 
-	if node is None
+	if node is None:
 		nodes = hou.selectedNodes()
 		if len(nodes) == 1:
 			node = nodes[0]

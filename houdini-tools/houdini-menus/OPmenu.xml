@@ -45,7 +45,6 @@ if node:
 			node_name = node_name[:index]
 			if node_name in Project().list_tools():
 				return 1
-				print "This is the Publish Tool MenuItem"
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -53,6 +52,7 @@ return 0
 import publish
 node = kwargs.get('node', None)
 if node:
+	print "This is the Publish Tool MenuItem"
 	publish.publish_tool_go(node)
 				]]>
 			</scriptCode>
@@ -125,7 +125,6 @@ if node:
 			node_name = node_name[:index]
 			if node_name in Project().list_assets():
 				return 1
-				print "This is the Publish Asset MenuItem"
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -133,6 +132,7 @@ return 0
 import publish
 node = kwargs.get('node', None)
 if node:
+	print "This is the Publish Asset MenuItem"
 	publish.publish_asset_go(node)
 				]]>
 			</scriptCode>
