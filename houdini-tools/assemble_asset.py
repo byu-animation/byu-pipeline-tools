@@ -150,9 +150,11 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 		try:
 			hda = set_hda.createNode(asset_name + "_main")
 		except:
-			print "There is not asset named " + asset_name + ". You may need to assemble it first."
-			error_gui.error("There is not asset named " + asset_name + ". You may need to assemble it first.")
-			subnet.destroy()
+			message = "There is not asset named " + asset_name + ". You may need to assemble it first."
+			print message
+			error_gui.error(message)
+			error_gui.error("Here is an extra error message just incase the first one was blank.\nThere is an asset that hasn't been assembled yet and that is why this fails.")
+			hda.destroy()
 			return
 		used_hdas.add(asset_name)
 		label_text = asset_name.replace('_', ' ').title()
