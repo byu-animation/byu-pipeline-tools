@@ -2,7 +2,7 @@
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import PublishWindow
+from byugui import PublishWindow, error_gui
 
 from byuam import Department, Project, Element, Environment
 
@@ -79,7 +79,7 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 		src = asset.type().definition().libraryFilePath()
 		publish_window = PublishWindow("", hou.ui.mainQtWindow(), departments)
 	else:
-		hou.ui.displayMessage("Node is not a digital asset")
+		hou.ui.displayMessage("The selected node is not a digital asset")
 		return
 	publish_window.finished.connect(publish_hda)
 
