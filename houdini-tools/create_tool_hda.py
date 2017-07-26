@@ -23,16 +23,17 @@ def create_hda(hda=None):
 		if len(selection) != 1:
 			error_gui.error('Please select only one node')
 			return
-			node = selection[0]
-
-	node = hda
-	if not node.canCreateDigitalAsset():
-		error_gui.error('You can\'t make a digital asset from the selected node')
-		return
+		node = selection[0]
+	else:
+		node = hda
 
 	tool_name = create_window.result
 
 	if tool_name is None:
+		return
+
+	if not node.canCreateDigitalAsset():
+		error_gui.error('You can\'t make a digital asset from the selected node')
 		return
 
 	project = Project()
