@@ -16,7 +16,7 @@ def go(node=None):
 	create_window = AssembleWindow(hou.ui.mainQtWindow(), [Department.HDA])
 	create_window.finished.connect(create_hda)
 
-def create_hda():
+def create_hda(hda=None):
 
 	if hda is None:
 		selection = hou.selectedNodes()

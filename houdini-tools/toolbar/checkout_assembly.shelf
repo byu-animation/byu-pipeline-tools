@@ -13,7 +13,7 @@
     ]]></helpText>
     <script scriptType="python"><![CDATA[import checkout
 
-checkout.checkout_asset()
+checkout.checkout_asset_go()
 ]]></script>
   </tool>
 </shelfDocument>

@@ -5,15 +5,15 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="publish" label="Publish" icon="PLASMA_App">
-    <helpText><![CDATA[= Publish Asset =
+  <tool name="rollback_shot" label="Rollback Shot" icon="PLASMA_App">
+    <helpText><![CDATA[= Rollback Shot =
 
-"""Saves and publishes all changes for the selected element."""
+"""Rollback a shot to a previous version."""
 
     ]]></helpText>
-    <script scriptType="python"><![CDATA[import publish_asset
+    <script scriptType="python"><![CDATA[import rollback
 
-publish_asset.go()
+rollback.rollback_shot_go()
 ]]></script>
   </tool>
 </shelfDocument>

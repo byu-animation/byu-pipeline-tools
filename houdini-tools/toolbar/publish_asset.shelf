@@ -5,15 +5,15 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="checkout_shot" label="Checkout Shot" icon="PLASMA_App">
+  <tool name="publish_asset" label="Publish Asset" icon="PLASMA_App">
     <helpText><![CDATA[= Publish Asset =
 
-"""Checks out a shot for editing."""
+"""Saves and publishes all changes for the selected asset."""
 
     ]]></helpText>
-    <script scriptType="python"><![CDATA[import checkout
+    <script scriptType="python"><![CDATA[import publish
 
-checkout.checkout_shot_go()
+publish.publish_asset_go()
 ]]></script>
   </tool>
 </shelfDocument>
