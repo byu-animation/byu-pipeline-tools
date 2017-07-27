@@ -48,6 +48,8 @@ def create_hda(hda=None):
 	operatorLabel = (project.get_name() + ' ' + tool.get_name()).title()
 	saveToLibrary = checkout_file
 
-	hda_node = node.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary)
+	num_inputs = len(node.inputs())
+
+	hda_node = node.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
 	assetTypeDef = hda_node.type().definition()
 	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
