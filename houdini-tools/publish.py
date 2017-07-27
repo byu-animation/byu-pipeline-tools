@@ -77,7 +77,7 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 		if index > 0:
 			hda_name = hda_name[:index]
 		src = asset.type().definition().libraryFilePath()
-		publish_window = PublishWindow("", hou.ui.mainQtWindow(), departments)
+		publish_window = PublishWindow(src, hou.ui.mainQtWindow(), departments)
 	else:
 		hou.ui.displayMessage("The selected node is not a digital asset")
 		return

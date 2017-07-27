@@ -196,7 +196,7 @@ def addMaterialOptions(geo, groups):
 	# Create a new parameter for RenderMan 'Displacement Shader'
 	displacement_shader = hou.StringParmTemplate('shop_displacepath#', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
 	displacement_shader.setHelp('RiDisplace')
-	displacement_shader.setTags({'opfilter': '!!SHOP/DISPLACEMENT!!', 'oprelative': '.', 'spare_category': 'Shaders'})
+	displacement_shader.setTags({'oprelative': '.'})
 	# Create a new parameter for RenderMan 'Displacement Bound'
 	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
 	displacement_bound.setHelp('Attribute: displacementbound/sphere')
@@ -243,24 +243,12 @@ hou.node("./shot_switch").cook(force=True)
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
-def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None):
+def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None, add_displacement=False):
 	# Get the paramter template group from the current geo node
 	hou_parm_template_group = geo.parmTemplateGroup()
 
 	# Create a folder for the RenderMan parameters
 	renderman_folder = hou.FolderParmTemplate('renderman', 'RenderMan', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
-
-	# Create a new parameter for RenderMan 'Displacement Shader'
-	displacement_shader = hou.StringParmTemplate('shop_displacepath', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
-	displacement_shader.setHelp('RiDisplace')
-	displacement_shader.setTags({'opfilter': '!!SHOP/DISPLACEMENT!!', 'oprelative': '.', 'spare_category': 'Shaders'})
-	renderman_folder.addParmTemplate(displacement_shader)
-
-	# Create a new parameter for RenderMan 'Displacement Bound'
-	displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
-	displacement_bound.setHelp('Attribute: displacementbound/sphere')
-	displacement_bound.setTags({'spare_category': 'Shading'})
-	renderman_folder.addParmTemplate(displacement_bound)
 
 	# Create a new parameter for RenderMan 'Interpolate Boundary'
 	interpolate_boundary = hou.ToggleParmTemplate("ri_interpolateboundary", "Interpolate Boundary", default_value=False)
@@ -274,26 +262,42 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	rendersubd.setTags({'spare_category': 'Geometry'})
 	renderman_folder.addParmTemplate(rendersubd)
 
+	# TODO: If we can get the displacement to work by group then we don't need to have this here anymore. We will need to finish hooking it up in addMaterialOptions()
+	if(add_displacement):
+		# Create a new parameter for RenderMan 'Displacement Shader'
+		displacement_shader = hou.StringParmTemplate('shop_displacepath', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+		displacement_shader.setHelp('RiDisplace')
+		displacement_shader.setTags({'oprelative': '.','spare_category': 'Shading'})
+		renderman_folder.addParmTemplate(displacement_shader)
+
+		# Create a new parameter for RenderMan 'Displacement Bound'
+		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+		displacement_bound.setHelp('Attribute: displacementbound/sphere')
+		displacement_bound.setTags({'spare_category': 'Shading'})
+		renderman_folder.addParmTemplate(displacement_bound)
+
 	hou_parm_template_group.append(renderman_folder)
 
 	geo.setParmTemplateGroup(hou_parm_template_group)
 
-	# Code for /obj/geo1/shop_displacepath parm
-	hou_parm = geo.parm('shop_displacepath')
-	hou_parm.lock(False)
-	if pxrdisplace is not None:
-		hou_parm.set(pxrdisplace.path())
-	if pxrdisplaceexpr is not None:
-		hou_parm.setExpression(pxrdisplaceexpr)
-	hou_parm.setAutoscope(False)
+	# TODO: If we can get the displacement to work by group then we don't need to have this here anymore. We will need to finish hooking it up in addMaterialOptions()
+	if add_displacement:
+		# Code for /obj/geo1/shop_displacepath parm
+		hou_parm = geo.parm('shop_displacepath')
+		hou_parm.lock(False)
+		if pxrdisplace is not None:
+			hou_parm.set(pxrdisplace.relativePathTo(geo))
+		if pxrdisplaceexpr is not None:
+			hou_parm.setExpression(pxrdisplaceexpr)
+		hou_parm.setAutoscope(False)
 
-	# Code for ri_dbound parm
-	hou_parm = geo.parm('ri_dbound')
-	hou_parm.lock(False)
-	hou_parm.set(0)
-	if riboundExpr is not None:
-		hou_parm.setExpression(riboundExpr)
-	hou_parm.setAutoscope(False)
+		# Code for ri_dbound parm
+		hou_parm = geo.parm('ri_dbound')
+		hou_parm.lock(False)
+		hou_parm.set(0)
+		if riboundExpr is not None:
+			hou_parm.setExpression(riboundExpr)
+		hou_parm.setAutoscope(False)
 
 	# Code for ri_interpolateboundary parm
 	hou_parm = geo.parm("ri_interpolateboundary")
@@ -389,7 +393,7 @@ def assemble(project, environment, assembly, asset, checkout_file):
 	shop.layoutChildren()
 
 	# Set up geo node
-	geo = geo_setup(hda, asset, project, risnet_nodes=risnet_nodes)
+	geo = geo_setup(hda, asset, project)
 
 	# Finish setting up the hda
 	hda.layoutChildren()
@@ -451,7 +455,7 @@ def get_model_alembic_cache(model, project):
 
 	return geo_files[0]
 
-def geo_setup(parentNode, asset, project, risnet_nodes=None):
+def geo_setup(parentNode, asset, project):
 	# Get assembly, model, and rig elements
 	rig = asset.get_element(Department.RIG)
 	model = asset.get_element(Department.MODEL)
@@ -461,10 +465,7 @@ def geo_setup(parentNode, asset, project, risnet_nodes=None):
 
 	geo = parentNode.createNode('geo')
 
-	if risnet_nodes is None:
-		geo = add_renderman_settings(geo)
-	else:
-		geo = add_renderman_settings(geo, risnet_nodes['pxrdisplace'])
+	geo = add_renderman_settings(geo)
 
 	for child in geo.children():
 		child.destroy()
@@ -589,6 +590,8 @@ for node in switch.inputs():
 
 
 	# Here is the temporary solution to the can't-assign-renderman-displacement-by-group-problem
+	# In addition to getting rid of this code you will also need to implement the new way to do displacement by group if Renderman in Houdini ever gets that capability.
+	# For example, in the future the displacement shader and bound would only need to be applied in the material parameter tab and not in the Renderman tab. But since we are using the same code for the geo nodes in the dont_touch_this_subnet subnet it doesn't make senese to remove it just yet.
 	subnet = geo.parent().createNode("subnet")
 	for i, group in enumerate(groups):
 		group_num = str(i + 1)
@@ -597,9 +600,7 @@ for node in switch.inputs():
 		mat_path_expr = 'chsop("../../' + geo.name() + '/mat_path' + group_num + '")'
 		displacePathExpr = 'chsop("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
 		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
-		# displacePathExpr = 'ch("../../a_gnome/shop_displacepath1")'
-		# riBoundExpr = 'ch("../../a_gnome/ri_dbound1")'
-		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr)
+		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr, add_displacement=True)
 		group_geo.parm("shop_materialpath").setExpression(mat_path_expr)
 
 		for child in group_geo.children():
@@ -608,7 +609,7 @@ for node in switch.inputs():
 		obj_merge.parm("objpath1").set("../../../" + geo.name() + "/" + out.name())
 		blast = obj_merge.createOutputNode("blast")
 		blast.parm("group").set(group.name())
-		blast.parm("group").setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)# TODO: I need to figure out what the expression really should be so that I can get the right one every time
+		blast.parm("group").setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)
 		blast.parm("negate").set(True)
 		blast.setRenderFlag(True)
 		blast.setDisplayFlag(True)
@@ -618,6 +619,7 @@ for node in switch.inputs():
 	tempHideDisplay = geo.createNode("null")
 	tempHideDisplay.setRenderFlag(True)
 	tempHideDisplay.setDisplayFlag(True)
+	# End temp solution
 
 	return geo
 
