@@ -406,6 +406,10 @@ def reassemble(hda, project, environment, assembly, asset, checkout_file):
 	for geo in geos:
 		geo.destroy()
 
+	touching = [c for c in hda.children() if c.name() == "dont_touch_this_subnet"]
+	for touch in touching:
+		touch.destroy()
+
 	geo = geo_setup(hda, asset, project)
 
 	hda.layoutChildren()
