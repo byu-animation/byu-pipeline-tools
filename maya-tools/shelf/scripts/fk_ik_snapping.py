@@ -1,7 +1,5 @@
+import maya.cmds as cmds
 import numpy as np
-
-ik_to_fk_match('Grendel', 'arm', 'LFT')
-ik_to_fk_match('Grendel', 'arm', 'RGT')
 
 def ik_to_fk_match(name, limb, side):
 
@@ -123,3 +121,86 @@ def fkToIk(fkShoulderPos, fkElbowPos, fkWristPos):
 	pole = fkElbowPos + (halfPole * 2)
 	# ik lower joint (wrist or ankle) goes to same pos as fk lower joint
 	return {'ikWristControl': fkWristPos, 'ikPole': pole}
+
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import *
+
+WINDOW_WIDTH = 250
+WINDOW_HEIGHT = 100
+
+def maya_main_window():
+	"""Return Maya's main window"""
+	for obj in QtWidgets.qApp.topLevelWidgets():
+		if obj.objectName() == 'MayaWindow':
+			return obj
+	raise RuntimeError('Could not find MayaWindow instance')
+
+class FKIKSnappingWindow(QDialog):
+	def __init__(self, parent=maya_main_window()):
+		QDialog.__init__(self, parent)
+		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+		self.create_layout()
+
+	def create_layout(self):
+		self.characterMenu = QtWidgets.QComboBox()
+		self.characterMenu.addItem("Grendel")
+		self.characterMenu.addItem("Beowulf")
+		self.characterMenu.addItem("Viking")
+		self.characterMenu.addItem("Dragon")
+
+		self.limbMenu = QtWidgets.QComboBox()
+		self.limbMenu.addItem("arm")
+		self.limbMenu.addItem("leg")
+
+		self.sideMenu = QtWidgets.QComboBox()
+		self.sideMenu.addItem("LFT")
+		self.sideMenu.addItem("RGT")
+
+		self.matchIkToFk = QPushButton('Match IK to FK')
+		self.matchIkToFk.clicked.connect(self.fillMatchIKToFK)
+		self.matchFkToIk = QPushButton('Match FK to IK')
+		self.matchFkToIk.clicked.connect(self.fillMatchFKToIK)
+		self.closeButton = QPushButton('Close')
+		self.closeButton.clicked.connect(self.close_dialog)
+
+		#Create button layout
+		button_layout = QHBoxLayout()
+		button_layout.setSpacing(2)
+		button_layout.addStretch()
+
+		button_layout.addWidget(self.matchIkToFk)
+		button_layout.addWidget(self.matchFkToIk)
+		button_layout.addWidget(self.closeButton)
+
+		#Create main layout
+		main_layout = QVBoxLayout()
+		main_layout.setSpacing(2)
+		main_layout.setMargin(2)
+		main_layout.addWidget(self.characterMenu)
+		main_layout.addWidget(self.limbMenu)
+		main_layout.addWidget(self.sideMenu)
+		main_layout.addLayout(button_layout)
+
+		self.setLayout(main_layout)
+
+	def fillMatchIKToFK(self):
+		character = str(self.characterMenu.currentText())
+		limb = str(self.limbMenu.currentText())
+		side = str(self.sideMenu.currentText())
+		ik_to_fk_match(character, limb, side)
+
+	def fillMatchFKToIK(self):
+		character = str(self.characterMenu.currentText())
+		limb = str(self.limbMenu.currentText())
+		side = str(self.sideMenu.currentText())
+		fk_to_ik_match(character, limb, side)
+
+	def close_dialog(self):
+		self.close()
+
+def go():
+	dialog = FKIKSnappingWindow()
+	dialog.show()
+
+if __name__ == '__main__':
+	go()

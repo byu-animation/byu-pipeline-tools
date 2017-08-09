@@ -10,6 +10,7 @@ import new_body
 import playblast
 import publish
 import rollback
+import fk_ik_snapping
 
 def go():
 	reload(alembic_static_exporter)
@@ -23,3 +24,4 @@ def go():
 	reload(playblast)
 	reload(publish)
 	reload(rollback)
+	reload(fk_ik_snapping)

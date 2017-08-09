@@ -2,7 +2,7 @@
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import RollbackWindow
+from byugui import RollbackWindow, error_gui
 
 from byuam import Project, Department, Environment
 
