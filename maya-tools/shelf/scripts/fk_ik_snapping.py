@@ -1,3 +1,5 @@
+#Author: Ben DeMann
+
 import maya.cmds as cmds
 import numpy as np
 
@@ -67,6 +69,7 @@ def snapIkToFk(fkUpperJointName, fkMiddleJointName, fkLowerJointName, ikControlN
 	cmds.xform(ikControlName, translation=[fkWristPos[0],fkWristPos[1],fkWristPos[2]], ws=True)
 	cmds.xform(ikControlName, rotation=[fkWristRot[0],fkWristRot[1],fkWristRot[2]], ws=True)
 	cmds.xform(ikPoleVectorName, translation=[ikPolePos[0],ikPolePos[1],ikPolePos[2]], ws=True)
+	cmds.setAttr(ikPoleVectorName + ".Follow", 0)
 
 	if fkUpperJointControlName is not None and fkMiddleJointControlName is not None and fkLowerJointControlName is not None:
 		# Deselect the FK controls
@@ -100,8 +103,10 @@ def snapFkToIk(ikUpperJointName, ikMiddleJointName, ikLowerJointName, fkUpperJoi
 	cmds.xform(fkLowerJointControlName, rotation=[ikLowerJointRot[0],ikLowerJointRot[1],ikLowerJointRot[2]], ws=True)
 
 	# apply Lengths to limbs
-	cmds.setAttr(upperLimbLenControlName, upperLimbLen)
-	cmds.setAttr(lowerLimbLenControlName, lowerLimbLen)
+	if False:
+		# TODO: I need to do some more work on this before it will work. The problem is that the hights here are given as scalars and we can only figure out what the current length is. If we were able to get the original length then we could work with that. But I can't figure out how to get that yet.
+		cmds.setAttr(upperLimbLenControlName, upperLimbLen)
+		cmds.setAttr(lowerLimbLenControlName, lowerLimbLen)
 
 	if ikControlName is not None and ikPoleVectorName is not None:
 		# Deselect the IK controls
