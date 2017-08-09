@@ -41,11 +41,14 @@ def fk_to_ik_match(name, limb, side):
 	fkMiddleJointControlName = name + '_' + side + '_FK_lower_' + limb + '_cc_01'
 	fkLowerJointControlName = name + '_' + side + '_FK_' + lower_joint + '_cc_01'
 
-	ikShoulderName = name + '_' + side + '_upper_' + limb + '_IK_JNT_01'
-	ikElbowName = name + '_' + side + '_lower_' + limb + '_IK_JNT_01'
-	ikWristName = name + '_' + side + '_' + lower_joint + '_IK_JNT_01'
+	ikUpperJointName = name + '_' + side + '_upper_' + limb + '_IK_JNT_01'
+	ikMiddleJointName = name + '_' + side + '_lower_' + limb + '_IK_JNT_01'
+	ikLowerJointName = name + '_' + side + '_' + lower_joint + '_IK_JNT_01'
 
-	snapFkToIk(ikShoulderName, ikElbowName, ikWristName, fkUpperJointControlName, fkMiddleJointControlName, fkLowerJointControlName=fkLowerJointControlName, fkIkSwitchName=fkIkSwitchName, ikControlName=ikControlName, ikPoleVectorName=ikPoleVectorName)
+	upperLimbLenControlName = name + '_' + side + '_' + limb + '_settings_cc_01.Upper_' + limb + '_Length'
+	lowerLimbLenControlName = name + '_' + side + '_' + limb + '_settings_cc_01.Lower_' + limb + '_Length'
+
+	snapFkToIk(ikUpperJointName, ikMiddleJointName, ikLowerJointName, fkUpperJointControlName, fkMiddleJointControlName, upperLimbLenControlName, lowerLimbLenControlName, fkLowerJointControlName=fkLowerJointControlName, fkIkSwitchName=fkIkSwitchName, ikControlName=ikControlName, ikPoleVectorName=ikPoleVectorName)
 
 #Change from FK to IK
 def snapIkToFk(fkUpperJointName, fkMiddleJointName, fkLowerJointName, ikControlName, ikPoleVectorName, fkIkSwitchName=None, fkUpperJointControlName=None, fkMiddleJointControlName=None, fkLowerJointControlName=None):
@@ -74,20 +77,33 @@ def snapIkToFk(fkUpperJointName, fkMiddleJointName, fkLowerJointName, ikControlN
 		cmds.select(fkLowerJointControlName, deselect=True)
 
 #Change from IK to FK
-def snapFkToIk(ikShoulderName, ikElbowName, ikWristName, fkUpperJointControlName, fkMiddleJointControlName, fkLowerJointControlName=None, fkIkSwitchName=None, ikControlName=None, ikPoleVectorName=None):
+def snapFkToIk(ikUpperJointName, ikMiddleJointName, ikLowerJointName, fkUpperJointControlName, fkMiddleJointControlName, upperLimbLenControlName, lowerLimbLenControlName, fkLowerJointControlName=None, fkIkSwitchName=None, ikControlName=None, ikPoleVectorName=None):
 	# get location of IK skeleton
-	ikShoulPos = np.array(cmds.xform(ikShoulderName, q=True, ws=True, rotation=True))
-	ikElbowPos = np.array(cmds.xform(ikElbowName, q=True, ws=True, rotation=True))
-	ikWristPos = np.array(cmds.xform(ikWristName, q=True, ws=True, rotation=True))
+	ikUpperJointRot = np.array(cmds.xform(ikUpperJointName, q=True, ws=True, rotation=True))
+	ikMiddleJointRot = np.array(cmds.xform(ikMiddleJointName, q=True, ws=True, rotation=True))
+	ikLowerJointRot = np.array(cmds.xform(ikLowerJointName, q=True, ws=True, rotation=True))\
+
+	# Get position of joints to calculate lengths
+	ikUpperJointPos = np.array(cmds.xform(ikUpperJointName, q=True, ws=True, rp=True))
+	ikMiddleJointPos = np.array(cmds.xform(ikMiddleJointName, q=True, ws=True, rp=True))
+	ikLowerJointPos = np.array(cmds.xform(ikLowerJointName, q=True, ws=True, rp=True))
+
+	# Calculate Lengths of upper and lower limbs
+	upperLimbLen = np.linalg.norm(ikUpperJointPos - ikMiddleJointPos)
+	lowerLimbLen = np.linalg.norm(ikMiddleJointPos - ikLowerJointPos)
 
 	if fkIkSwitchName is not None:
 		# switch mode from FK to IK
 		cmds.setAttr(fkIkSwitchName, 0)
 
 	# snap FK controls to IK location
-	cmds.xform(fkUpperJointControlName, rotation=[ikShoulPos[0],ikShoulPos[1],ikShoulPos[2]], ws=True)
-	cmds.xform(fkMiddleJointControlName, rotation=[ikElbowPos[0],ikElbowPos[1],ikElbowPos[2]], ws=True)
-	cmds.xform(fkLowerJointControlName, rotation=[ikWristPos[0],ikWristPos[1],ikWristPos[2]], ws=True)
+	cmds.xform(fkUpperJointControlName, rotation=[ikUpperJointRot[0],ikUpperJointRot[1],ikUpperJointRot[2]], ws=True)
+	cmds.xform(fkMiddleJointControlName, rotation=[ikMiddleJointRot[0],ikMiddleJointRot[1],ikMiddleJointRot[2]], ws=True)
+	cmds.xform(fkLowerJointControlName, rotation=[ikLowerJointRot[0],ikLowerJointRot[1],ikLowerJointRot[2]], ws=True)
+
+	# apply Lengths to limbs
+	cmds.setAttr(upperLimbLenControlName, upperLimbLen)
+	cmds.setAttr(lowerLimbLenControlName, lowerLimbLen)
 
 	if ikControlName is not None and ikPoleVectorName is not None:
 		# Deselect the IK controls
@@ -101,9 +117,9 @@ def fkToIk(fkShoulderPos, fkElbowPos, fkWristPos):
 	# Get pole vector
 	# 1) Get point on plane
 	point_on_plane = fkWristPos + ((fkShoulderPos-fkWristPos)/2)
-	# 2) Get vector from point to elbow
+	# 2) Get vector from point to middle joint (elbow or knee)
 	halfPole = fkElbowPos - point_on_plane
 	# 3) Extend vector to be in a good position for the pole vector
 	pole = fkElbowPos + (halfPole * 2)
-	# ik wrist goes to same pos as fk wrist
+	# ik lower joint (wrist or ankle) goes to same pos as fk lower joint
 	return {'ikWristControl': fkWristPos, 'ikPole': pole}
