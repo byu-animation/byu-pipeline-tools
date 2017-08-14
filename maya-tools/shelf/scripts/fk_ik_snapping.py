@@ -53,9 +53,9 @@ def fk_to_ik_match(name, limb, side):
 #Change from FK to IK
 def snapIkToFk(fkUpperJointName, fkMiddleJointName, fkLowerJointName, ikControlName, ikPoleVectorName, fkIkSwitchName=None, fkUpperJointControlName=None, fkMiddleJointControlName=None, fkLowerJointControlName=None):
 	# get location of FK skeleton
-	fkShoulPos = np.array(cmds.xform(fkUpperJointName, q=True, ws=True, rp=1))
-	fkElbowPos = np.array(cmds.xform(fkMiddleJointName, q=True, ws=True, rp=1))
-	fkWristPos = np.array(cmds.xform(fkLowerJointName, q=True, ws=True, rp=1))
+	fkShoulPos = np.array(cmds.xform(fkUpperJointName, q=True, ws=True, t=1))
+	fkElbowPos = np.array(cmds.xform(fkMiddleJointName, q=True, ws=True, t=1))
+	fkWristPos = np.array(cmds.xform(fkLowerJointName, q=True, ws=True, t=1))
 	fkWristRot = np.array(cmds.xform(fkLowerJointName, q=True, ws=True, rotation=True))
 
 	if fkIkSwitchName is not None:
@@ -66,10 +66,35 @@ def snapIkToFk(fkUpperJointName, fkMiddleJointName, fkLowerJointName, ikControlN
 	ikPolePos = fkToIk(fkShoulPos, fkElbowPos, fkWristPos)['ikPole']
 
 	# snap IK controls to FK location
-	cmds.xform(ikControlName, translation=[fkWristPos[0],fkWristPos[1],fkWristPos[2]], ws=True)
+	cmds.setAttr(ikPoleVectorName + ".Follow", 3)
+	print "Change the follow"
 	cmds.xform(ikControlName, rotation=[fkWristRot[0],fkWristRot[1],fkWristRot[2]], ws=True)
-	cmds.xform(ikPoleVectorName, translation=[ikPolePos[0],ikPolePos[1],ikPolePos[2]], ws=True)
+	cmds.xform(ikControlName, translation=[fkWristPos[0],fkWristPos[1],fkWristPos[2]], ws=True)
 	cmds.setAttr(ikPoleVectorName + ".Follow", 0)
+	cmds.xform(ikPoleVectorName, translation=[ikPolePos[0],ikPolePos[1],ikPolePos[2]], ws=True)
+	print "change the follow back"
+
+	name = 'Grendel'
+	side = 'RGT'
+	limb = 'arm'
+	lower_joint = 'wrist'
+	ikUpperJointName = name + '_' + side + '_upper_' + limb + '_IK_JNT_01'
+	ikMiddleJointName = name + '_' + side + '_lower_' + limb + '_IK_JNT_01'
+	ikLowerJointName = name + '_' + side + '_' + lower_joint + '_IK_JNT_01'
+
+	fksRot = cmds.xform(fkUpperJointName, q=True, ws=True, rotation=1)
+	fkeRot = cmds.xform(fkMiddleJointName, q=True, ws=True, rotation=1)
+	fkwRot = cmds.xform(fkLowerJointName, q=True, ws=True, rotation=1)
+	iksRot = cmds.xform(ikUpperJointName, q=True, ws=True, rotation=1)
+	ikeRot = cmds.xform(ikMiddleJointName, q=True, ws=True, rotation=1)
+	ikwRot = cmds.xform(ikLowerJointName, q=True, ws=True, rotation=1)
+
+	print fksRot
+	print iksRot
+	print fkeRot
+	print ikeRot
+	print fkwRot
+	print ikwRot
 
 	if fkUpperJointControlName is not None and fkMiddleJointControlName is not None and fkLowerJointControlName is not None:
 		# Deselect the FK controls
@@ -108,6 +133,20 @@ def snapFkToIk(ikUpperJointName, ikMiddleJointName, ikLowerJointName, fkUpperJoi
 		cmds.setAttr(upperLimbLenControlName, upperLimbLen)
 		cmds.setAttr(lowerLimbLenControlName, lowerLimbLen)
 
+	fksRot = cmds.xform(fkUpperJointName, q=True, ws=True, rotation=1)
+	fkeRot = cmds.xform(fkMiddleJointName, q=True, ws=True, rotation=1)
+	fkwRot = cmds.xform(fkLowerJointName, q=True, ws=True, rotation=1)
+	iksRot = cmds.xform(ikUpperJointName, q=True, ws=True, rotation=1)
+	ikeRot = cmds.xform(ikMiddleJointName, q=True, ws=True, rotation=1)
+	ikwRot = cmds.xform(ikLowerJointName, q=True, ws=True, rotation=1)
+
+	print fksRot
+	print iksRot
+	print fkeRot
+	print ikeRot
+	print fkwRot
+	print ikwRot
+
 	if ikControlName is not None and ikPoleVectorName is not None:
 		# Deselect the IK controls
 		cmds.select(ikControlName, deselect=True)
@@ -119,11 +158,12 @@ def fkToIk(fkShoulderPos, fkElbowPos, fkWristPos):
 	'''
 	# Get pole vector
 	# 1) Get point on plane
-	point_on_plane = fkWristPos + ((fkShoulderPos-fkWristPos)/2)
+	midPoint = (fkWristPos + fkShoulderPos) / 2
+
 	# 2) Get vector from point to middle joint (elbow or knee)
-	halfPole = fkElbowPos - point_on_plane
+	halfPole = fkElbowPos - midPoint
 	# 3) Extend vector to be in a good position for the pole vector
-	pole = fkElbowPos + (halfPole * 2)
+	pole = midPoint + (halfPole * 4)
 	# ik lower joint (wrist or ankle) goes to same pos as fk lower joint
 	return {'ikWristControl': fkWristPos, 'ikPole': pole}
 
@@ -158,12 +198,13 @@ class FKIKSnappingWindow(QDialog):
 		self.limbMenu.addItem("leg")
 
 		self.sideMenu = QtWidgets.QComboBox()
-		self.sideMenu.addItem("LFT")
 		self.sideMenu.addItem("RGT")
+		self.sideMenu.addItem("LFT")
 
-		self.matchIkToFk = QPushButton('Match IK to FK')
+		self.switchLabel = QLabel('Switch to: ')
+		self.matchIkToFk = QPushButton('IK')
 		self.matchIkToFk.clicked.connect(self.fillMatchIKToFK)
-		self.matchFkToIk = QPushButton('Match FK to IK')
+		self.matchFkToIk = QPushButton('FK')
 		self.matchFkToIk.clicked.connect(self.fillMatchFKToIK)
 		self.closeButton = QPushButton('Close')
 		self.closeButton.clicked.connect(self.close_dialog)
@@ -173,6 +214,7 @@ class FKIKSnappingWindow(QDialog):
 		button_layout.setSpacing(2)
 		button_layout.addStretch()
 
+		button_layout.addWidget(self.switchLabel)
 		button_layout.addWidget(self.matchIkToFk)
 		button_layout.addWidget(self.matchFkToIk)
 		button_layout.addWidget(self.closeButton)
