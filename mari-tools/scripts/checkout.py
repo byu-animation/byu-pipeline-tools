@@ -15,24 +15,12 @@ def go():
 
 def post_checkout():
 	filepath = mari_checkout_dialog.result
-	#print filepath
-
-
-
-	if True:
-		return
 	if filepath is not None:
-#Find mari alternative for cmds --> import maya.cmds as cmds
-#		if not cmds.file(q=True, sceneName=True) == '':
-#			cmds.file(save=True, force=True) #save file
 
 		if not os.path.exists(filepath):
-#			cmds.file(new=True, force=True)
-#			cmds.file(rename=filepath)
-#			cmds.file(save=True, force=True)
 			print "new file "+filepath
-			mari.scriptSaveAs(filepath+".nk")
+			#TODO: make a new project if there are not publishes?
+			print "We don't handle creating new files"
 		else:
-#			cmds.file(filepath, open=True, force=True)
-			print "open file "+filepath
-			mari.scriptOpen(filepath)
+			project = mari.projects.extract(filepath)
+			mari.projects.open(project.name())

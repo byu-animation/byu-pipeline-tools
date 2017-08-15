@@ -1,7 +1,7 @@
 # Author: Ben DeMann
 
 from byuam import Department, Project, Environment
-from byugui.assemble_gui import AssembleWindow
+from byugui.assemble_gui import AssembleWindow, error_gui
 from PySide import QtGui
 import os
 import mari
@@ -43,13 +43,19 @@ def post_assemble():
 		if(not str(file_path).lower().endswith('.abc')):
 			geo_files.remove(file_path)
 
-	geo_file_path = os.path.join(cache, geo_files[0])
-	mari.projects.create(texture.get_long_name(), geo_file_path ,[],[],dict())
+	if len(geo_files) > 1:
+		result = error_gui.light_error("There are multiple alembic files in " + str(file_path) + " and there should only be one.\nWould you like to continue anyways?\nIt might not work.")
+		if not result:
+			return
+	elif len(geo_files) > 1:
+		error_gui.error("There was no geo to bring it. Make sure that the model has been published in Maya.")
 
+	geo_file_path = os.path.join(cache, geo_files[0])
+	mari.projects.create(texture.get_long_name(), geo_file_path ,[],[],dict(), [{"/":mari.geo.GEOMETRY_IMPORT_DONT_MERGE_CHILDREN}, ])
+
+	# At this point there should be no files left to add but if there are then the user was warned about it and we can go ahead and try to load those in.
+	# This was from when we exported a bunch of alembics from Maya instead of just one. And since it shouldn't get called unless something goes wrong I figure it might be interesting to see what would happen if something goes wrong so we might as well leave it.
 	for i in range(1, len(geo_files)):
 		geo_file_path = os.path.join(cache, geo_files[i])
 		mari.geo.load(geo_file_path)
 		print "Loaded " + geo_file_path
-
-	if True:
-		return
