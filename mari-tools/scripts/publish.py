@@ -6,6 +6,7 @@ from byugui import error_gui
 from PySide import QtGui
 import os
 import mari
+import export_images
 
 mari_publish_dialog = None
 
@@ -23,6 +24,7 @@ def post_publish():
 		#save the file
 		project = mari.projects.current()
 		project_id = project.uuid()
+		export_images.go()
 		project.save()
 		project.close()
 
