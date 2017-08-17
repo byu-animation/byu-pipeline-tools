@@ -5,7 +5,7 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="checkout_asset" label="Checkout Asset" icon="PLASMA_App">
+  <tool name="checkout_asset" label="Checkout Asset" icon="checkout.svg">
     <helpText><![CDATA[= Checkout Asset =
 
 """Checks out a digital asset to the user for editing."""

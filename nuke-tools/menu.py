@@ -12,5 +12,5 @@ m = toolbar.addMenu("byu-pipeline Menu", icon="make me.png")
 m.addCommand("Checkout", 'checkout.go()', icon="checkout.xpm")
 m.addCommand("Publish", 'publish.go()', icon="publish.xpm")
 m.addCommand("Rollback", 'rollback.go()', icon="rollback.xpm")
-m.addCommand("Auto Comp", 'nukeAutoComp.go()', icon="")
+m.addCommand("Auto Comp", 'nukeAutoComp.go()', icon="folder.svg")
 #Allen was asking about Nuke + Pipeline

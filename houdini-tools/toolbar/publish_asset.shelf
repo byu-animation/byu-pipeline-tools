@@ -5,7 +5,7 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="publish_asset" label="Publish Asset" icon="PLASMA_App">
+  <tool name="publish_asset" label="Publish Asset" icon="publish.svg">
     <helpText><![CDATA[= Publish Asset =
 
 """Saves and publishes all changes for the selected asset."""
