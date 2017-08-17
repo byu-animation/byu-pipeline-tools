@@ -1,63 +1,63 @@
 {
 	"buttons":[
 		{
-			"icon":"checkout.xpm",
+			"icon":"checkout.svg",
 			"annotation":"Checkout a model, rig or animation",
 			"python_file":"checkout.py"
 		}, {
-			"icon":"new.xpm",
+			"icon":"new-body.svg",
 			"annotation":"Create a new body",
 			"python_file":"new_body.py"
 		}, {
-			"icon":"publish.xpm",
+			"icon":"publish.svg",
 			"annotation":"Publish a model, rig or animation",
 			"python_file":"publish.py"
 		}, {
-			"icon":"frame_range.xpm",
+			"icon":"frame_range.svg",
 			"annotation":"Set the correct frame range for the current shot",
 			"python_file":"frame_range.py"
 		}, {
-			"icon":"playblast.xpm",
+			"icon":"playblast.svg",
 			"annotation":"Playblast this shot",
 			"python_file":"playblast.py"
 		}, {
-			"icon":"alembic_exporter.xpm",
+			"icon":"alembic-export.svg",
 			"annotation":"Export as Alembic",
 			"python_file":"alembic_exporter.py"
 		}, {
-			"icon":"alembic_tagger.xpm",
+			"icon":"alembic_tagger.svg",
 			"annotation":"Tag Selected Objects for Export",
 			"python_file":"alembic_tagger.py"
 		}, {
-			"icon":"alembic_untagger.xpm",
+			"icon":"alembic_untagger.svg",
 			"annotation":"Untag Selected Objects for Export",
 			"python_file":"alembic_untagger.py"
 		}, {
-			"icon":"reference.xpm",
+			"icon":"reference.svg",
 			"annotation":"Reference a model or rig",
 			"python_file":"reference.py"
 		}, {
-			"icon":"brent.xpm",
+			"icon":"brent.svg",
 			"annotation":"Inspirational quote of the day!",
 			"python_file":"inspire_quote.py"
 		}, {
-			"icon":"gnome.xpm",
+			"icon":"gnome.svg",
 			"annotation":"Gnomic Test Geo",
 			"python_file":"import_test_geo.py"
 		}, {
-			"icon":"alembic_exporter.xpm",
+			"icon":"alembic-export.svg",
 			"annotation":"Static Alembic Exporter",
 			"python_file":"alembic_static_exporter.py"
 		}, {
-			"icon":"reload.xpm",
+			"icon":"refresh-scripts.svg",
 			"annotation":"Reload Scripts",
 			"python_file":"reload_scripts.py"
 		}, {
-			"icon":"match.xpm",
+			"icon":"match.svg",
 			"annotation":"FK IK Matching Tool",
 			"python_file":"fk_ik_snapping.py"
 		}, {
-			"icon":"rollback.xpm",
+			"icon":"rollback-tool.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
 		}

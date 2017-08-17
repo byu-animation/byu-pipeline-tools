@@ -32,6 +32,7 @@ env = Environment()
 PROJ = env.get_project_name()
 SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')
 ICON_DIR = os.path.join(SHELF_DIR, "icons")
+ICON_DIR = os.path.join(os.environ.get('BYU_TOOLS_DIR'), "assets/images/tools-icons")
 SCRIPT_DIR = os.path.join(SHELF_DIR, "scripts")
 ####
 
@@ -67,4 +68,3 @@ def BYU_delete_shelf():
         deleteUI(PROJ)
 
 BYU_load_shelf()
-
