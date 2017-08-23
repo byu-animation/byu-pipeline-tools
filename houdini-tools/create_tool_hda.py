@@ -13,19 +13,21 @@ def go(node=None):
 	global create_window
 	global hda
 	hda = node
-	create_window = AssembleWindow(hou.ui.mainQtWindow(), [Department.HDA])
-	create_window.finished.connect(create_hda)
-
-def create_hda(hda=None):
 
 	if hda is None:
 		selection = hou.selectedNodes()
-		if len(selection) != 1:
+		if len(selection) > 1:
 			message_gui.error('Please select only one node')
 			return
-		node = selection[0]
-	else:
-		node = hda
+		elif len(selection) < 1:
+			message_gui.error('Please select a node')
+			return
+		hda = selection[0]
+
+	create_window = AssembleWindow(hou.ui.mainQtWindow(), [Department.HDA])
+	create_window.finished.connect(create_hda)
+
+def create_hda():
 
 	tool_name = create_window.result
 
