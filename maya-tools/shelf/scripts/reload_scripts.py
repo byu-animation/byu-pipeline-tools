@@ -11,6 +11,7 @@ import playblast
 import publish
 import rollback
 import fk_ik_snapping
+import alembic_export
 
 def go():
 	reload(alembic_static_exporter)
@@ -25,3 +26,4 @@ def go():
 	reload(publish)
 	reload(rollback)
 	reload(fk_ik_snapping)
+	reload(alembic_export)

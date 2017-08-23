@@ -6,7 +6,7 @@ from PySide2 import QtGui, QtWidgets, QtCore
 from byuam import Department, Project, Environment
 from byugui.assemble_gui import AssembleWindow
 from byuam.environment import AssetType
-from byugui import error_gui
+from byugui import message_gui
 import checkout
 
 def go(node=None):
@@ -21,7 +21,7 @@ def create_hda(hda=None):
 	if hda is None:
 		selection = hou.selectedNodes()
 		if len(selection) != 1:
-			error_gui.error('Please select only one node')
+			message_gui.error('Please select only one node')
 			return
 		node = selection[0]
 	else:
@@ -33,7 +33,7 @@ def create_hda(hda=None):
 		return
 
 	if not node.canCreateDigitalAsset():
-		error_gui.error('You can\'t make a digital asset from the selected node')
+		message_gui.error('You can\'t make a digital asset from the selected node')
 		return
 
 	project = Project()

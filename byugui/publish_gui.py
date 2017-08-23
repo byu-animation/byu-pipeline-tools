@@ -10,7 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
-import error_gui
+import message_gui
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
@@ -96,7 +96,7 @@ class PublishWindow(QtWidgets.QWidget):
 		elif department in Department.TOOL_DEPTS:
 			self.elementType = 'Tool'
 		else:
-			error_gui.error('There was an error loading the ' + str(department) + ' department')
+			message_gui.error('There was an error loading the ' + str(department) + ' department')
 		self.eList.refreshList(self.elementType)
 
 	def selectElement(self):
@@ -120,7 +120,7 @@ class PublishWindow(QtWidgets.QWidget):
 	def publish(self):
 
 		if str(self.comment.toPlainText()) == "":
-			error_gui.error("Please add a publish comment.\nComments help to track the progress.")
+			message_gui.error("Please add a publish comment.\nComments help to track the progress.")
 			return
 
 		self.elementType = str(self.menu.currentText())
@@ -166,7 +166,7 @@ class ElementList(QtWidgets.QListWidget):
 			self.elements = self.project.list_tools()
 		else:
 			self.elements = list()
-			error_gui.error("There was a problem loading in the elements from of " + element  + " type.")
+			message_gui.error("There was a problem loading in the elements from of " + element  + " type.")
 		self.clear()
 		for e in self.elements:
 			self.addItem(e)

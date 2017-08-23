@@ -10,7 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Department, Environment
-import error_gui
+import message_gui
 
 
 WINDOW_WIDTH = 650
@@ -136,7 +136,7 @@ class AssembleWindow(QtWidgets.QWidget):
 		# Make sure that the asset hasn't been assemble yet
 		startAssembling = False
 		if self.hasPreviousPublish(self.current_item, current_dept):
-			startAssembling = error_gui.light_error("This asset has already been assembled for " + current_dept + ".\n Are you sure you want to assemble it again?")
+			startAssembling = message_gui.light_error("This asset has already been assembled for " + current_dept + ".\n Are you sure you want to assemble it again?")
 		else:
 			startAssembling = True
 

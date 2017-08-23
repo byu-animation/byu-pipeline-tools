@@ -4,7 +4,7 @@ from byuam import Department, Environment
 from PySide import QtGui
 import os
 import mari
-from byugui import error_gui
+from byugui import message_gui
 from byugui.rollback_gui import RollbackWindow
 
 from byuam import Project, Department, Environment
@@ -23,7 +23,7 @@ def go():
 	try:
 		scene_name = mari.projects.current().name()
 	except:
-		error_gui.error("You need to open the project that you would like to rollback.")
+		message_gui.error("You need to open the project that you would like to rollback.")
 
 	shot = os.path.basename(scene_name)
 	index = shot.find("_texture")
@@ -31,7 +31,7 @@ def go():
 		base_name = shot[:index]
 		print base_name
 	else:
-		error_gui.error("We couldn't figure out what asset you are working on.")
+		message_gui.error("We couldn't figure out what asset you are working on.")
 		return
 
 	project = Project()

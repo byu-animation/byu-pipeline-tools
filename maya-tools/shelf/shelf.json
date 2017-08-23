@@ -17,13 +17,13 @@
 			"annotation":"Set the correct frame range for the current shot",
 			"python_file":"frame_range.py"
 		}, {
-			"icon":"play-blast.svg",
+			"icon":"playblast.svg",
 			"annotation":"Playblast this shot",
 			"python_file":"playblast.py"
 		}, {
 			"icon":"alembic-export.svg",
 			"annotation":"Export as Alembic",
-			"python_file":"alembic_exporter.py"
+			"python_file":"alembic_export.py"
 		}, {
 			"icon":"tag.svg",
 			"annotation":"Tag Selected Objects for Export",
@@ -44,10 +44,6 @@
 			"icon":"gnome.svg",
 			"annotation":"Gnomic Test Geo",
 			"python_file":"import_test_geo.py"
-		}, {
-			"icon":"alembic-export.svg",
-			"annotation":"Static Alembic Exporter",
-			"python_file":"alembic_static_exporter.py"
 		}, {
 			"icon":"refresh-scripts.svg",
 			"annotation":"Reload Scripts",

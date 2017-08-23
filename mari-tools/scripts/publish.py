@@ -2,7 +2,7 @@
 
 from byuam import Department, Environment
 from byugui.publish_gui import PublishWindow
-from byugui import error_gui
+from byugui import message_gui
 from PySide import QtGui
 import os
 import mari
@@ -52,7 +52,7 @@ def post_publish():
 			print "There was an error while removing the temp file."
 			pass
 
-		remove = error_gui.light_error("The Mari Project is safely published. Would you like to remove the project from your Mari cache?")
+		remove = message_gui.yes_or_no("The Mari Project is safely published. Would you like to remove the project from your Mari cache?")
 
 		if remove:
 			mari.projects.remove(project_id)

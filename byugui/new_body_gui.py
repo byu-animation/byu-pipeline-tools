@@ -10,7 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import AssetType
-from byugui import error_gui
+from byugui import message_gui
 
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 200
@@ -116,7 +116,7 @@ class NewBodyWindow(QtWidgets.QWidget):
 			elif self.element == 'tool':
 				tool = project.create_tool(name)
 			else:
-				error_gui.error(self.element + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
+				message_gui.error(self.element + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
 			self.parent.accept()
 		except EnvironmentError, e:
 			print e

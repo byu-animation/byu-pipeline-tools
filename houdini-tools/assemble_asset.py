@@ -6,7 +6,7 @@ from PySide2 import QtGui, QtWidgets, QtCore
 from byuam import Department, Project, Environment
 from byugui.assemble_gui import AssembleWindow
 from byuam.environment import AssetType
-from byugui import error_gui
+from byugui import message_gui
 import checkout
 
 def rego():
@@ -17,10 +17,10 @@ def rego():
 	selection = hou.selectedNodes()
 
 	if len(selection) > 1:
-		error_gui.error("Please only select one item")
+		message_gui.error("Please only select one item")
 		return
 	if len(selection) <1:
-		error_gui.error("Please select an item to be reassembled")
+		message_gui.error("Please select an item to be reassembled")
 		return
 
 	hda = selection[0]
@@ -31,7 +31,7 @@ def rego():
 	asset_name = name[:index]
 
 	if main.find("_main") == -1:
-		error_gui.error("There was something wrong with the name. Try tabbing in the asset again and trying one more time.")
+		message_gui.error("There was something wrong with the name. Try tabbing in the asset again and trying one more time.")
 		return
 
 	project = Project()
@@ -152,8 +152,8 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 		except:
 			message = "There is not asset named " + asset_name + ". You may need to assemble it first."
 			print message
-			error_gui.error(message)
-			error_gui.error("Here is an extra error message just incase the first one was blank.\nThere is an asset that hasn't been assembled yet and that is why this fails.")
+			message_gui.error(message)
+			message_gui.error("Here is an extra error message just incase the first one was blank.\nThere is an asset that hasn't been assembled yet and that is why this fails.")
 			hda.destroy()
 			return
 		used_hdas.add(asset_name)
@@ -454,7 +454,7 @@ def get_model_alembic_cache(model, project):
 	geo_files = clean_file_list(geo_files, '.abc')
 
 	if len(geo_files) > 1 or len(geo_files) < 1:
-		error_gui.error("There was a problem importing the geo. Please re-export the geo from maya.")
+		message_gui.error("There was a problem importing the geo. Please re-export the geo from maya.")
 		return
 
 	return geo_files[0]
@@ -566,7 +566,7 @@ for node in switch.inputs():
 	try:
 		groups = static_geo.primGroups()
 	except:
-		error_gui.error("The static_geo has no groups.\n\n Details:\nstr(geometry) =  " + str(static_geo))
+		message_gui.error("The static_geo has no groups.\n\n Details:\nstr(geometry) =  " + str(static_geo))
 		print "This is what static_geo is and it's not working: " + str(static_geo)
 	geo = addMaterialOptions(geo, groups)
 
