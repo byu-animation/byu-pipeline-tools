@@ -5,7 +5,7 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="assemble" label="Assemble Asset" icon="reference.xpm">
+  <tool name="assemble" label="Assemble" icon="assemble.svg">
     <helpText><![CDATA[= Asemble Asset =
 
 """Builds a houdini digital asset for the selected element and imports all model geometry."""
@@ -16,4 +16,17 @@
 assemble_asset.go()
 ]]></script>
   </tool>
+
+
+    <tool name="reassemble" label="Reassemble" icon="assemble.svg">
+      <helpText><![CDATA[= Reassemble Asset =
+
+  """Removes geo and rebuilds a houdini digital asset for the selected element and imports all model geometry."""
+
+      ]]></helpText>
+      <script scriptType="python"><![CDATA[import assemble_asset
+
+  assemble_asset.rego()
+  ]]></script>
+    </tool>
 </shelfDocument>

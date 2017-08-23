@@ -205,11 +205,11 @@ def installGeometry(path=''):
 	path=os.path.dirname(mc.file(q=True, sceneName=True))
 	assetName, assetType, version = decodeFileName()
 
-	#srcOBJ = os.path.join(path, 'cache/objFiles')
-	#destOBJ = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache/objFiles')
-	#destABC = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache/abcFiles')
+	#srcOBJ = os.path.join(path, 'cache', 'objFiles')
+	#destOBJ = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache', 'objFiles')
+	#destABC = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache', 'abcFiles')
 
-	srcABC = os.path.join(path, 'cache/abcFiles')
+	srcABC = os.path.join(path, 'cache', 'abcFiles')
 	destABC = getElementCacheDirectory(path)
 
 	#if os.path.exists(destOBJ):
@@ -269,8 +269,8 @@ def generateGeometry(path=''):
 	if not os.path.exists (os.path.join(path, 'cache')):
 		os.makedirs(os.path.join(path, 'cache'))
 
-	#OBJPATH = os.path.join(path, "cache/objFiles")
-	ABCPATH = os.path.join(path, "cache/abcFiles")
+	#OBJPATH = os.path.join(path, 'cache', 'objFiles')
+	ABCPATH = os.path.join(path, 'cache', 'abcFiles')
 
 	#if os.path.exists(OBJPATH):
 	#	shutil.rmtree(OBJPATH)

@@ -5,6 +5,19 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
+  <tool name="rollback_shot" label="Rollback Shot" icon="rollback.svg">
+    <helpText><![CDATA[= Rollback Shot =
+
+"""Rollback a shot to a previous version."""
+
+    ]]></helpText>
+    <script scriptType="python"><![CDATA[import rollback
+
+rollback.rollback_shot_go()
+]]></script>
+  </tool>
+
+
   <tool name="rollback_asset" label="Rollback Asset" icon="rollback.svg">
     <helpText><![CDATA[= Rollback Asset =
 
@@ -14,6 +27,19 @@
     <script scriptType="python"><![CDATA[import rollback
 
 rollback.rollback_asset_go()
+]]></script>
+  </tool>
+
+
+  <tool name="rollback_tool" label="Rollback Tool" icon="rollback.svg">
+    <helpText><![CDATA[= Rollback Asset =
+
+"""Rollback an asset to a previous version."""
+
+    ]]></helpText>
+    <script scriptType="python"><![CDATA[import rollback
+
+rollback.rollback_tool_go()
 ]]></script>
   </tool>
 </shelfDocument>

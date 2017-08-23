@@ -16,4 +16,30 @@
 publish.publish_shot_go()
 ]]></script>
   </tool>
+
+
+  <tool name="publish_asset" label="Publish Asset" icon="publish.svg">
+	<helpText><![CDATA[= Publish Asset =
+
+"""Saves and publishes all changes for the selected asset."""
+
+	]]></helpText>
+	<script scriptType="python"><![CDATA[import publish
+
+publish.publish_asset_go()
+]]></script>
+  </tool>
+
+
+  <tool name="publish_tool" label="Publish Tool" icon="publish.svg">
+	<helpText><![CDATA[= Publish Tool =
+
+"""Saves and publishes all changes for the selected tool."""
+
+	]]></helpText>
+	<script scriptType="python"><![CDATA[import publish
+
+publish.publish_tool_go()
+]]></script>
+  </tool>
 </shelfDocument>

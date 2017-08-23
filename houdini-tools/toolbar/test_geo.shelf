@@ -5,7 +5,7 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="test_geo" label="Gnome" icon="PLASMA_App">
+  <tool name="test_geo" label="Gnome" icon="gnome.svg">
     <helpText><![CDATA[= Gnome Asset =
 
 """Use Gnomic test geometry"""

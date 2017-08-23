@@ -1,23 +1,23 @@
 {
 	"buttons":[
 		{
-			"icon":"checkout.svg",
-			"annotation":"Checkout a model, rig or animation",
-			"python_file":"checkout.py"
-		}, {
 			"icon":"new-body.svg",
 			"annotation":"Create a new body",
 			"python_file":"new_body.py"
-		}, {
+		},{
+			"icon":"checkout.svg",
+			"annotation":"Checkout a model, rig or animation",
+			"python_file":"checkout.py"
+		},  {
 			"icon":"publish.svg",
 			"annotation":"Publish a model, rig or animation",
 			"python_file":"publish.py"
 		}, {
-			"icon":"frame_range.svg",
+			"icon":"frame-range.svg",
 			"annotation":"Set the correct frame range for the current shot",
 			"python_file":"frame_range.py"
 		}, {
-			"icon":"playblast.svg",
+			"icon":"play-blast.svg",
 			"annotation":"Playblast this shot",
 			"python_file":"playblast.py"
 		}, {
@@ -25,11 +25,11 @@
 			"annotation":"Export as Alembic",
 			"python_file":"alembic_exporter.py"
 		}, {
-			"icon":"alembic_tagger.svg",
+			"icon":"tag.svg",
 			"annotation":"Tag Selected Objects for Export",
 			"python_file":"alembic_tagger.py"
 		}, {
-			"icon":"alembic_untagger.svg",
+			"icon":"untag.svg",
 			"annotation":"Untag Selected Objects for Export",
 			"python_file":"alembic_untagger.py"
 		}, {
@@ -37,7 +37,7 @@
 			"annotation":"Reference a model or rig",
 			"python_file":"reference.py"
 		}, {
-			"icon":"brent.svg",
+			"icon":"quote.svg",
 			"annotation":"Inspirational quote of the day!",
 			"python_file":"inspire_quote.py"
 		}, {
@@ -53,11 +53,11 @@
 			"annotation":"Reload Scripts",
 			"python_file":"reload_scripts.py"
 		}, {
-			"icon":"match.svg",
+			"icon":"ik-fk.svg",
 			"annotation":"FK IK Matching Tool",
 			"python_file":"fk_ik_snapping.py"
 		}, {
-			"icon":"rollback-tool.svg",
+			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
 		}

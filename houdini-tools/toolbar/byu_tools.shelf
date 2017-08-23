@@ -8,14 +8,18 @@
   <toolshelf name="byu_tools" label="BYU Tools">
     <memberTool name="new_body"/>
     <memberTool name="checkout_shot"/>
-	<memberTool name="checkout_asset"/>
-    <memberTool name="rollback_shot"/>
-    <memberTool name="rollback_asset"/>
-    <memberTool name="assemble"/>
     <memberTool name="publish_shot"/>
-    <memberTool name="publish_asset"/>
+    <memberTool name="rollback_shot"/>
+    <memberTool name="assemble"/>
     <memberTool name="inspire"/>
     <memberTool name="test_geo"/>
     <memberTool name="renderman_setup"/>
+	<memberTool name="checkout_asset"/>
+    <memberTool name="publish_asset"/>
+    <memberTool name="rollback_asset"/>
+    <memberTool name="reassemble"/>
+	<memberTool name="checkout_tool"/>
+    <memberTool name="publish_tool"/>
+    <memberTool name="rollback_tool"/>
   </toolshelf>
 </shelfDocument>

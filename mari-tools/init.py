@@ -14,6 +14,6 @@ init()
 
 project = Project()
 
-script_path = os.path.join(project.get_project_dir(), 'byu-pipeline-tools/mari-tools/scripts/')
+script_path = os.path.join(project.get_project_dir(), "byu-pipeline-tools", "mari-tools", "scripts")
 
 sys.path.append(script_path)

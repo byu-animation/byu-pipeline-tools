@@ -32,7 +32,7 @@ def create_project(path, name="test", email=None, password=None, nickname=None):
 	pipeline_io.writefile(pipeline_file, datadict)
 
 	# Set up .desktop files
-	iconScript = os.path.join(path, "byu-pipeline-tools/bin/make-icons.sh")
+	iconScript = os.path.join(path, "byu-pipeline-tools", "bin", "make-icons.sh")
 	if(nickname is not None):
 		subprocess.call(["sh", iconScript, "-n", nickname, name, path])
 	else:

@@ -32,7 +32,7 @@ env = Environment()
 PROJ = env.get_project_name()
 SHELF_DIR = os.environ.get('MAYA_SHELF_DIR')
 ICON_DIR = os.path.join(SHELF_DIR, "icons")
-ICON_DIR = os.path.join(os.environ.get('BYU_TOOLS_DIR'), "assets/images/tools-icons")
+ICON_DIR = os.path.join(os.environ.get('BYU_TOOLS_DIR'), "assets", "images", "icons", "tool-icons")
 SCRIPT_DIR = os.path.join(SHELF_DIR, "scripts")
 ####
 
