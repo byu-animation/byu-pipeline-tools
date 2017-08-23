@@ -4,5 +4,5 @@ import hou
 import os
 
 def go():
-    global quote_window
-    dialog = CreateWindow(hou.ui.mainQtWindow())
+	global quote_window
+	dialog = CreateWindow(hou.ui.mainQtWindow())

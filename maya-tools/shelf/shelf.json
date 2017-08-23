@@ -45,7 +45,7 @@
 			"annotation":"Gnomic Test Geo",
 			"python_file":"import_test_geo.py"
 		}, {
-			"icon":"refresh-scripts.svg",
+			"icon":"reload-scripts.svg",
 			"annotation":"Reload Scripts",
 			"python_file":"reload_scripts.py"
 		}, {

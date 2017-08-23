@@ -14,6 +14,7 @@
     <memberTool name="inspire"/>
     <memberTool name="test_geo"/>
     <memberTool name="renderman_setup"/>
+	<memberTool name="reload_scripts"/>
 	<memberTool name="checkout_asset"/>
     <memberTool name="publish_asset"/>
     <memberTool name="rollback_asset"/>
