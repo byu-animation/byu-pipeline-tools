@@ -22,7 +22,8 @@ class QuoteWindow(QtWidgets.QWidget):
     def __init__(self, parent):
         super(QuoteWindow, self).__init__()
         self.parent = parent
-        quote_json = file(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/inspire-quotes.json')
+		quotes_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'inspire-quotes.json')
+        quote_json = file(quotes_path)
         self.quoteData = json.loads(quote_json.read())['quotes']
         self.initUI()
 
@@ -63,7 +64,8 @@ class QuoteWindow(QtWidgets.QWidget):
 	quoteInfo = self.getQuote()
 
         self.quote.setText(quoteInfo["quote"] + "\n\t-" + quoteInfo["author"])# + "\n\n\n Submitted by: " + quoteInfo["contributor"])
-        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/' + quoteInfo['image'])
+		image_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'images', quoteInfo['image'])
+        pixmap = QtGui.QPixmap(image_path)
         scaled = pixmap.scaledToWidth(self.size().width()/2)
         print scaled
         print "\n" + str(self.size()) + " " + str(self.size().width())
@@ -75,5 +77,5 @@ class QuoteWindow(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
+    ex = QuoteWindow(app)
     sys.exit(app.exec_())

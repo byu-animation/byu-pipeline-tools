@@ -67,7 +67,8 @@ class NewBodyWindow(QtWidgets.QWidget):
 		self.cancelBtn.clicked.connect(self.parent.close)
 		#set image
 		self.img = QtWidgets.QLabel()
-		pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/film-banner.jpg')
+		image_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'images', 'film-banner.jpg')
+		pixmap = QtGui.QPixmap(image_path)
 		scaled = pixmap.scaledToWidth(self.size().width()/3)
 		self.img.setPixmap(scaled)
 

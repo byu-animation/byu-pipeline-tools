@@ -54,7 +54,8 @@ class CheckoutWindow(QtWidgets.QWidget):
         button_layout.addWidget(self.cancel_button)
 
         self.img = QtWidgets.QLabel()
-        pixmap = QtGui.QPixmap(os.environ['BYU_TOOLS_DIR'] + '/byugui/assets/images/film-banner.jpg')
+		banner_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'images', 'film-banner.jpg')
+        pixmap = QtGui.QPixmap(banner_path)
         scaled = pixmap.scaledToWidth(self.size().width())
         self.img.setPixmap(scaled)
 

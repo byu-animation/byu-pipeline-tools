@@ -181,5 +181,6 @@ class ElementList(QtWidgets.QListWidget):
 
 if __name__ == '__main__':
 	app = QtWidgets.QApplication(sys.argv)
-	ex = PublishWindow(os.environ['BYU_TOOLS_DIR'] + '/byu_gui/test.txt', app)
+	test_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byu_gui',  'test.txt')
+	ex = PublishWindow(test_path, app)
 	sys.exit(app.exec_())

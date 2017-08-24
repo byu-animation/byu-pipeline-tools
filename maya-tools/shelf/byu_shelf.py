@@ -64,6 +64,7 @@ def BYU_load_shelf():
 	remove_unwanted_shelfs()
 
 def remove_unwanted_shelfs():
+	#There was a little bit of murmuring about the TURTLE shelf tab and how it not removeable. So I just removed at startup.
 	import maya.cmds as cmds
 	if cmds.shelfLayout("TURTLE", exists=True):
 		cmds.deleteUI("TURTLE", lay=True)

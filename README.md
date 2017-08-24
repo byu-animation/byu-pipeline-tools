@@ -12,6 +12,7 @@ To setup a production project:
 	```bash
 	create_project $BYU_PROJECT_DIR YourProjectName --email projectSupport@email.com --password projectSupportEmailPassword --nickname name
 	```
+	The nick name is the a short version of the film name that you can meld with a software name. For example, for the project Grendel the nickname would be Grend and for Taijitu it would be Taij so that you get Maya to become Grendaya and Taijaya and Houdini is Grendini and Taijini etc. All of the options are optional.
 1. Update all of the images to be customized for your project. (For a development or test project you may skip this step)
 	* Update the icons for the .desktop files
 		* Icon images of for the .desktop files can be found in byu-pipeline-tools/assets/images/icons/
