@@ -13,23 +13,35 @@ def rollback_hda():
 		hou.hda.uninstallFile(src, change_oplibraries_file=False)
 		dst = os.path.join(environment.get_hda_dir(), asset_name)
 		hou.hda.installFile(dst)
-		message_gui.info("Rollback successful")
+		message_gui.info('Rollback successful')
 
 def rollback_shot():
 	filepath = rollback_window.result
 	if filepath is not None:
 		hou.hipFile.load(filepath)
-		message_gui.info("Rollback successful")
+		message_gui.info('Rollback successful')
 
 def rollback_shot_go():
 	scene_name = hou.hipFile.name()
 	shot = os.path.basename(scene_name)
-	index = shot.find("_lighting")
+	index = shot.find('_lighting')
 	if index > 0:
 		base_name = shot[:index]
+		department = Department.LIGHTING
+	else:
+		index = shot.find('_fx')
+		if index > 0:
+			base_name = shot[:index]
+			department = Department.FX
+		else:
+			message_gui.error("An Error occured while trying to determine what we were supposed to rollback. Maybe at this point we should try to give you a thing to select which one you want to rollback.")
+			return;
 	print base_name
+	project = Project()
 	body = project.get_body(base_name)
-	element = body.get_element(Department.LIGHTING)
+	element = body.get_element(department)
+
+	global rollback_window
 	rollback_window = RollbackWindow(element, hou.ui.mainQtWindow())
 	rollback_window.finished.connect(rollback_shot)
 
@@ -50,11 +62,11 @@ def rollback_asset_go(node=None):
 	project = Project()
 	src = node.type().definition().libraryFilePath()
 	asset_name = os.path.basename(src)
-	index = asset_name.find("_assembly")
+	index = asset_name.find('_assembly')
 	if index > 0:
 		base_name = asset_name[:index]
 	else:
-		message_gui.error("There was a problem finding the asset")
+		message_gui.error('There was a problem finding the asset')
 		return
 	body = project.get_body(base_name)
 	element = body.get_element(Department.ASSEMBLY)
@@ -78,11 +90,11 @@ def rollback_tool_go(node=None):
 	project = Project()
 	src = node.type().definition().libraryFilePath()
 	asset_name = os.path.basename(src)
-	index = asset_name.find("_hda")
+	index = asset_name.find('_hda')
 	if index > 0:
 		base_name = asset_name[:index]
 	else:
-		message_gui.error("There was a problem finding the tool")
+		message_gui.error('There was a problem finding the tool')
 		return
 	body = project.get_body(base_name)
 	element = body.get_element(Department.HDA)

@@ -61,7 +61,7 @@ class QuoteWindow(QtWidgets.QWidget):
 		return self.quoteData[index]
 
 	def populateQuote(self):
-	quoteInfo = self.getQuote()
+		quoteInfo = self.getQuote()
 
 		self.quote.setText(quoteInfo["quote"] + "\n\t-" + quoteInfo["author"])# + "\n\n\n Submitted by: " + quoteInfo["contributor"])
 		image_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'images', quoteInfo['image'])

@@ -26,7 +26,7 @@ def post_checkout():
 #			cmds.file(rename=filepath)
 #			cmds.file(save=True, force=True)
 			print "new file "+filepath
-		nuke.scriptSaveAs(filepath+".nk")
+			nuke.scriptSaveAs(filepath+".nk")
 		else:
 #			cmds.file(filepath, open=True, force=True)
 			print "open file "+filepath
