@@ -5,13 +5,13 @@
 
 if [ -z "${HFS}" ]
 then
-    # The default HFS directory if it isn't already defined
-    export HFS=/opt/hfs.current
-    # If working on the new image, update the houdini directory
-    if [ ! -d "${HFS}" ]
-    then
-        export HFS=/opt/hfs16.0
-    fi
+	# The default HFS directory if it isn't already defined
+	export HFS=/opt/hfs.current
+	# If working on the new image, update the houdini directory
+	if [ ! -d "${HFS}" ]
+	then
+		export HFS=/opt/hfs16.0
+	fi
 fi
 
 # source current houdini setup

@@ -5,10 +5,10 @@ import sys
 from byuam import Project
 
 def init():
-    toolbar = mari.app.findToolBar("BYU Tools")
-    if toolbar is not None:
-        label = PySide.QtGui.QLabel("BYU Tools")
-        toolbar.addWidget(label)
+	toolbar = mari.app.findToolBar("BYU Tools")
+	if toolbar is not None:
+		label = PySide.QtGui.QLabel("BYU Tools")
+		toolbar.addWidget(label)
 
 init()
 

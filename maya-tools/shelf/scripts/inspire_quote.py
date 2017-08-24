@@ -9,13 +9,13 @@ import os
 maya_inspire_dialog = None
 
 def maya_main_window():
-    """Return Maya's main window"""
-    for obj in QtWidgets.qApp.topLevelWidgets():
-        if obj.objectName() == 'MayaWindow':
-            return obj
-    raise RuntimeError('Could not find MayaWindow instance')
+	"""Return Maya's main window"""
+	for obj in QtWidgets.qApp.topLevelWidgets():
+		if obj.objectName() == 'MayaWindow':
+			return obj
+	raise RuntimeError('Could not find MayaWindow instance')
 
 def go():
-    parent = maya_main_window()
-    global maya_inspire_dialog
-    maya_inspire_dialog = QuoteWindow(parent)
+	parent = maya_main_window()
+	global maya_inspire_dialog
+	maya_inspire_dialog = QuoteWindow(parent)

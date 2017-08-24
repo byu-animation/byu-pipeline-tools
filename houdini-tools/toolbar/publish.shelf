@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shelfDocument>
-  <!-- This file contains definitions of shelves, toolbars, and tools.
+	<!-- This file contains definitions of shelves, toolbars, and tools.
  It should not be hand-edited when it is being used by the application.
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="publish_shot" label="Publish Shot" icon="publish.svg">
-    <helpText><![CDATA[= Publish Shot =
+	<tool name="publish_shot" label="Publish Shot" icon="publish.svg">
+		<helpText><![CDATA[= Publish Shot =
 
 """Saves and publishes all changes for the selected shot."""
 
-    ]]></helpText>
-    <script scriptType="python"><![CDATA[import publish
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import publish
 
 publish.publish_shot_go()
 ]]></script>
-  </tool>
+	</tool>
 
 
-  <tool name="publish_asset" label="Publish Asset" icon="publish.svg">
+	<tool name="publish_asset" label="Publish Asset" icon="publish.svg">
 	<helpText><![CDATA[= Publish Asset =
 
 """Saves and publishes all changes for the selected asset."""
@@ -28,10 +28,10 @@ publish.publish_shot_go()
 
 publish.publish_asset_go()
 ]]></script>
-  </tool>
+	</tool>
 
 
-  <tool name="publish_tool" label="Publish Tool" icon="publish.svg">
+	<tool name="publish_tool" label="Publish Tool" icon="publish.svg">
 	<helpText><![CDATA[= Publish Tool =
 
 """Saves and publishes all changes for the selected tool."""
@@ -41,5 +41,5 @@ publish.publish_asset_go()
 
 publish.publish_tool_go()
 ]]></script>
-  </tool>
+	</tool>
 </shelfDocument>
