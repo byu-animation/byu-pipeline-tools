@@ -3,8 +3,8 @@
 #### snippets taken from http://etoia.free.fr/?p=1771
 
 ####
-#  /$$   /$$           /$$ /$$           /$$ /$$
-# | $$  | $$          | $$| $$          | $$| $$
+#  /$$   /$$		   /$$ /$$		   /$$ /$$
+# | $$  | $$		  | $$| $$		  | $$| $$
 # | $$  | $$  /$$$$$$ | $$| $$  /$$$$$$ | $$| $$
 # | $$$$$$$$ /$$__  $$| $$| $$ /$$__  $$| $$| $$
 # | $$__  $$| $$$$$$$$| $$| $$| $$  \ $$|__/|__/
@@ -42,29 +42,37 @@ SCRIPT_DIR = os.path.join(SHELF_DIR, "scripts")
 sys.path.append(SCRIPT_DIR)
 
 def BYU_load_shelf():
-    BYU_delete_shelf()
+	BYU_delete_shelf()
 
-    gShelfTopLevel = mel.eval('global string $gShelfTopLevel; string $temp=$gShelfTopLevel')
-    shelfLayout(PROJ, cellWidth=33, cellHeight=33, p=gShelfTopLevel)
+	gShelfTopLevel = mel.eval('global string $gShelfTopLevel; string $temp=$gShelfTopLevel')
+	shelfLayout(PROJ, cellWidth=33, cellHeight=33, p=gShelfTopLevel)
 
-    #### Okay, for some reason, deleting the shelf from a shelf button crashes Maya.
-    #### I'm saving this for another day, or for someone more adventurous.
-    #### Make the hard-coded reload button:
-    # shelfButton(command="printcow()", annotation="Reload the shelf",
-    #             image=os.path.join(ICON_DIR, "reload.xpm"))
+	#### Okay, for some reason, deleting the shelf from a shelf button crashes Maya.
+	#### I'm saving this for another day, or for someone more adventurous.
+	#### Make the hard-coded reload button:
+	# shelfButton(command="printcow()", annotation="Reload the shelf",
+	#			 image=os.path.join(ICON_DIR, "reload.xpm"))
 
-    #### Load in the buttons
-    json_file = file(os.path.join(SHELF_DIR, "shelf.json"))
-    data = json.loads(json_file.read())
-    for button in data['buttons']:
-        icon = os.path.join(ICON_DIR, button['icon'])
-        annotation = button['annotation']
-        python_file = button['python_file'][:-3]
-        shelfButton(command="import %s; %s.go()"%(python_file, python_file),
-                    annotation=annotation, image=icon)
+	#### Load in the buttons
+	json_file = file(os.path.join(SHELF_DIR, "shelf.json"))
+	data = json.loads(json_file.read())
+	for button in data['buttons']:
+		icon = os.path.join(ICON_DIR, button['icon'])
+		annotation = button['annotation']
+		python_file = button['python_file'][:-3]
+		shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
+	remove_unwanted_shelfs()
+
+def remove_unwanted_shelfs():
+	import maya.cmds as cmds
+	if cmds.shelfLayout("TURTLE", exists=True):
+		cmds.deleteUI("TURTLE", lay=True)
+		print "You are now free from TURTLE. You're welcome!"
+	else:
+		print "There was no TURTLE to be removed."
 
 def BYU_delete_shelf():
-    if shelfLayout(PROJ, exists=True):
-        deleteUI(PROJ)
+	if shelfLayout(PROJ, exists=True):
+		deleteUI(PROJ)
 
 BYU_load_shelf()
