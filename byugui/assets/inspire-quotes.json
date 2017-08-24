@@ -1,95 +1,107 @@
 {
 	"quotes":[
-        {
-            "author":"Brent",
-            "quote":"We are in polish mode",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"We're in finish mode. Kay?",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"Go team!",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"This is the best film BYU has ever produced.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"If winning was easy, even losers could do it.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"If you want to sound smart then you should call them crepuscular rays and not God rays!",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"It has a tanget",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"What you guys are doing is impossilble. It takes Pixar a team of 20 people and $10 million to make a short and they don't have English, Math and Religion classes.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"Normally they have three winners for each category in the student Emmys. I feel bad for the other schools.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"It doesn't matter if you guys get an Emmy. Look at Finding Dory. It was the highest grossing animated film of all time and it didn't even get nominated.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-        {
-            "author":"Brent",
-            "quote":"You guys have really made a cohesive group. And I didn't think that you would be at the beginning of the semster.",
-	    "image":"brent.jpg",
-            "contributor":"Anonymous"
-        },
-	{
-            "author":"Brent",
-            "quote":"We need you to submit more quotes from Brent into the tool_suggestions channel in slack!",
-	    "image":"brent.jpg",
-            "contributor":"Ben DeMann"
-        },
-	{
-            "author":"Kelly",
-            "quote":"We need you to submit more quotes from Kelly into the tool_suggestions channel in slack!",
-	    "image":"kelly.jpg",
-            "contributor":"Ben DeMann"
-        },
-	{
-            "author":"Seth",
-            "quote":"We need you to submit more quotes from Seth into the tool_suggestions channel in slack!",
-	    "image":"seth.png",
-            "contributor":"Ben DeMann"
-        },
-	{
-            "author":"???",
-            "quote":"Have quotes from your favorite faculty/producer/director/anybody? submit the quote and a picture to the tool_suggestions channel in slack!",
-	    "image":"profile.jpg",
-            "contributor":"Ben DeMann"
-        }
+		{
+			"author":"Brent",
+			"quote":"We are in polish mode",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"We're in finish mode. Kay?",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"Go team!",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"This is the best film BYU has ever produced.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"If winning was easy, even losers could do it.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"If you want to sound smart then you should call them crepuscular rays and not God rays!",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"It has a tanget",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"What you guys are doing is impossilble. It takes Pixar a team of 20 people and $10 million to make a short and they don't have English, Math and Religion classes.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"Normally they have three winners for each category in the student Emmys. I feel bad for the other schools.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"It doesn't matter if you guys get an Emmy. Look at Finding Dory. It was the highest grossing animated film of all time and it didn't even get nominated.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"You guys have really made a cohesive group. And I didn't think that you would be at the beginning of the semster.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"We need you to submit more quotes from Brent into the tool_suggestions channel in slack!",
+		"image":"brent.png",
+			"contributor":"Ben DeMann"
+		},
+		{
+			"author":"Kelly",
+			"quote":"We need you to submit more quotes from Kelly into the tool_suggestions channel in slack!",
+		"image":"brent.png",
+			"contributor":"Ben DeMann"
+		},
+		{
+			"author":"Seth",
+			"quote":"There is absolutely no guarantee that the out-of-the-box simulation will give you anything remotely resembling your reference or your director's desires. There is no guarantee that several hours or even an infinite number of hours or floundering and random guessing of parameter values will provide you with any proper shape, motion, resemblance of shape, resemblance of motion, energy, direction, silhouette, composition, surface tension aesthetic, paycheck, refraction, or any other characteristic desired for your effort. Significant time must be spent understanding the most critical parameters and spending much love and care with those parameters in order to mold the simulation into the target shapes and motion. The simulation artist must be warned that starry-eyed mesmerization with the results of default configurations can paralyze the artist and temporarily remove any aesthetic recognition and skill within one's own work. The artist is also warned against initial fear of rectangular-shaped parameter boxes. The curve-of-enthusiasm must be trusted and remembered. If the artist can start playing with a minimal amount of parameters, the tools can be fun and satisfying, and the free fluid motion can result in wonders and infinite possibilities.",
+		"image":"seth.png",
+			"contributor":"Ben DeMann"
+		},
+		{
+			"author":"Brent",
+			"quote":"if it was easy everybody would do it.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"Brent",
+			"quote":"I want that written in stone. I do not judge a group based on if they win any awards.",
+		"image":"brent.png",
+			"contributor":"Anonymous"
+		},
+		{
+			"author":"???",
+			"quote":"Have quotes from your favorite faculty/producer/director/anybody? submit the quote and a picture to the tool_suggestions channel in slack!",
+		"image":"profile.jpg",
+			"contributor":"Ben DeMann"
+		}
 
 	]
 }
