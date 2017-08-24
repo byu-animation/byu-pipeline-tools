@@ -9,7 +9,7 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
-from byuam.environment import AssetType
+from byuam.body import AssetType
 from byugui import message_gui
 
 WINDOW_WIDTH = 300

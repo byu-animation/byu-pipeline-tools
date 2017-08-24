@@ -2,7 +2,7 @@
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import CheckoutWindow
+from byugui import CheckoutWindow, message_gui
 
 from byuam import Department, Project, Environment, Element
 
@@ -36,7 +36,7 @@ def checkout_hda(hda, project, environment):
 		elif asset_name in project.list_tools():
 			body = project.get_tool(asset_name)
 		else:
-			error_gui.error("We could not find " + asset_name + " in the list of things you can checkout.")
+			message_gui.error("We could not find " + asset_name + " in the list of things you can checkout.")
 
 		if os.path.exists(src):
 			if body is not None:
@@ -45,7 +45,7 @@ def checkout_hda(hda, project, environment):
 				elif Element.DEFAULT_NAME in body.list_elements(Department.HDA):
 					element = body.get_element(Department.HDA, Element.DEFAULT_NAME)
 				else:
-					error_gui.error("There was a problem checking out the selected hda")
+					message_gui.error("There was a problem checking out the selected hda")
 					return None
 				element_path = element.checkout(current_user)
 				hou.hda.uninstallFile(src, change_oplibraries_file=False)
@@ -63,18 +63,18 @@ def checkout_hda_go(hda=None):
 		if len(nodes) == 1:
 			hda = nodes[0]
 		elif len(nodes) > 1:
-			hou.ui.displayMessage("Only one node can be selected for checkout")
+			message_gui.error("Only one node can be selected for checkout")
 		else:
-			hou.ui.displayMessage("You need to select an asset node to checkout")
+			message_gui.error("You need to select an asset node to checkout")
 
 	if hda.type().definition() is not None:
 		result = checkout_hda(hda, project, environment)
 		if result is not None:
-			hou.ui.displayMessage('Checkout Successful!', title='Success!')
+			message_gui.info('Checkout Successful!', title='Success!')
 		else:
-			hou.ui.displayMessage('Checkout Failed', title='Failure :()')
+			message_gui.error('Checkout Failed', title='Failure :()')
 	else:
-		hou.ui.displayMessage("Node is not a digital asset")
+		message_gui.error("Node is not a digital asset")
 		return
 
 def checkout_tool_go(node=None):

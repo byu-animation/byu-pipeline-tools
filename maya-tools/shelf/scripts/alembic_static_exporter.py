@@ -6,7 +6,8 @@ import shutil
 from pymel.core import *
 
 import byuam.pipeline_io as pio
-from byuam.environment import Environment, AssetType
+from byuam.environment import Environment
+from byuam.body import AssetType
 from byuam.project import Project
 #from ui_tools import ui, messageSeverity
 

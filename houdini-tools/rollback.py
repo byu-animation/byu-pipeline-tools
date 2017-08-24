@@ -2,7 +2,7 @@
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import RollbackWindow, error_gui
+from byugui import RollbackWindow, message_gui
 
 from byuam import Project, Department, Environment
 
@@ -13,13 +13,13 @@ def rollback_hda():
 		hou.hda.uninstallFile(src, change_oplibraries_file=False)
 		dst = os.path.join(environment.get_hda_dir(), asset_name)
 		hou.hda.installFile(dst)
-		hou.ui.displayMessage("Rollback successful")
+		message_gui.info("Rollback successful")
 
 def rollback_shot():
 	filepath = rollback_window.result
 	if filepath is not None:
 		hou.hipFile.load(filepath)
-		hou.ui.displayMessage("Rollback successful")
+		message_gui.info("Rollback successful")
 
 def rollback_shot_go():
 	scene_name = hou.hipFile.name()
@@ -43,9 +43,9 @@ def rollback_asset_go(node=None):
 		if len(nodes) == 1:
 			node = nodes[0]
 		elif len(node) > 1:
-			error_gui.error('Please select only one node to rollback')
+			message_gui.error('Please select only one node to rollback')
 		elif len(node) < 1:
-			error_gui.error('Please select a node to rollback')
+			message_gui.error('Please select a node to rollback')
 
 	project = Project()
 	src = node.type().definition().libraryFilePath()
@@ -54,7 +54,7 @@ def rollback_asset_go(node=None):
 	if index > 0:
 		base_name = asset_name[:index]
 	else:
-		error_gui.error("There was a problem finding the asset")
+		message_gui.error("There was a problem finding the asset")
 		return
 	body = project.get_body(base_name)
 	element = body.get_element(Department.ASSEMBLY)
@@ -71,9 +71,9 @@ def rollback_tool_go(node=None):
 		if len(nodes) == 1:
 			node = nodes[0]
 		elif len(node) > 1:
-			error_gui.error('Please select only one node to rollback')
+			message_gui.error('Please select only one node to rollback')
 		elif len(node) < 1:
-			error_gui.error('Please select a node to rollback')
+			message_gui.error('Please select a node to rollback')
 
 	project = Project()
 	src = node.type().definition().libraryFilePath()
@@ -82,7 +82,7 @@ def rollback_tool_go(node=None):
 	if index > 0:
 		base_name = asset_name[:index]
 	else:
-		error_gui.error("There was a problem finding the tool")
+		message_gui.error("There was a problem finding the tool")
 		return
 	body = project.get_body(base_name)
 	element = body.get_element(Department.HDA)

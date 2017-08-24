@@ -243,15 +243,3 @@ class Status:
 		given a status level return the equivalent name
 		"""
 		return Status.ALL[level]
-
-
-class AssetType:
-	"""
-	Class describing types of assets.
-	"""
-
-	CHARACTER = "character"
-	SET = "set"
-	PROP = "prop"
-	ACCESSORY = "accessory"
-	ALL = [CHARACTER, SET, PROP, ACCESSORY]

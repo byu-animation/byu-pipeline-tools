@@ -8,8 +8,8 @@ import datetime
 import operator
 import os
 
-from byuam.body import Asset, Shot
-from byuam.environment import AssetType, Department, Status
+from byuam.body import AssetType, Asset, Shot
+from byuam.environment import Department, Status
 from byuam.project import Project
 
 from byugui import request_email

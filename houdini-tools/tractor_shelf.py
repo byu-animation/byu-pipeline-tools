@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import hou
+from byugui import message_gui
 
 # Project name (e.g. owned, ramshorn)
 project_name = "dusk"

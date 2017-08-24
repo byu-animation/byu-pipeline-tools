@@ -2,7 +2,7 @@ import os
 
 # from .department import Department
 from .element import Element
-from .environment import AssetType, Department, Environment
+from .environment import Department, Environment
 from . import pipeline_io
 from .registry import Registry
 
@@ -176,6 +176,16 @@ class Body:
 			return False
 		return relate(self._datadict[attribute],value)
 
+class AssetType:
+	"""
+	Class describing types of assets.
+	"""
+
+	CHARACTER = "character"
+	SET = "set"
+	PROP = "prop"
+	ACCESSORY = "accessory"
+	ALL = [CHARACTER, SET, PROP, ACCESSORY]
 
 class Asset(Body):
 	"""

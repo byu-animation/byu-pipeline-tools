@@ -9,8 +9,8 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
-from byuam.body import Asset
-from byuam.environment import Department, AssetType
+from byuam.body import Asset, AssetType
+from byuam.environment import Department
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600

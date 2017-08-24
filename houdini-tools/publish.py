@@ -2,7 +2,7 @@
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import PublishWindow, error_gui
+from byugui import PublishWindow, message_gui
 
 from byuam import Department, Project, Element, Environment
 
@@ -41,7 +41,7 @@ def publish_hda():
 					dst = os.path.join(environment.get_hda_dir(), saveFile)
 					hou.hda.installFile(dst)
 		else:
-			hou.ui.displayMessage("File does not exist")
+			message_gui.error("File does not exist")
 
 def publish_shot():
 	element = publish_window.result
@@ -66,9 +66,9 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 		if len(nodes) == 1:
 			hda = nodes[0]
 		elif len(nodes) > 1:
-			error_gui.error("Please select only one node.")
+			message_gui.error("Please select only one node.")
 		else:
-			error_gui.error("Please select a node.")
+			message_gui.error("Please select a node.")
 
 	if hda.type().definition() is not None:
 		asset = hda
@@ -79,7 +79,7 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 		src = asset.type().definition().libraryFilePath()
 		publish_window = PublishWindow(src, hou.ui.mainQtWindow(), departments)
 	else:
-		hou.ui.displayMessage("The selected node is not a digital asset")
+		message_gui.error("The selected node is not a digital asset")
 		return
 	publish_window.finished.connect(publish_hda)
 
