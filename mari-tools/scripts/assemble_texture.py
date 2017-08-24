@@ -1,7 +1,8 @@
 # Author: Ben DeMann
 
 from byuam import Department, Project, Environment
-from byugui.assemble_gui import AssembleWindow, error_gui
+from byugui.assemble_gui import AssembleWindow
+from byugui import message_gui
 from PySide import QtGui
 import os
 import mari
@@ -44,11 +45,12 @@ def post_assemble():
 			geo_files.remove(file_path)
 
 	if len(geo_files) > 1:
-		result = error_gui.light_error("There are multiple alembic files in " + str(file_path) + " and there should only be one.\nWould you like to continue anyways?\nIt might not work.")
+		result = message_gui.light_error("There are multiple alembic files in " + str(file_path) + " and there should only be one.\nWould you like to continue anyways?\nIt might not work.")
 		if not result:
 			return
 	elif len(geo_files) > 1:
-		error_gui.error("There was no geo to bring it. Make sure that the model has been published in Maya.")
+		message_gui.error("There was no geo to bring it. Make sure that the model has been published in Maya.")
+		return
 
 	geo_file_path = os.path.join(cache, geo_files[0])
 	mari.projects.create(texture.get_long_name(), geo_file_path ,[],[],dict(), [{"/":mari.geo.GEOMETRY_IMPORT_DONT_MERGE_CHILDREN}, ])

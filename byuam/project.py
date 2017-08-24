@@ -42,6 +42,12 @@ class Project:
 		"""
 		return self._env.get_shots_dir()
 
+	def get_tools_dir(self):
+		"""
+		return the absolute filepath to the tools directory of this project
+		"""
+		return self._env.get_tools_dir()
+
 	def get_users_dir(self):
 		"""
 		return the absolute filepath to the users directory of this project
