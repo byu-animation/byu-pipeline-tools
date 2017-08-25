@@ -13,6 +13,7 @@ from message_gui import *
 from inspire_quote_gui import *
 from new_body_gui import *
 from publish_gui import *
+from selection_gui import *
 from request_email import *
 from reference_gui import *
 from rollback_gui import *

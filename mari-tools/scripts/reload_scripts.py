@@ -4,6 +4,7 @@ import inspire
 import publish
 import reload_scripts
 import rollback
+import export_images
 
 def go():
 	reload(assemble_texture)
@@ -12,3 +13,4 @@ def go():
 	reload(publish)
 	reload(reload_scripts)
 	reload(rollback)
+	reload(export_images)

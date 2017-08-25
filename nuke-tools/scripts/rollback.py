@@ -1,5 +1,5 @@
 from byuam import Department, Project
-from byugui import RollbackWindow, message_gui
+from byugui import RollbackWindow, SelectionWindow, message_gui
 from PySide import QtGui
 import os
 import nuke
@@ -10,10 +10,21 @@ def post_rollback():
 	filepath = rollback_window.result
 
 	if filepath is not None:
+		nuke.scriptClose()
 		print "open file " + filepath
 		nuke.scriptOpen(filepath)
 
+def post_selection():
+	parent = QtGui.QApplication.activeWindow()
+	element = rollback_selection_window.result
+	if element is None:
+		return
+	global rollback_window
+	rollback_window = RollbackWindow(element, parent)
+	rollback_window.finished.connect(post_rollback)
+
 def go():
+	parent = QtGui.QApplication.activeWindow()
 	filepath = nuke.toNode("root").name()
 	shot = os.path.basename(filepath)
 	index = shot.find("_comp")
@@ -21,15 +32,17 @@ def go():
 		base_name = shot[:index]
 		print base_name
 	else:
-		message_gui.error("We couldn't figure out what asset you are working on.")
+		# If there is no composition opened then we allow the user to select one from all of the comps.
+		global rollback_selection_window
+		rollback_selection_window = SelectionWindow(parent, dept_list=[Department.COMP])
+		rollback_selection_window.finished.connect(post_selection)
 		return
 
 	project = Project()
 	body = project.get_body(base_name)
 	element = body.get_element(Department.COMP)
 
-	nuke.scriptClose()
+	# nuke.scriptClose()
 	global rollback_window
-	parent = QtGui.QApplication.activeWindow()
 	rollback_window = RollbackWindow(element, parent)
 	rollback_window.finished.connect(post_rollback)

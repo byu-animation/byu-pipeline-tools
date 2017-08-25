@@ -64,8 +64,10 @@ def checkout_hda_go(hda=None):
 			hda = nodes[0]
 		elif len(nodes) > 1:
 			message_gui.error("Only one node can be selected for checkout")
+			return
 		else:
 			message_gui.error("You need to select an asset node to checkout")
+			return
 
 	if hda.type().definition() is not None:
 		result = checkout_hda(hda, project, environment)

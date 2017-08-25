@@ -15,18 +15,19 @@
 
 assemble_asset.go()
 ]]></script>
+
 	</tool>
 
 
 		<tool name="reassemble" label="Reassemble" icon="assemble.svg">
 			<helpText><![CDATA[= Reassemble Asset =
 
-	"""Removes geo and rebuilds a houdini digital asset for the selected element and imports all model geometry."""
+"""Removes geo and rebuilds a houdini digital asset for the selected element and imports all model geometry."""
 
 			]]></helpText>
 			<script scriptType="python"><![CDATA[import assemble_asset
 
-	assemble_asset.rego()
+assemble_asset.rego()
 	]]></script>
 		</tool>
 </shelfDocument>

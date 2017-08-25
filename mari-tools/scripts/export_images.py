@@ -1,5 +1,5 @@
 from byuam import Department, Project
-from byugui.selection_gui import SelectionWindow
+from byugui import SelectionWindow, message_gui
 from PySide import QtGui
 import os
 import subprocess
@@ -11,6 +11,10 @@ SELECTED_CHANNEL = "channel"
 mari_selection_dialog = None
 
 def go(scope = ALL):
+	if mari.projects.current() is None:
+		message_gui.error("You need to have a project open in order to export textures.")
+		return None
+		
 	global mari_selection_dialog
 	texture = get_texture()
 	if texture is None:

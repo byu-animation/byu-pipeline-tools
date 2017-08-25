@@ -24,6 +24,7 @@ def go():
 		scene_name = mari.projects.current().name()
 	except:
 		message_gui.error("You need to open the project that you would like to rollback.")
+		return
 
 	shot = os.path.basename(scene_name)
 	index = shot.find("_texture")

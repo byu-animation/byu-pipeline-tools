@@ -1,6 +1,6 @@
 # Author: Ben DeMann
 
-from byuam import Department, Environment
+from byuam import Department, Environment, Project
 from byugui.publish_gui import PublishWindow
 from byugui import message_gui
 from PySide import QtGui
@@ -12,9 +12,21 @@ mari_publish_dialog = None
 
 def go():
 	parent = QtGui.QApplication.activeWindow()
-	project_name = mari.projects.current().name() #get the name of the current project
+	if mari.projects.current() is None:
+		message_gui.error("You need to have a project open in order to publish it.")
+		return
+
+	# Get the file location of the mari archive so that the publish windown will get the hightlight right.
+	project_name = mari.projects.current().name()
+	src = project_name
+	index = project_name.find("_texture")
+	if index > 0:
+		environment = Environment()
+		workspace = environment.get_user_workspace()
+		src = os.path.join(workspace, project_name, project_name + ".mra")
+
 	global mari_publish_dialog
-	mari_publish_dialog = PublishWindow(project_name, parent, [Department.TEXTURE])
+	mari_publish_dialog = PublishWindow(src, parent, [Department.TEXTURE])
 	mari_publish_dialog.finished.connect(post_publish)
 
 def post_publish():

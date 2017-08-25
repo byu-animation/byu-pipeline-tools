@@ -1,4 +1,4 @@
-#Author: Trevor Barrus
+#Author: Trevor Barrus and Ben DeMann
 import hou
 import os
 from PySide2 import QtGui, QtWidgets, QtCore
@@ -67,8 +67,10 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 			hda = nodes[0]
 		elif len(nodes) > 1:
 			message_gui.error("Please select only one node.")
+			return
 		else:
 			message_gui.error("Please select a node.")
+			return
 
 	if hda.type().definition() is not None:
 		asset = hda
@@ -93,5 +95,6 @@ def publish_shot_go():
 	global publish_window
 
 	scene = hou.hipFile.name()
+	print scene
 	publish_window = PublishWindow(scene, hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
 	publish_window.finished.connect(publish_shot)
