@@ -34,7 +34,7 @@ def create_hda():
 	if tool_name is None:
 		return
 
-	if not node.canCreateDigitalAsset():
+	if not hda.canCreateDigitalAsset():
 		message_gui.error('You can\'t make a digital asset from the selected node')
 		return
 
@@ -42,18 +42,18 @@ def create_hda():
 	environment = Environment()
 	username = project.get_current_username()
 	tool = project.get_tool(tool_name)
-	hda = tool.get_element(Department.HDA)
+	hda_element = tool.get_element(Department.HDA)
 
-	checkout_file = hda.checkout(username)
+	checkout_file = hda_element.checkout(username)
 
-	operatorName = hda.get_short_name()
+	operatorName = hda_element.get_short_name()
 	operatorLabel = (project.get_name() + ' ' + tool.get_name()).title()
 	saveToLibrary = checkout_file
 
-	num_inputs = len(node.inputs())
+	num_inputs = len(hda.inputs())
 
 	try:
-		hda_node = node.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
+		hda_node = hda.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
 	except hou.OperationFailed, e:
 		print message_gui.error(str(e))
 		return
