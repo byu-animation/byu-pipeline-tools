@@ -28,6 +28,7 @@ def go(node=None):
 	create_window.finished.connect(create_hda)
 
 def create_hda():
+	message_gui.info("We are for sure do this right")
 
 	tool_name = create_window.result
 
@@ -35,8 +36,15 @@ def create_hda():
 		return
 
 	if not hda.canCreateDigitalAsset():
-		message_gui.error('You can\'t make a digital asset from the selected node')
-		return
+		if hda.type().definition is not None:
+			# we are dealing with an premade hda
+			result = message_gui.yes_or_no("This node is already a digial asset. Would you like to copy the definition into the pipeline")
+			if not result:
+				return
+			#TODO handle premade hdas here
+		else:
+			message_gui.error('You can\'t make a digital asset from the selected node')
+			return
 
 	project = Project()
 	environment = Environment()
@@ -60,3 +68,6 @@ def create_hda():
 
 	assetTypeDef = hda_node.type().definition()
 	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
+	nodeParms = hda_node.parmTemplateGroup()
+	assetTypeDef.setParmTemplateGroup(nodeParms)
+	print "We did the thing"
