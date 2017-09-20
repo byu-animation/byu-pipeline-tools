@@ -28,8 +28,6 @@ def go(node=None):
 	create_window.finished.connect(create_hda)
 
 def create_hda():
-	message_gui.info("We are for sure do this right")
-
 	tool_name = create_window.result
 
 	if tool_name is None:
@@ -70,4 +68,3 @@ def create_hda():
 	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
 	nodeParms = hda_node.parmTemplateGroup()
 	assetTypeDef.setParmTemplateGroup(nodeParms)
-	print "We did the thing"
