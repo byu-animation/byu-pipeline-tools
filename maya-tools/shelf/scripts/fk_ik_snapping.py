@@ -188,10 +188,10 @@ class FKIKSnappingWindow(QDialog):
 
 	def create_layout(self):
 		self.characterMenu = QtWidgets.QComboBox()
-		self.characterMenu.addItem("Grendel")
-		self.characterMenu.addItem("Beowulf")
-		self.characterMenu.addItem("Viking")
-		self.characterMenu.addItem("Dragon")
+		self.characterMenu.addItem("grendel_rig_main_Grendel")
+		self.characterMenu.addItem("beowulf_rig_main_Beowulf")
+		self.characterMenu.addItem("viking_rig_main_Viking")
+		self.characterMenu.addItem("dragon_rig_main_Dragon")
 
 		self.limbMenu = QtWidgets.QComboBox()
 		self.limbMenu.addItem("arm")
