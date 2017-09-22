@@ -170,6 +170,9 @@ if node:
 			<expression>
 node = kwargs.get('node', None)
 if node:
+	result = node.canCreateDigitalAsset()
+	if not result:
+		return node.type().definition() is not None
 	return node.canCreateDigitalAsset()
 return 0
 			</expression>

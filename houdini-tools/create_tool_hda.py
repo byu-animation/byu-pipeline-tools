@@ -36,10 +36,11 @@ def create_hda():
 	if not hda.canCreateDigitalAsset():
 		if hda.type().definition is not None:
 			# we are dealing with an premade hda
-			result = message_gui.yes_or_no("This node is already a digial asset. Would you like to copy the definition into the pipeline")
+			result = message_gui.yes_or_no("The selected node is already a digial asset. Would you like to copy the definition into the pipeline")
 			if not result:
 				return
 			#TODO handle premade hdas here
+			copyHDA = True
 		else:
 			message_gui.error('You can\'t make a digital asset from the selected node')
 			return
@@ -58,13 +59,28 @@ def create_hda():
 
 	num_inputs = len(hda.inputs())
 
-	try:
-		hda_node = hda.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
-	except hou.OperationFailed, e:
-		print message_gui.error(str(e))
-		return
+	if copyHDA:
+		parent = hda.parent()
+
+		subnet = parent.createNode("subnet")
+
+		hda_node = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
+
+		hou.copyNodesTo(hda.children(), hda_node)
+		hda_nodeDef = hda_node.type().definition()
+		hdaDef = hda.type().definition()
+		oldParms = hdaDef.parmTemplateGroup()
+		hda_nodeDef.setParmTemplateGroup(oldParms)
+	else:
+		try:
+			hda_node = hda.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
+		except hou.OperationFailed, e:
+			print message_gui.error(str(e))
+			return
 
 	assetTypeDef = hda_node.type().definition()
 	assetTypeDef.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
-	nodeParms = hda_node.parmTemplateGroup()
-	assetTypeDef.setParmTemplateGroup(nodeParms)
+	if not copyHDA:
+		nodeParms = hda_node.parmTemplateGroup()
+		assetTypeDef.setParmTemplateGroup(nodeParms)
+	hda_node.setSelected(True)
