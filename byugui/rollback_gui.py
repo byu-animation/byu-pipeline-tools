@@ -10,6 +10,7 @@ except ImportError:
 	from PySide2 import QtWidgets, QtCore
 from byuam.project import Project
 from byuam.environment import Environment
+import message_gui
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 300
@@ -20,6 +21,9 @@ class RollbackWindow(QtWidgets.QWidget):
 
 	def __init__(self, element, parent):
 		super(RollbackWindow, self).__init__()
+		if element is None:
+			message_gui.error("Please checkout a shot to rollback.\n")
+			return
 		self.element = element
 		self.parent = parent
 		self.environment = Environment()

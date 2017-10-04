@@ -53,6 +53,10 @@
 			"annotation":"FK IK Matching Tool",
 			"python_file":"fk_ik_snapping.py"
 		}, {
+			"icon":"y.svg",
+			"annotation":"Cluster Interpolate",
+			"python_file":"cluster_interpolate.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
