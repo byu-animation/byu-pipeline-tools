@@ -90,6 +90,36 @@ def maya_main_window():
 			return obj
 	raise RuntimeError('Could not find MayaWindow instance')
 
+def computeEdgeLengths(vertList):
+	edgeLen = array('f', [0 for vert in vertList])
+
+	vertNums = vertList.indices()
+
+	# We are going to go over each vertex and add the line length to a total to get the total length from that point to the first point in the array.
+	# We can't do just the direct distance from point 0 to point i because if the geo loops around then there might be a shorter path to point 0 that doesn't go though all of the other points in the geo. So we need to step through and makes sure we measure all of the edges.
+	# Once we have how far away point i is from point 0 we convert it to a percent of the total length from point 0 to point n and we return that list of percents
+	for i, vertNumA in enumerate(vertNums):
+		if i == 0:
+			# First point is 0 away from the first point.
+			edgeLen[0] = 0
+			continue
+
+		preVertNum = i - 1
+		vertNumB = vertNums[preVertNum]
+		vertAName = str(vertList.node()) + ".vtx[" + str(vertNumA) + "]"
+		vertBName = str(vertList.node()) + ".vtx[" + str(vertNumB) + "]"
+		vertA = pm.ls(vertAName)[0]
+		vertB = pm.ls(vertBName)[0]
+		posA = vertA.getPosition(space="world")
+		posB = vertB.getPosition(space="world")
+		vect = posA - posB
+		edgeLen[i] = edgeLen[i-1] + vect.length()
+
+	totalLen = edgeLen[len(edgeLen)-1]
+	for i, l in enumerate(edgeLen):
+		edgeLen[i] /= totalLen
+	return edgeLen
+
 class ClusterInterpolationWindow(QDialog):
 	def __init__(self, vert1, vert2, parent=maya_main_window()):
 		QDialog.__init__(self, parent)
@@ -102,6 +132,7 @@ class ClusterInterpolationWindow(QDialog):
 	def interpolate(self):
 		clust = pm.ls(self.clusterMenu.currentText())[0]
 		vertList = self.vertList
+		edgeLengths = computeEdgeLengths(vertList)
 
 		input1 = self.input1.displayText()
 		input2 = self.input2.displayText()
@@ -114,8 +145,7 @@ class ClusterInterpolationWindow(QDialog):
 			val2 = pm.percent(str(clust), str(self.vert2), v=True, q=True)[0]
 
 		for i, vert in enumerate(vertList):
-			percentLocation = i / float((len(vertList) - 1))
-			ratio = function(self.functionMenu.currentText(), percentLocation)
+			ratio = function(self.functionMenu.currentText(), edgeLengths[i])
 			value = val1 * compliment(ratio) + val2 * ratio
 			pm.percent(clust, vert, v=value)
 
@@ -131,6 +161,15 @@ class ClusterInterpolationWindow(QDialog):
 		self.functionMenu = QtWidgets.QComboBox()
 		self.functionMenu.addItem("Linear")
 		self.functionMenu.addItem("Quadratic")
+
+		self.interpolationAxis = QtWidgets.QComboBox()
+		self.interpolationAxis.addItem("xyz")
+		self.interpolationAxis.addItem("x")
+		self.interpolationAxis.addItem("y")
+		self.interpolationAxis.addItem("z")
+		self.interpolationAxis.addItem("xy")
+		self.interpolationAxis.addItem("xz")
+		self.interpolationAxis.addItem("yz")
 
 		self.interpolateButton = QPushButton('Interpolate')
 		self.interpolateButton.clicked.connect(self.interpolate)
