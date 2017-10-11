@@ -62,6 +62,8 @@ def function(function, inputVal):
 		return inputVal
 	if function == "Quadratic":
 		return inputVal * inputVal
+	if fucntion == "Ramp":
+		raise Exception('Not implemented')
 	else:
 		raise Exception('Not a valid function')
 
@@ -90,7 +92,7 @@ def maya_main_window():
 			return obj
 	raise RuntimeError('Could not find MayaWindow instance')
 
-def computeEdgeLengths(vertList):
+def computeEdgeLengths(vertList, axis):
 	edgeLen = array('f', [0 for vert in vertList])
 
 	vertNums = vertList.indices()
@@ -113,11 +115,22 @@ def computeEdgeLengths(vertList):
 		posA = vertA.getPosition(space="world")
 		posB = vertB.getPosition(space="world")
 		vect = posA - posB
+
+		if not "x" in axis:
+			vect[0] = 0
+		if not "y" in axis:
+			vect[1] = 0
+		if not "z" in axis:
+			vect[2] = 0
+
 		edgeLen[i] = edgeLen[i-1] + vect.length()
 
 	totalLen = edgeLen[len(edgeLen)-1]
 	for i, l in enumerate(edgeLen):
-		edgeLen[i] /= totalLen
+		if totalLen == 0:
+			edgeLen[i] = 0
+		else:
+			edgeLen[i] /= totalLen
 	return edgeLen
 
 class ClusterInterpolationWindow(QDialog):
@@ -132,7 +145,8 @@ class ClusterInterpolationWindow(QDialog):
 	def interpolate(self):
 		clust = pm.ls(self.clusterMenu.currentText())[0]
 		vertList = self.vertList
-		edgeLengths = computeEdgeLengths(vertList)
+		if not "Point Number" == self.interpolationAxis.currentText():
+			edgeLengths = computeEdgeLengths(vertList, self.interpolationAxis.currentText())
 
 		input1 = self.input1.displayText()
 		input2 = self.input2.displayText()
@@ -145,7 +159,11 @@ class ClusterInterpolationWindow(QDialog):
 			val2 = pm.percent(str(clust), str(self.vert2), v=True, q=True)[0]
 
 		for i, vert in enumerate(vertList):
-			ratio = function(self.functionMenu.currentText(), edgeLengths[i])
+			if "Point Number" == self.interpolationAxis.currentText():
+				percent = i / float((len(vertList) - 1))
+			else:
+				percent = edgeLengths[i]
+			ratio = function(self.functionMenu.currentText(), percent)
 			value = val1 * compliment(ratio) + val2 * ratio
 			pm.percent(clust, vert, v=value)
 
@@ -161,6 +179,7 @@ class ClusterInterpolationWindow(QDialog):
 		self.functionMenu = QtWidgets.QComboBox()
 		self.functionMenu.addItem("Linear")
 		self.functionMenu.addItem("Quadratic")
+		self.functionMenu.addItem("Ramp")
 
 		self.interpolationAxis = QtWidgets.QComboBox()
 		self.interpolationAxis.addItem("xyz")
@@ -170,6 +189,7 @@ class ClusterInterpolationWindow(QDialog):
 		self.interpolationAxis.addItem("xy")
 		self.interpolationAxis.addItem("xz")
 		self.interpolationAxis.addItem("yz")
+		self.interpolationAxis.addItem("Point Number")
 
 		self.interpolateButton = QPushButton('Interpolate')
 		self.interpolateButton.clicked.connect(self.interpolate)
@@ -192,6 +212,7 @@ class ClusterInterpolationWindow(QDialog):
 		main_layout.addWidget(self.input2)
 		main_layout.addWidget(self.clusterMenu)
 		main_layout.addWidget(self.functionMenu)
+		main_layout.addWidget(self.interpolationAxis)
 		main_layout.addLayout(button_layout)
 
 		self.setLayout(main_layout)
