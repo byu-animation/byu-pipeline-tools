@@ -25,6 +25,7 @@ def go():
 	dialog = ClusterInterpolationWindow(vert1, vert2)
 	dialog.show()
 
+
 def getVertList(vert1, vert2):
 	currentSelection = pm.ls(selection=True)
 	pm.select(pm.polySelectSp(vert1, vert2, q=True, loop=True))
@@ -62,7 +63,8 @@ def function(function, inputVal):
 		return inputVal
 	if function == "Quadratic":
 		return inputVal * inputVal
-	if fucntion == "Ramp":
+	if function == "Ramp":
+		return pm.gradientControlNoAttr( 'falloffCurve', q=True, vap=inputVal)
 		raise Exception('Not implemented')
 	else:
 		raise Exception('Not a valid function')
@@ -133,92 +135,98 @@ def computeEdgeLengths(vertList, axis):
 			edgeLen[i] /= totalLen
 	return edgeLen
 
-class ClusterInterpolationWindow(QDialog):
+class ClusterInterpolationWindow():
 	def __init__(self, vert1, vert2, parent=maya_main_window()):
-		QDialog.__init__(self, parent)
-		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
 		self.vert1 = vert1
 		self.vert2 = vert2
 		self.vertList = getVertList(vert1, vert2)
 		self.create_layout()
+		self.rampName = ""
 
 	def interpolate(self):
-		clust = pm.ls(self.clusterMenu.currentText())[0]
+		clust = pm.ls(self.clusterMenu.getValue())[0]
 		vertList = self.vertList
-		if not "Point Number" == self.interpolationAxis.currentText():
-			edgeLengths = computeEdgeLengths(vertList, self.interpolationAxis.currentText())
+		if not "Point Number" == self.interpolationAxis.getValue():
+			edgeLengths = computeEdgeLengths(vertList, self.interpolationAxis.getValue())
 
-		input1 = self.input1.displayText()
-		input2 = self.input2.displayText()
+		minWeight = self.minWeight.getText()
+		maxWeight = self.maxWeight.getText()
 
-		if not input1 == "" and not input2 == "":
-			val1 = float(input1)
-			val2 = float(input2)
+		if not minWeight == "" and not maxWeight == "":
+			val1 = float(minWeight)
+			val2 = float(maxWeight)
 		else:
 			val1 = pm.percent(str(clust), str(self.vert1), v=True, q=True)[0]
 			val2 = pm.percent(str(clust), str(self.vert2), v=True, q=True)[0]
 
 		for i, vert in enumerate(vertList):
-			if "Point Number" == self.interpolationAxis.currentText():
+			if "Point Number" == self.interpolationAxis.getValue():
 				percent = i / float((len(vertList) - 1))
 			else:
 				percent = edgeLengths[i]
-			ratio = function(self.functionMenu.currentText(), percent)
+			ratio = function(self.functionMenu.getValue(), percent)
 			value = val1 * compliment(ratio) + val2 * ratio
 			pm.percent(clust, vert, v=value)
 
 	def create_layout(self):
-		self.input1 = QtWidgets.QLineEdit()
-		self.input2 = QtWidgets.QLineEdit()
+		self.win = pm.window(title="Cluster Weight Interpolation")
+		layout = pm.rowColumnLayout(numberOfColumns=2, columnAttach=(1, 'right', 0), columnWidth=[(1,100), (2, 250)], rowOffset=(6, "bottom", 15), rowSpacing=(1, 10), columnSpacing=(2,15))
+		#chkBox = pm.checkBox(label = "My Checkbox", value=True, parent=layout)
 
-		self.clusterMenu = QtWidgets.QComboBox()
+		#Set up weight inputs
+		pm.text(label="Min Weight")
+		self.minWeight = pm.textField()
+		pm.text(label="Max Weight")
+		self.maxWeight = pm.textField()
+
+		#Set up cluster Menu
+		pm.text(label='Cluster')
+		self.clusterMenu = pm.optionMenu()
 		clusterList = getClusterList(self.vertList)
 		for c in clusterList:
-			self.clusterMenu.addItem(str(c))
+			pm.menuItem(label=str(c))
 
-		self.functionMenu = QtWidgets.QComboBox()
-		self.functionMenu.addItem("Linear")
-		self.functionMenu.addItem("Quadratic")
-		self.functionMenu.addItem("Ramp")
+		#Set up Equation Menu
+		pm.text(label='Equation')
+		self.functionMenu = pm.optionMenu()
+		pm.menuItem(label='Ramp')
+		pm.menuItem(label='Linear')
+		pm.menuItem(label='Quadratic')
 
-		self.interpolationAxis = QtWidgets.QComboBox()
-		self.interpolationAxis.addItem("xyz")
-		self.interpolationAxis.addItem("x")
-		self.interpolationAxis.addItem("y")
-		self.interpolationAxis.addItem("z")
-		self.interpolationAxis.addItem("xy")
-		self.interpolationAxis.addItem("xz")
-		self.interpolationAxis.addItem("yz")
-		self.interpolationAxis.addItem("Point Number")
+		#Set up Ramp
+		#TODO is there a way that we can hide or disable this thing if the user should select to use the Linear or Quadratic options?
+		pm.text(label='Ramp Value')
+		pm.optionVar(stringValueAppend=['falloffCurveOptionVar', '0,1,2'])
+		pm.optionVar(stringValueAppend=['falloffCurveOptionVar', '1,0,2'])
+		pm.gradientControlNoAttr( 'falloffCurve', h=90)
+		self.ramp = pm.gradientControlNoAttr( 'falloffCurve', e=True, optionVar='falloffCurveOptionVar' )
 
-		self.interpolateButton = QPushButton('Interpolate')
-		self.interpolateButton.clicked.connect(self.interpolate)
-		self.closeButton = QPushButton('Close')
-		self.closeButton.clicked.connect(self.close_dialog)
+		#Set up Axis Menu
+		pm.text(label='Axies')
+		self.interpolationAxis = pm.optionMenu()
+		print "This is the type of the menu so that we can get the stuff from it"
+		print type(self.interpolationAxis)
+		pm.menuItem(label='xyz')
+		pm.menuItem(label='x')
+		pm.menuItem(label='y')
+		pm.menuItem(label='z')
+		pm.menuItem(label='xy')
+		pm.menuItem(label='xz')
+		pm.menuItem(label='yz')
+		pm.menuItem(label='Point Number')
 
-		#Create button layout
-		button_layout = QHBoxLayout()
-		button_layout.setSpacing(2)
-		button_layout.addStretch()
+		#Set up Buttons
+		closeBtn = pm.button(label="Close", parent=layout)
+		interpolateBtn = pm.button(label="Interpolate", parent=layout)
 
-		button_layout.addWidget(self.interpolateButton)
-		button_layout.addWidget(self.closeButton)
+		interpolateBtn.setCommand(lambda *args: self.interpolate())
+		closeBtn.setCommand(lambda *args: self.close_dialog())
 
-		#Create main layout
-		main_layout = QVBoxLayout()
-		main_layout.setSpacing(2)
-		main_layout.setMargin(2)
-		main_layout.addWidget(self.input1)
-		main_layout.addWidget(self.input2)
-		main_layout.addWidget(self.clusterMenu)
-		main_layout.addWidget(self.functionMenu)
-		main_layout.addWidget(self.interpolationAxis)
-		main_layout.addLayout(button_layout)
-
-		self.setLayout(main_layout)
+	def show(self):
+		self.win.show()
 
 	def close_dialog(self):
-		self.close()
+		self.win.delete()
 
 if __name__ == '__main__':
 	go()
