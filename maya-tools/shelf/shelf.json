@@ -53,7 +53,7 @@
 			"annotation":"FK IK Matching Tool",
 			"python_file":"fk_ik_snapping.py"
 		}, {
-			"icon":"y.svg",
+			"icon":"interpolate.svg",
 			"annotation":"Cluster Interpolate",
 			"python_file":"cluster_interpolate.py"
 		}, {
