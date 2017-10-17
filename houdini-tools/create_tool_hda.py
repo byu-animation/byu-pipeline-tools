@@ -69,6 +69,15 @@ def create_hda():
 		hou.copyNodesTo(hda.children(), hda_node)
 		hda_nodeDef = hda_node.type().definition()
 		hdaDef = hda.type().definition()
+
+		#Copy over sections
+		#TODO copy over sections
+		sects = hdaDef.sections()
+		for sectName in sects:
+			print "Copying over section: " + str(sectName)
+			hda_nodeDef.addSection(sectName, sects[sectName].contents())
+
+		# Copy over paramters
 		oldParms = hdaDef.parmTemplateGroup()
 		hda_nodeDef.setParmTemplateGroup(oldParms)
 	else:

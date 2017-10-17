@@ -79,6 +79,9 @@ return set_list
 	'''
 	project = Project()
 	if(value == None):
+		if len(project.list_sets()) < 1:
+			message_gui.error("There are currently no sets in created in the film. Because of how this node works you are going to have to create at least one set before assembling anything.")
+			raise("No sets in the project")
 		default_set = (str(project.list_sets()[0]),)
 	else:
 		default_set = (value,)

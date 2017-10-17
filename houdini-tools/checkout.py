@@ -72,7 +72,9 @@ def checkout_hda_go(hda=None):
 	if hda.type().definition() is not None:
 		result = checkout_hda(hda, project, environment)
 		if result is not None:
-			message_gui.info('Checkout Successful!', title='Success!')
+			print "checkout successful"
+			#I think having the node unlock is visual que enough that the checkout was fine. Mostly it's annoying to have the window there. And we have a window that will let them know if it didn't work.
+			#message_gui.info('Checkout Successful!', title='Success!')
 		else:
 			message_gui.error('Checkout Failed', title='Failure :()')
 	else:

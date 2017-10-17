@@ -28,7 +28,11 @@ def publish_hda():
 				if Element.DEFAULT_NAME in body.list_elements(department):
 					#save node definition
 					asset.type().definition().updateFromNode(asset)
-					asset.matchCurrentDefinition()
+					try:
+						asset.matchCurrentDefinition()
+					except hou.OperationFailed, e:
+						print message_gui.error(str(e))
+						return
 					element = body.get_element(department, Element.DEFAULT_NAME)
 					dst = element.publish(user, src, comment)
 					#Ensure file has correct permissions
