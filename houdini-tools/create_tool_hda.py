@@ -77,6 +77,21 @@ def create_hda():
 			print "Copying over section: " + str(sectName)
 			hda_nodeDef.addSection(sectName, sects[sectName].contents())
 
+		#Copy over NodeGroups
+		nodeGroups = hda.nodeGroups()
+		for ng in nodeGroups:
+			newNg = hda_node.addNodeGroup(ng.name())
+			print "New group: " + str(newNg)
+			for node in ng.nodes():
+				nodePath = hda_node.path() + '/' + str(node.name())
+				print "The Node path is:" + str(nodePath)
+				newNode = hou.node(nodePath)
+				if newNode is None:
+					print ("Ya that node was null that is a problem")
+					continue
+				print "The new Node is: " + str(newNode)
+				newNg.addNode(newNode)
+
 		# Copy over paramters
 		oldParms = hdaDef.parmTemplateGroup()
 		hda_nodeDef.setParmTemplateGroup(oldParms)
