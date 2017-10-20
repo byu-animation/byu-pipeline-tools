@@ -100,15 +100,16 @@ def adjustNodes():
 
 	#Set up all expressions for output names
 	for i in range(1, numLayers + 1):
-		renderer.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"\$F4")')
-		filepath = '\$JOB/production/shots/' + getShotName() + '/render/main/' + getVersion() + '/'
+		renderer.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
+		filepath = '$JOB/production/shots/' + getShotName() + '/render/main/' + getVersion() + '/'
 		renderer.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
-		filepath = '\$JOB/production/ribs/' + getShotName() + '/' + getVersion() + '/'
+		filepath = '$JOB/production/ribs/' + getShotName() + '/' + getVersion() + '/'
 		renderer.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
 
 
 	renderer.layoutChildren()
 
+'''
 def createRenderNode():
 	# Initialize parent node variable.
 	if locals().get("hou_parent") is None:
@@ -491,26 +492,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername1\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -526,26 +527,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -687,26 +688,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename1\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -740,26 +741,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername2\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -775,26 +776,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -936,26 +937,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename2\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -989,26 +990,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"\$F4\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(chs(\"layername3\"),\"$F4\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -1024,26 +1025,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/shots/a001/render/main/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -1185,26 +1186,26 @@ def createRenderNode():
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for last keyframe.
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 	# Code for keyframe.
 	hou_keyframe = hou.StringKeyframe()
 	hou_keyframe.setTime(0)
-	hou_keyframe.setExpression("strcat(strcat(\"\$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
+	hou_keyframe.setExpression("strcat(strcat(\"$JOB/production/ribs/a001/1/\",chs(\"filename3\")),\".exr\")", hou.exprLanguage.Hscript)
 	hou_parm.setKeyframe(hou_keyframe)
 
 
@@ -1214,3 +1215,4 @@ def createRenderNode():
 	hou_node.setUserData("___Version___", "16.0.504.20")
 	if hasattr(hou_node, "syncNodeVersionIfNeeded"):
 	hou_node.syncNodeVersionIfNeeded("16.0.504.20")
+'''

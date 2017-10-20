@@ -44,6 +44,8 @@ def create_hda():
 		else:
 			message_gui.error('You can\'t make a digital asset from the selected node')
 			return
+	else:
+		copyHDA = False
 
 	project = Project()
 	environment = Environment()
