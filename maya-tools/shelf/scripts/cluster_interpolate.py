@@ -39,14 +39,23 @@ def getClusterList(vertList):
 
 	allClusters = pm.ls(type="cluster") # O(1)
 
-	for c in allClusters: # O(c)
-		objectSet = c.listConnections(type="objectSet") # O(1)
+	for index, c in enumerate(allClusters): # O(c)
+		objectSets = c.listConnections(type="objectSet") # O(1)
 
-		if not len(objectSet) == 1:
-			message_gui.error("There is more than one object set tied to this cluster. That is something I didn't expect. Please let me know about it. Let's keep going though and see what happens")
-			continue
+		print "this is the " + str(index) + "th cluster we are looking at"
+
+		if not len(objectSets) == 1:
+			results = list()
+			for objSet in objectSets:
+				if "cluster" in objSet.name():
+					results.add(objSet)
+			if not len(results) == 1:
+				message_gui.error("There is more than one object set tied to this cluster. That is something I didn't expect. Please let me know about it. Let's keep going though and see what happens. The list of object sets looks like this: " + str(results))
+				continue
+			else:
+				objectSet = results[0]
 		else:
-			objectSet = objectSet[0]
+			objectSet = objectSets[0]
 
 		# TODO make sure that the object set is actually part of the geo.
 		# TODO will we ever have a cluster that spans multiple geometries?
