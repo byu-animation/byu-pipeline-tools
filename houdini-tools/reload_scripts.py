@@ -8,6 +8,7 @@ import renderman_setup
 import rollback
 import test_geo
 import reload_scripts
+import render_callbacks
 
 def go():
 	reload(assemble_asset)
@@ -20,3 +21,4 @@ def go():
 	reload(rollback)
 	reload(test_geo)
 	reload(reload_scripts)
+	reload(render_callbacks)
