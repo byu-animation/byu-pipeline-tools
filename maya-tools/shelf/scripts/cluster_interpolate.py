@@ -51,10 +51,10 @@ def getClusterList(vertList):
 		# TODO make sure that the object set is actually part of the geo.
 		# TODO will we ever have a cluster that spans multiple geometries?
 		# TODO will we ever be working with edges that go over multiple geometries? If we do then the vertList[1].node().getParent() will have a different parent.
-		hashSize = vertList.node().getParent().numVertices()
-		objectHash = makeReadable(objectSet, hashSize) #O(v)
+		#hashSize = vertList.node().getParent().numVertices()
+		vertSet = makeReadable(objectSet) #O(v)
 
-		if contains(objectHash, vertList): # O(v)
+		if contains(vertSet, vertList): # O(v)
 			result.append(c) #O(1)
 	return result
 
@@ -72,20 +72,24 @@ def function(function, inputVal):
 def compliment(val):
 	return abs(val - 1)
 
-def contains(objectHash, vertList): # O(v)
+def contains(vertSet, vertList): # O(v)
 	for vert in vertList: #O(v)
-		if objectHash[vert.currentItemIndex()] is 0: # O(1)  if all of the vertexs are in an object hash add it to list. One vert that isn't in a set move on.
+		if vert.currentItemIndex() in vertSet: # O(1)  if all of the vertexs are in an object hash add it to list. One vert that isn't in a set move on.
 			return False
 	return True
 
-def makeReadable(objectSet, hashSize): #O(v)
+def makeReadable(objectSet): #O(v)
 	# Worts case one there is a list of all the the points so c is v and the other is one c with all of the v so then it is still v so its just v. Well I mean its not that simple because of multiplication. But the idea is that it wont ever be quite v^2 I think
-	objectHash = array('b', [False for i in range(hashSize)])
+
+	# What a silly idea to use an array. Let's try a dictionary instead. What a silly idea to use a dictionary lets use a set instead.
+	# objectHash = array('b', [False for i in range(hashSize)])
+	# objectHash = {}
+	vertSet = set()
 	for e in objectSet: # O(n - v)
 		# TODO if you get an object list then you can iterate over it to get a mesh vertex range and if you iterate over that you get a single mesh vertex but I don't know how to get the number from the mesh vertex
 		for vert in e: # 0(v - n)
-			objectHash[vert.currentItemIndex()] = True # O(1)
-	return objectHash
+			vertSet.add(vert.currentItemIndex())
+	return vertSet
 
 def maya_main_window():
 	"""Return Maya's main window"""
