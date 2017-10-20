@@ -1,4 +1,5 @@
 import hou
+from byuam import Project
 
 def getShotName():
 	return 'a001'
@@ -6,17 +7,30 @@ def getShotName():
 def getVersion():
 	return '1'
 
+def setup():
+	subnet = hou.node('out').createNode('subnet', node_name="risNodes")
+	subnet.setName("render")
+	merge = subnet.createNode('merge', 'risMerge')
+
 def adjustNodes():
 	'''
 	This will go through my render node and create ris nodes for each layer and properly hook up everting.
 	Just in case we loose my node the "as Code" version is down bellow
 	'''
+	out = hou.node('/out')
+	print out
+	project = Project()
+	renderEngine = hou.node('/out/' + project.get_name() + 'RenderEngine')
+	if renderEngine is None:
+		renderEngine = out.createNode('subnet', node_name=project.get_name() + 'RenderEngine')
 	# Get nodes we need to work with
-	renderer = hou.pwd()
-	merge = hou.node('./risMerge')
+	merge = hou.node(renderEngine.path() + '/risMerge')
+	if merge is None:
+		merge = renderEngine.createNode('merge', 'risMerge')
+	renderCtrl = hou.pwd()
 
 	# Get the number of layers we should have and the number of layers we actually have
-	numLayers = renderer.parm('layers').evalAsInt()
+	numLayers = renderCtrl.parm('layers').evalAsInt()
 	risNodes = merge.inputAncestors()
 	numNodes = len(risNodes)
 
@@ -35,54 +49,54 @@ def adjustNodes():
 			chanNum = risNode.name()[3:]
 
 			# Create all of the exporessions
-			trange = 'ch("../trange")'
+			trange = 'ch("' + renderCtrl.path() + '/trange")'
 			risNode.parm('trange').setExpression(trange)
-			f1 = 'ch("../f1")'
-			f2 = 'ch("../f2")'
-			f3 = 'ch("../f3")'
+			f1 = 'ch("' + renderCtrl.path() + '/f1")'
+			f2 = 'ch("' + renderCtrl.path() + '/f2")'
+			f3 = 'ch("' + renderCtrl.path() + '/f3")'
 			risNode.parm('f1').setExpression(f1)
 			risNode.parm('f2').setExpression(f2)
 			risNode.parm('f3').setExpression(f3)
-			camera = 'chsop("../camera")'
+			camera = 'chsop("' + renderCtrl.path() + '/camera")'
 			risNode.parm('camera').setExpression(camera)
-			ri_device = 'chs("../ri_device")'
+			ri_device = 'chs("' + renderCtrl.path() + '/ri_device")'
 			risNode.parm('ri_device').setExpression(ri_device)
 
 			# Layer specific expressions
-			ri_display = 'chs("../ri_display' + chanNum + '")'
+			ri_display = 'chs("' + renderCtrl.path() + '/ri_display' + chanNum + '")'
 			risNode.parm('ri_display').setExpression(ri_display)
 
 			#Objects
-			vobject = 'chsop("../vobject' + chanNum + '")'
+			vobject = 'chsop("' + renderCtrl.path() + '/vobject' + chanNum + '")'
 			risNode.parm('vobject').setExpression(vobject)
-			forceobject = 'chsop("../forceobject' + chanNum + '")'
+			forceobject = 'chsop("' + renderCtrl.path() + '/forceobject' + chanNum + '")'
 			risNode.parm('forceobject').setExpression(forceobject)
-			matte_objects = 'chsop("../matte_objects' + chanNum + '")'
+			matte_objects = 'chsop("' + renderCtrl.path() + '/matte_objects' + chanNum + '")'
 			risNode.parm('matte_objects').setExpression(matte_objects)
-			phantom_objects = 'chsop("../phantom_objects' + chanNum + '")'
+			phantom_objects = 'chsop("' + renderCtrl.path() + '/phantom_objects' + chanNum + '")'
 			risNode.parm('phantom_objects').setExpression(phantom_objects)
-			excludeobject = 'chsop("../excludeobject' + chanNum + '")'
+			excludeobject = 'chsop("' + renderCtrl.path() + '/excludeobject' + chanNum + '")'
 			risNode.parm('excludeobject').setExpression(excludeobject)
 			#Lights
-			sololight = 'chsop("../sololight' + chanNum + '")'
+			sololight = 'chsop("' + renderCtrl.path() + '/sololight' + chanNum + '")'
 			risNode.parm('sololight').setExpression(sololight)
-			alights = 'chsop("../alights' + chanNum + '")'
+			alights = 'chsop("' + renderCtrl.path() + '/alights' + chanNum + '")'
 			risNode.parm('alights').setExpression(alights)
-			forcelights = 'chsop("../forcelights' + chanNum + '")'
+			forcelights = 'chsop("' + renderCtrl.path() + '/forcelights' + chanNum + '")'
 			risNode.parm('forcelights').setExpression(forcelights)
-			excludelights = 'chsop("../excludelights' + chanNum + '")'
+			excludelights = 'chsop("' + renderCtrl.path() + '/excludelights' + chanNum + '")'
 			risNode.parm('excludelights').setExpression(excludelights)
 			#Depth of Field
-			ri_dof = 'ch("../ri_dof' + chanNum + '")'
+			ri_dof = 'ch("' + renderCtrl.path() + '/ri_dof' + chanNum + '")'
 			risNode.parm('ri_dof').setExpression(ri_dof)
-			ri_focusregion = 'ch("../ri_focusregion' + chanNum + '")'
+			ri_focusregion = 'ch("' + renderCtrl.path() + '/ri_focusregion' + chanNum + '")'
 			risNode.parm('ri_focusregion').setExpression(ri_focusregion)
 			#Render Driver
-			target = 'chs("../target' + chanNum + '")'
+			target = 'chs("' + renderCtrl.path() + '/target' + chanNum + '")'
 			risNode.parm('target').setExpression(target)
-			rib_outputmode = 'ch("../rib_outputmode' + chanNum + '")'
+			rib_outputmode = 'ch("' + renderCtrl.path() + '/rib_outputmode' + chanNum + '")'
 			risNode.parm('rib_outputmode').setExpression(rib_outputmode)
-			soho_diskfile = 'chs("../soho_diskfile' + chanNum + '")'
+			soho_diskfile = 'chs("' + renderCtrl.path() + '/soho_diskfile' + chanNum + '")'
 			risNode.parm('soho_diskfile').setExpression(soho_diskfile)
 
 	#rename the nodes so that we make sure we have the right names in the right order
@@ -100,17 +114,18 @@ def adjustNodes():
 
 	#Set up all expressions for output names
 	for i in range(1, numLayers + 1):
-		renderer.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
+		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
 		filepath = '$JOB/production/shots/' + getShotName() + '/render/main/' + getVersion() + '/'
-		renderer.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
 		filepath = '$JOB/production/ribs/' + getShotName() + '/' + getVersion() + '/'
-		renderer.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
 
 
-	renderer.layoutChildren()
+	renderEngine.layoutChildren()
 
-'''
+
 def createRenderNode():
+	print "Test"
 	# Initialize parent node variable.
 	if locals().get("hou_parent") is None:
 		hou_parent = hou.node("/out")
@@ -1212,7 +1227,6 @@ def createRenderNode():
 	hou_node.setColor(hou.Color([0.8, 0.8, 0.8]))
 	hou_node.setExpressionLanguage(hou.exprLanguage.Hscript)
 
-	hou_node.setUserData("___Version___", "16.0.504.20")
-	if hasattr(hou_node, "syncNodeVersionIfNeeded"):
-	hou_node.syncNodeVersionIfNeeded("16.0.504.20")
-'''
+	# hou_node.setUserData("___Version___", "16.0.504.20")
+	# if hasattr(hou_node, "syncNodeVersionIfNeeded"):
+	# hou_node.syncNodeVersionIfNeeded("16.0.504.20")
