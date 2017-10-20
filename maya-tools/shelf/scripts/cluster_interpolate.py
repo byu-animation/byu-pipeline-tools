@@ -28,21 +28,28 @@ def go():
 
 def getVertList(vert1, vert2):
 	currentSelection = pm.ls(selection=True)
-	pm.select(pm.polySelectSp(vert1, vert2, q=True, loop=True))
-	edge = pm.ls(selection=True)[0]
+	loop = pm.polySelectSp(vert1, vert2, q=True, loop=True)
+	pm.select(loop)
+	# We want to do the select and ls steps because they give us a list of Mesh Vertieces in stead of list of strings
+	edge = pm.ls(selection=True)
+	edgeVerts = list()
+	for vertMesh in edge:
+		for vert in vertMesh:
+			edgeVerts.append(vert)
 	pm.select(currentSelection)
-	return edge
-	#return pm.polySelectSp(vert1, vert2, q=True, loop=True)
+	return edgeVerts
 
 def getClusterList(vertList):
 	result = []
 
 	allClusters = pm.ls(type="cluster") # O(1)
 
+	clusterCnt = len(allClusters)
+
 	for index, c in enumerate(allClusters): # O(c)
 		objectSets = c.listConnections(type="objectSet") # O(1)
 
-		print "this is the " + str(index) + "th cluster we are looking at"
+		print str(index) + " of " + str(clusterCnt) + " clusters processed."
 
 		if not len(objectSets) == 1:
 			results = list()
@@ -81,19 +88,16 @@ def function(function, inputVal):
 def compliment(val):
 	return abs(val - 1)
 
-def contains(vertSet, vertList): # O(v)
-	for vert in vertList: #O(v)
-		if vert.currentItemIndex() in vertSet: # O(1)  if all of the vertexs are in an object hash add it to list. One vert that isn't in a set move on.
+def contains(vertSet, vertList):
+	for vert in vertList:
+		#if all of the verteices are in the vertSet of the cluster then we can add it to list.
+		if not vert.currentItemIndex() in vertSet: # Once we find one vert that isn't in a set we can move on.
 			return False
 	return True
 
-def makeReadable(objectSet): #O(v)
-	# Worts case one there is a list of all the the points so c is v and the other is one c with all of the v so then it is still v so its just v. Well I mean its not that simple because of multiplication. But the idea is that it wont ever be quite v^2 I think
-
-	# What a silly idea to use an array. Let's try a dictionary instead. What a silly idea to use a dictionary lets use a set instead.
-	# objectHash = array('b', [False for i in range(hashSize)])
-	# objectHash = {}
+def makeReadable(objectSet):
 	vertSet = set()
+	#TODO I am wondering if we could use this same approach on a the object set itself and not have to convert it at all
 	for e in objectSet: # O(n - v)
 		# TODO if you get an object list then you can iterate over it to get a mesh vertex range and if you iterate over that you get a single mesh vertex but I don't know how to get the number from the mesh vertex
 		for vert in e: # 0(v - n)
@@ -110,7 +114,10 @@ def maya_main_window():
 def computeEdgeLengths(vertList, axis):
 	edgeLen = array('f', [0 for vert in vertList])
 
-	vertNums = vertList.indices()
+	vertNums = list()
+
+	for vert in vertList:
+		vertNums.append(vert.currentItemIndex())
 
 	# We are going to go over each vertex and add the line length to a total to get the total length from that point to the first point in the array.
 	# We can't do just the direct distance from point 0 to point i because if the geo loops around then there might be a shorter path to point 0 that doesn't go though all of the other points in the geo. So we need to step through and makes sure we measure all of the edges.
@@ -123,8 +130,8 @@ def computeEdgeLengths(vertList, axis):
 
 		preVertNum = i - 1
 		vertNumB = vertNums[preVertNum]
-		vertAName = str(vertList.node()) + ".vtx[" + str(vertNumA) + "]"
-		vertBName = str(vertList.node()) + ".vtx[" + str(vertNumB) + "]"
+		vertAName = str(vertList[0].node()) + ".vtx[" + str(vertNumA) + "]"
+		vertBName = str(vertList[0].node()) + ".vtx[" + str(vertNumB) + "]"
 		vertA = pm.ls(vertAName)[0]
 		vertB = pm.ls(vertBName)[0]
 		posA = vertA.getPosition(space="world")
@@ -169,17 +176,25 @@ class ClusterInterpolationWindow():
 			val1 = float(minWeight)
 			val2 = float(maxWeight)
 		else:
-			val1 = pm.percent(str(clust), str(self.vert1), v=True, q=True)[0]
+			val1 = pm.percent(clust, self.vert1, v=True, q=True)[0]
 			val2 = pm.percent(str(clust), str(self.vert2), v=True, q=True)[0]
 
+		print "START INTERPOLATING THIS VERT LIST: " + str(vertList)
 		for i, vert in enumerate(vertList):
+			print "We are working on the " + str(i) + "th vert in the list."
 			if "Point Number" == self.interpolationAxis.getValue():
 				percent = i / float((len(vertList) - 1))
 			else:
 				percent = edgeLengths[i]
 			ratio = function(self.functionMenu.getValue(), percent)
 			value = val1 * compliment(ratio) + val2 * ratio
+			oldValue = pm.percent(str(clust), str(vert), v=True, q=True)
+			print "vert " + str(vert) + " is getting the value " + str(value) + ". Old value was: " + str(oldValue)
+			print "we are assigning it to this cluster: " + str(clust)
 			pm.percent(clust, vert, v=value)
+			actualValue = pm.percent(str(clust), str(vert), v=True, q=True)[0]
+			print "actual value recieved: " + str(actualValue)
+		print "FINSIH"
 
 	def create_layout(self):
 		self.win = pm.window(title="Cluster Weight Interpolation")
@@ -217,8 +232,6 @@ class ClusterInterpolationWindow():
 		#Set up Axis Menu
 		pm.text(label='Axies')
 		self.interpolationAxis = pm.optionMenu()
-		print "This is the type of the menu so that we can get the stuff from it"
-		print type(self.interpolationAxis)
 		pm.menuItem(label='xyz')
 		pm.menuItem(label='x')
 		pm.menuItem(label='y')
