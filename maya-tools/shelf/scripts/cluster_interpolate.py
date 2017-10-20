@@ -48,7 +48,7 @@ def getClusterList(vertList):
 			results = list()
 			for objSet in objectSets:
 				if "cluster" in objSet.name():
-					results.add(objSet)
+					results.append(objSet)
 			if not len(results) == 1:
 				message_gui.error("There is more than one object set tied to this cluster. That is something I didn't expect. Please let me know about it. Let's keep going though and see what happens. The list of object sets looks like this: " + str(results))
 				continue
