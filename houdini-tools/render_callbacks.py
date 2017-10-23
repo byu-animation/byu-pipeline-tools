@@ -20,14 +20,14 @@ def adjustNodes():
 	out = hou.node('/out')
 	print out
 	project = Project()
-	renderEngine = hou.node('/out/' + project.get_name() + 'RenderEngine')
+	renderCtrl = hou.pwd()
+	renderEngine = hou.node(renderCtrl.parent().path() + "/" + project.get_name() + 'RenderEngine')
 	if renderEngine is None:
-		renderEngine = out.createNode('subnet', node_name=project.get_name() + 'RenderEngine')
+		renderEngine = renderCtrl.parent().createNode('subnet', node_name=project.get_name() + 'RenderEngine')
 	# Get nodes we need to work with
 	merge = hou.node(renderEngine.path() + '/risMerge')
 	if merge is None:
 		merge = renderEngine.createNode('merge', 'risMerge')
-	renderCtrl = hou.pwd()
 
 	# Get the number of layers we should have and the number of layers we actually have
 	numLayers = renderCtrl.parm('layers').evalAsInt()
