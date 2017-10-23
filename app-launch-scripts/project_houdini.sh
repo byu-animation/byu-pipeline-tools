@@ -25,6 +25,9 @@ source ${DIR}/project_env.sh
 
 export CURRENT_PROG='Houdini'
 
+# We need this line in order for gridmarkets to work.
+export HOUDINI_USE_HFS_PYTHON=1
+
 export JOB=${BYU_PROJECT_DIR}
 HOUDINI_TOOLS=${BYU_TOOLS_DIR}/houdini-tools
 export PYTHONPATH=${PYTHONPATH}:${HOUDINI_TOOLS}
