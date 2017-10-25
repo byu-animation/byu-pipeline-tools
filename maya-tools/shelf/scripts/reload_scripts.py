@@ -13,6 +13,7 @@ import rollback
 import fk_ik_snapping
 import alembic_export
 import cluster_interpolate
+import reference
 import reload_scripts
 
 def go():
@@ -30,6 +31,7 @@ def go():
 	reload(fk_ik_snapping)
 	reload(alembic_export)
 	reload(reload_scripts)
+	reload(reference)
 	reload(cluster_interpolate)
 	# reload(byuam)
 	# reload(byugui)

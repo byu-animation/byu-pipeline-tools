@@ -1,6 +1,6 @@
 from byugui.reference_gui import ReferenceWindow
 from byuam.environment import Department
-import maya.cmds as cmds
+import pymel.core as pm
 from PySide2 import QtWidgets
 import maya.OpenMayaUI as omu
 import os
@@ -14,16 +14,19 @@ def maya_main_window():
 			return obj
 	raise RuntimeError('Could not find MayaWindow instance')
 
-def post_reference():
-	file_paths = maya_reference_dialog.filePaths
-	done = maya_reference_dialog.done
-	reference = maya_reference_dialog.reference
+def post_reference(dialog):
+	file_paths = dialog.filePaths
+	done = dialog.done
+	isReferenced = dialog.reference
 
-	if file_paths is not None and reference:
+	print "The filePaths are", file_paths
+	print "The reference is", isReferenced
+
+	if file_paths is not None and isReferenced:
 		empty = []
 		for path in file_paths:
 			if os.path.exists(path):
-				cmds.file(path, reference=True)
+				pm.system.createReference(path, namespace="HelloWorld1")
 			else:
 				empty.append(path)
 
@@ -37,7 +40,7 @@ def post_reference():
 
 def go():
 	parent = maya_main_window()
-	filePath = cmds.file(q=True, sceneName=True)
-	global maya_reference_dialog
+	# filePath = pm.file(q=True, sceneName=True)
+	filePath = pm.system.sceneName()
 	maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG])
-	maya_reference_dialog.finished.connect(post_reference)
+	maya_reference_dialog.finished.connect(lambda: post_reference(maya_reference_dialog))

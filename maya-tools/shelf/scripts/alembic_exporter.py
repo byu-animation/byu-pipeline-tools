@@ -99,14 +99,22 @@ class AlembicExportDialog(QDialog):
 
 	def get_filename_for_reference(self, ref):
 		refPath = cmds.referenceQuery(unicode(ref), filename=True)
-		return os.path.basename(refPath).split('.')[0] + '.abc'
+		start = refPath.find("{")
+		end = refPath.find("}")
+		if start == -1 or end == -1:
+			copyNum = ""
+		else:
+			copyNum = refPath[start+1:end]
+		return os.path.basename(refPath).split('.')[0] + str(copyNum) + '.abc'
 
 	def export_alembic(self):
 		self.saveFile()
 
 		selectedReferences = []
 		selectedItems = self.selection_list.selectedItems()
+		print "HERE IS WHERE WE HAVE THE LIST OF SELECTED ITEMS: " + str(selectedItems)
 		for item in selectedItems:
+			print item.text()
 			selectedReferences.append(item.text())
 		print "Here are the references: ", selectedReferences
 
@@ -124,6 +132,7 @@ class AlembicExportDialog(QDialog):
 
 			for ref in selectedReferences:
 				refAbcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
+				print "fileName for reference", self.get_filename_for_reference(ref)
 				print "abcFilePath", refAbcFilePath
 				command = self.build_alembic_command(ref, refAbcFilePath)
 				print "Export Alembic command: ", command
