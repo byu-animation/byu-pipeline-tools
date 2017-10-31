@@ -26,7 +26,9 @@ def post_reference(dialog):
 		empty = []
 		for path in file_paths:
 			if os.path.exists(path):
-				pm.system.createReference(path, namespace="HelloWorld1")
+				#TODO do we want to add multiple references in with different namespaces? You know to get rid of conflicts? Or is our current system for handling that good enough?
+				# pm.system.createReference(path, namespace="HelloWorld1")
+				pm.system.createReference(path)
 			else:
 				empty.append(path)
 
