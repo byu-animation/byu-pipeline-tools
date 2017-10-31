@@ -1,11 +1,58 @@
 import hou
-from byuam import Project
+from byuam import Project, Department
+from byugui import message_gui
+import os
+
+def localRender():
+	message_gui.info("Local rendering is not yet supported")
+
+def farmRender():
+	message_gui.info("Farm render is not yet supported")
+
+def gridmarketsRender():
+	message_gui.info("Gridmarkets rendering is not yet supported")
 
 def getShotName():
-	return 'a001'
+	project = Project()
+	scene = hou.hipFile.name()
+	src_dir = os.path.dirname(scene)
+	element = project.get_checkout_element(src_dir)
+	if element is None:
+		print "We are not in a checkouted out element so we can't really render to a folder right now"
+		return None
+	return element.get_parent()
 
-def getVersion():
-	return '1'
+def get_subdirs(renderDir):
+	return [name for name in os.listdir(renderDir) if os.path.isdir(os.path.join(renderDir, name))]
+
+def getVersion(renderDir=None):
+	project = Project()
+	scene = hou.hipFile.name()
+	src_dir = os.path.dirname(scene)
+	element = project.get_checkout_element(src_dir)
+	parent = element.get_parent()
+	shot = project.get_shot(parent)
+	renderElement = shot.get_element(Department.RENDER)
+	print "This is the parent ", renderElement
+	print "This is the parent type ", type(renderElement)
+	if element is None:
+		print "We are not in a checkouted out element so we can't really render to a folder right now"
+		return None
+	elemDir = renderElement.get_dir()
+	renderDir = renderElement.get_render_dir()
+
+	# Get the sub dir and figure out which is the next version
+	subDirs = get_subdirs(elemDir)
+	versions = list()
+	for subDir in subDirs:
+		try:
+			versions.append(int(subDir))
+		except:
+			continue
+	if len(versions) == 0:
+		return 1
+	versions.sort()
+	return versions[len(versions) - 1] + 1
 
 def setup():
 	subnet = hou.node('out').createNode('subnet', node_name="risNodes")
@@ -114,11 +161,20 @@ def adjustNodes():
 
 	#Set up all expressions for output names
 	for i in range(1, numLayers + 1):
+		shotName = getShotName()
+		if shotName is None:
+			rendFilePath = '$JOB/test-renders/'
+			versionNum = getVersion(dirPath=rendFilePath)
+			rendFilePath = rendFilePath + str(versionNum) + "/"
+			ribFilePath = rendFilePath + "rib/"
+		else:
+			versionNum = getVersion()
+			rendFilePath = '$JOB/production/shots/' + shotName + '/render/main/' + str(versionNum) + '/'
+			ribFilePath = '$JOB/production/ribs/' + shotName + '/' + str(versionNum) + '/'
+
 		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
-		filepath = '$JOB/production/shots/' + getShotName() + '/render/main/' + getVersion() + '/'
-		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
-		filepath = '$JOB/production/ribs/' + getShotName() + '/' + getVersion() + '/'
-		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + filepath + '",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + rendFilePath + '",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '",chs("filename' + str(i) + '")),".exr")')
 
 
 	renderEngine.layoutChildren()

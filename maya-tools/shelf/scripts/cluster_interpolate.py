@@ -25,6 +25,17 @@ def go():
 	dialog = ClusterInterpolationWindow(vert1, vert2)
 	dialog.show()
 
+def sortVertList(vert1, vert2, vertList):
+	currentVert = vert1
+	result = list()
+	while currentVert != vert2:
+		# print "This is the currentVert: ", currentVert
+		connectedVerts = currentVert.connectedVertices()
+		for vert in connectedVerts:
+			if vert in vertList and vert not in result:
+				result.append(vert)
+				currentVert = vert
+	return result
 
 def getVertList(vert1, vert2):
 	currentSelection = pm.ls(selection=True)
@@ -37,19 +48,18 @@ def getVertList(vert1, vert2):
 		for vert in vertMesh:
 			edgeVerts.append(vert)
 	pm.select(currentSelection)
-	return edgeVerts
+	return sortVertList(vert1, vert2, edgeVerts)
 
-def getClusterList(vertList):
+def getClusterListForVert(vert, clusters=None):
 	result = []
 
-	allClusters = pm.ls(type="cluster") # O(1)
+	if clusters is None:
+		clusters = pm.ls(type="cluster")
 
-	clusterCnt = len(allClusters)
+	clusterCnt = len(clusters)
 
-	for index, c in enumerate(allClusters): # O(c)
-		objectSets = c.listConnections(type="objectSet") # O(1)
-
-		print str(index) + " of " + str(clusterCnt) + " clusters processed."
+	for index, c in enumerate(clusters):
+		objectSets = c.listConnections(type="objectSet")
 
 		if not len(objectSets) == 1:
 			results = list()
@@ -64,15 +74,45 @@ def getClusterList(vertList):
 		else:
 			objectSet = objectSets[0]
 
-		# TODO make sure that the object set is actually part of the geo.
-		# TODO will we ever have a cluster that spans multiple geometries?
-		# TODO will we ever be working with edges that go over multiple geometries? If we do then the vertList[1].node().getParent() will have a different parent.
-		#hashSize = vertList.node().getParent().numVertices()
-		vertSet = makeReadable(objectSet) #O(v)
+		if vert in objectSet[0]:
+			result.append(c)
 
-		if contains(vertSet, vertList): # O(v)
-			result.append(c) #O(1)
+		print str(index + 1) + " of " + str(clusterCnt) + " clusters processed."
+	print "Len of result: ", len(result)
+	print "Type of clusters: ", type(clusters[0])
+	print "Type of result items: ", type(result[0])
 	return result
+
+def getClusterList(vertList, clusters=None, quick=False):
+	if quick:
+		quickVertList = list()
+		quickVertList.append(vertList[0])
+		endIndex = len(vertList) - 1
+		quickVertList.append(vertList[endIndex])
+		return getClusterList(quickVertList, clusters=clusters)
+	for vert in vertList:
+		clusters = getClusterListForVert(vert, clusters=clusters)
+	return clusters
+
+def allClustersOnVert(vert, clusters=None):
+	'''
+	Using the percent query we really quickly get all of the clusters that affect the geo for the given vert. This greatly reduces the number of clusters we have to process for scenes that have multriple pieces of geometry.
+	'''
+	if clusters is None:
+		clusters = pm.ls(type="cluster")
+		print len(clusters), " is the length of all the clusters. Should be about 300"
+	result = list()
+	for i, cluster in enumerate(clusters):
+		vals = pm.percent(cluster, vert, v=True, q=True)
+		if vals is not None:
+			result.append(cluster)
+			# print i, ": ", vals
+	return result
+
+def hybridClusterList(vertList):
+	clusters = allClustersOnVert(vertList[0])
+	clusters = getClusterList(vertList, clusters=clusters, quick=True)
+	return clusters
 
 def function(function, inputVal):
 	if function == "Linear":
@@ -87,22 +127,6 @@ def function(function, inputVal):
 
 def compliment(val):
 	return abs(val - 1)
-
-def contains(vertSet, vertList):
-	for vert in vertList:
-		#if all of the verteices are in the vertSet of the cluster then we can add it to list.
-		if not vert.currentItemIndex() in vertSet: # Once we find one vert that isn't in a set we can move on.
-			return False
-	return True
-
-def makeReadable(objectSet):
-	vertSet = set()
-	#TODO I am wondering if we could use this same approach on a the object set itself and not have to convert it at all
-	for e in objectSet: # O(n - v)
-		# TODO if you get an object list then you can iterate over it to get a mesh vertex range and if you iterate over that you get a single mesh vertex but I don't know how to get the number from the mesh vertex
-		for vert in e: # 0(v - n)
-			vertSet.add(vert.currentItemIndex())
-	return vertSet
 
 def maya_main_window():
 	"""Return Maya's main window"""
@@ -180,6 +204,12 @@ class ClusterInterpolationWindow():
 			val2 = pm.percent(str(clust), str(self.vert2), v=True, q=True)[0]
 
 		print "START INTERPOLATING THIS VERT LIST: " + str(vertList)
+		isReversed = self.invert.getValue() == 'invert'
+		if isReversed:
+			temp = val1
+			val1 = val2
+			val2 = temp
+			print"Here is the updated one"
 		for i, vert in enumerate(vertList):
 			print "We are working on the " + str(i) + "th vert in the list."
 			if "Point Number" == self.interpolationAxis.getValue():
@@ -195,10 +225,11 @@ class ClusterInterpolationWindow():
 			actualValue = pm.percent(str(clust), str(vert), v=True, q=True)[0]
 			print "actual value recieved: " + str(actualValue)
 		print "FINSIH"
+		print ""
 
 	def create_layout(self):
 		self.win = pm.window(title="Cluster Weight Interpolation")
-		layout = pm.rowColumnLayout(numberOfColumns=2, columnAttach=(1, 'right', 0), columnWidth=[(1,100), (2, 250)], rowOffset=(6, "bottom", 15), rowSpacing=(1, 10), columnSpacing=(2,15))
+		layout = pm.rowColumnLayout(numberOfColumns=2, columnAttach=(1, 'right', 0), columnWidth=[(1,150), (2, 250)], rowOffset=(6, "bottom", 15), rowSpacing=(1, 10), columnSpacing=(2,15))
 		#chkBox = pm.checkBox(label = "My Checkbox", value=True, parent=layout)
 
 		#Set up weight inputs
@@ -210,7 +241,7 @@ class ClusterInterpolationWindow():
 		#Set up cluster Menu
 		pm.text(label='Cluster')
 		self.clusterMenu = pm.optionMenu()
-		clusterList = getClusterList(self.vertList)
+		clusterList = hybridClusterList(self.vertList)
 		for c in clusterList:
 			pm.menuItem(label=str(c))
 
@@ -229,8 +260,13 @@ class ClusterInterpolationWindow():
 		pm.gradientControlNoAttr( 'falloffCurve', h=90)
 		self.ramp = pm.gradientControlNoAttr( 'falloffCurve', e=True, optionVar='falloffCurveOptionVar' )
 
+		pm.text(label='Invert')
+		self.invert = pm.optionMenu()
+		pm.menuItem(label='invert')
+		pm.menuItem(label='not invert')
+
 		#Set up Axis Menu
-		pm.text(label='Axies')
+		pm.text(label='Axies for Dist Measurement')
 		self.interpolationAxis = pm.optionMenu()
 		pm.menuItem(label='xyz')
 		pm.menuItem(label='x')
