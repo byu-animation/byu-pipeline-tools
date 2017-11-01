@@ -177,6 +177,15 @@ renderman_setup.go()
 			</scriptItem>
 		</subMenu>
 
+		<scriptItem id="h.reload">
+			<label>Reload Scripts</label>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import reload_scripts; reload_scripts.go()
+				]]>
+			</scriptCode>
+		</scriptItem>
+
 		<subMenu id="edit_menu">
 		</subMenu>
 
