@@ -1,16 +1,53 @@
 import hou
 from byuam import Project, Department
 from byugui import message_gui
+import tractor_shelf
 import os
 
+#TODO We need to make sure that we have updated the version number
+
 def localRender():
-	message_gui.info("Local rendering is not yet supported")
+	'''
+	Get all of the risNodes
+	unchecheck the diskfile.
+	click the render button
+	'''
+	setRibOutputMode(False)
+	print "Start Farm Render"
+	nodes = getEngineParts()
+	nodes["merge"].render()
 
 def farmRender():
-	message_gui.info("Farm render is not yet supported")
+	'''
+	Get all of the risNodes
+	check the diskfile.
+	click the render button
+	make sure we do open EXR
+	send the job to the farm
+	'''
+	print "Start Farm Render"
+	nodes = getEngineParts()
+	tractor_shelf.go(nodes["merge"].inputAncestors())
 
 def gridmarketsRender():
+	print "Start Gridmarkets Render"
+	nodes = getEngineParts()
+	nodes['gridmarkets'].parm("submit_start").pressButton()
 	message_gui.info("Gridmarkets rendering is not yet supported")
+	'''
+	Get all of the risNodes
+	uncheck the diskfile.
+	make sure the display device is open exr
+	click the gridmarkets button
+	'''
+
+def setRibOutputMode(state):
+	nodes = getEngineParts()
+	risNodes = nodes["merge"].inputAncestors()
+	for risNode in risNodes:
+		risNode.parm("rib_outputmode").set(state)
+
+	print "not supported"
 
 def getShotName():
 	project = Project()
@@ -59,11 +96,31 @@ def setup():
 	subnet.setName("render")
 	merge = subnet.createNode('merge', 'risMerge')
 
+def getEngineParts():
+	project = Project()
+	nodes = {}
+	nodes['out'] = hou.node('/out')
+	nodes['renderCtrl'] = hou.pwd()
+
+	nodes['renderEngine'] = nodes['renderCtrl'].parent().node(project.get_name() + 'RenderEngine')
+	if nodes['renderEngine'] is None:
+		nodes['renderEngine'] = nodes['renderCtrl'].parent().createNode('subnet', node_name=project.get_name() + 'RenderEngine')
+
+	nodes['merge'] = nodes['renderEngine'].node('risMerge')
+	if nodes['merge'] is None:
+		nodes['merge'] = nodes['renderEngine'].createNode('merge', 'risMerge')
+
+	nodes['gridmarkets'] = nodes['renderEngine'].node('GridMarketsSubmit')
+	if nodes['gridmarkets'] is None:
+		nodes['gridmarkets'] = nodes['merge'].createOutputNode('render_submit', 'GridMarketsSubmit')
+	return nodes
+
 def adjustNodes():
 	'''
 	This will go through my render node and create ris nodes for each layer and properly hook up everting.
 	Just in case we loose my node the "as Code" version is down bellow
 	'''
+	getEngineParts()
 	out = hou.node('/out')
 	print out
 	project = Project()
@@ -174,7 +231,7 @@ def adjustNodes():
 
 		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
 		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + rendFilePath + '",chs("filename' + str(i) + '")),".exr")')
-		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '",chs("filename' + str(i) + '")),".rib")')
 
 
 	renderEngine.layoutChildren()

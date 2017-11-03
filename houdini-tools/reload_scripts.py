@@ -7,6 +7,7 @@ import publish
 import renderman_setup
 import rollback
 import test_geo
+import tractor_shelf
 import reload_scripts
 import render_callbacks
 
@@ -17,8 +18,9 @@ def go():
 	reload(inspire_quote)
 	reload(new_body)
 	reload(publish)
+	reload(reload_scripts)
+	reload(render_callbacks)
 	reload(renderman_setup)
 	reload(rollback)
 	reload(test_geo)
-	reload(reload_scripts)
-	reload(render_callbacks)
+	reload(tractor_shelf)

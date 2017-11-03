@@ -1,6 +1,4 @@
 from PySide2 import QtGui, QtWidgets, QtCore
-from TrHttpRPC import TrHttpRPC
-import urllib
 import datetime
 import os
 import re
@@ -9,6 +7,7 @@ import hou
 from byugui import message_gui
 from byugui.assemble_gui import AssembleWindow
 from byuam import Project, Environment
+import tractor.api.author as author
 
 # Creates the dialog box
 class ExportDialog(QtWidgets.QWidget):
@@ -113,7 +112,7 @@ class ExportDialog(QtWidgets.QWidget):
 
 		# Get user, project, and time info so we can make a temp folder
 		user = self.environment.get_current_username()
-		projectName = self.project.get_name()
+		projectName = self.project.get_name().lower()
 		time_now = datetime.datetime.now()
 
 		#Make a temp folder for the rib files based on the user and the current time
@@ -126,8 +125,14 @@ class ExportDialog(QtWidgets.QWidget):
 		if len(title) == 0:
 			title = self.empty_text
 
-		# This is the start of the alfred/tractor script we send to engine
-		job_script = "Job -title {"+title+"} -metadata {Spooled by "+user+"} -init {\n\tAssign ribdir {"+ribDir+"}\n} -service {PixarRender} -subtasks {"
+		# This job we send to tractor
+		job = author.Job()
+		job.title = title + " python job"
+		job.priority = self.priority.currentIndex()
+		path = os.environ["PATH"] + ":/opt/pixar/RenderManProServer-21.5/bin/"
+		job.envkey = ["setenv PATH=" + path + " RMANTREE=/opt/pixar/RenderManProServer-21.5"]
+		job.service = "PixarRender"
+		job.comment = "Spooled by " + user
 
 		# Loop through each frame of our nodes and create frame tasks and append it to the job script
 		for index, node in enumerate(self.renderNodes):
@@ -138,89 +143,79 @@ class ExportDialog(QtWidgets.QWidget):
 				start = int(node.parm('f1').eval())
 				end = int(node.parm('f2').eval())
 				step = int(node.parm('f3').eval())
-				job_script += "\n\tTask {"+("%s [%d-%d]" % (name, start, end))+"} -subtasks {"
+				task = author.Task()
+				task.title = "%s [%d-%d]" % (name, start, end)
 
 				oldOutputMode = node.parm('rib_outputmode').eval()
-				oldDiskFile = node.parm('soho_diskfile').eval()
+				try:
+					oldDiskFile = node.parm('soho_diskfile').expression()
+					useExpression = True
+					print "We are getting rid of expressiion"
+				except:
+					oldDiskFile = node.parm('soho_diskfile').eval()
+					useExpression = False
+					print "we didn't get rid of them"
 				# Activate rib output
 				node.parm('rib_outputmode').set(True)
+				node.parm('soho_diskfile').deleteAllKeyframes()
 				node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
 
 				# Loop through every frame in framerange
 				for frame in range(start, end+1, step):
-					job_script += "\n\t\tTask {Frame %04d} -cmds { RemoteCmd {/opt/pixar/RenderManProServer-21.3/bin/prman -progress $ribdir/%s_%04d.rib} }" % (frame, name, frame)
+					subtask = author.Task()
+					subtask.title = "Frame %04d" % (frame)
+					ribFile = "%s/%s_%04d.rib" % (ribDir, name, frame)
+					print "Here is the rib file ", ribFile
+
+					# Commands for Debugging
+					cmdPATH = author.Command()
+					cmdPATH.argv = ["echo", "${PATH}"]
+					cmdRMANTREE = author.Command()
+					cmdRMANTREE.argv = ["echo", "${RMANTREE}"]
+					printenv = author.Command()
+					printenv.argv = ["printenv"]
+					subtask.addCommand(cmdPATH)
+					subtask.addCommand(cmdRMANTREE)
+					subtask.addCommand(printenv)
+
+					# Real Commands
+					command = author.Command()
+					command.argv = ["prman", "-progress", ribFile]
+					command.service = "PixarRender"
+					subtask.addCommand(command)
+					task.addChild(subtask)
 					# Render this frame to the ifd file
 					node.render([frame, frame])
-				job_script += "\n\t}"
+				job.addChild(task)
 
 				# Restore rib output
 				node.parm('soho_outputmode').set(oldOutputMode)
-				node.parm('soho_diskfile').set(oldDiskFile)
+				if useExpression:
+					node.parm('soho_diskfile').setExpression(oldDiskFile)
+				else:
+					node.parm('soho_diskfile').set(oldDiskFile)
 
-		job_script += "\n} -cleanup { RemoteCmd {rm -rf "+ribDir+"/} }"
+		command = author.Command()
+		command.argv = ["rm", "-rf", ribDir]
+		job.addCleanup(command)
+
+		# print "This is the new job script \n", job.asTcl()
 
 		# Attempt to spool job, with the option to keep trying
 		choice = True
 		while choice:
-			rc, msg = self.spool(job_script, time_now)
-			# An error occurred
-			if rc != 0:
-				choice = hou.ui.displayMessage(
-					"Failed to export to tractor!\nError Code #%d:\n%s\n\nDo you want to try again?" % (rc, msg),
-					('Cancel', 'Retry'),
-					hou.severityType.Warning
-				)
-			# Job succesfully spooled
-			else:
+			try:
+				job.spool()
+				message_gui.info("Job sent to Tractor!")
 				break
+			except Exception as err:
+				choice = message_gui.yes_or_no("We ran into this problem while spooling the job:\n" + str(err) + "\nWould you like to try again?", "Continue?")
 		#Cleanup ifd files, if they didn't want to retry
 		if not choice:
 			shutil.rmtree(ribDir)
-		message_gui.info("Job sent to Tractor!")
-
-	# Spool the generated script to the engine
-	def spool(self, job_script, time_now):
-		print "Spooling"
-		delay_type = self.delay.currentIndex()
-		# Spool parameters
-		spool_url = "spool?"
-		# Current user will own this job
-		spool_url += "jobOwner=" + urllib.quote("render")
-		#TODO Why do we do the render user instead of the current user?? To get the current user use current_user = self.environment.get_current_username()
-		# Location of mantra executable
-		spool_url += "&cwd=" + urllib.quote("/opt/hfs.current/bin/")
-		# Job priority (1=vlo, 2=lo, 3=med, 4=hi, 5=vhi)
-		# Negating priority pauses the job on start
-		priority = self.priority.currentIndex()+1
-		if delay_type == 1:
-			priority = -priority
-		spool_url += "&priority=" + str(priority)
-		# Wait until the specified time before starting (MM DD HH:MM)
-		if delay_type == 2:
-			sec = float(self.delay_time.text())
-			unit = self.delay_unit.currentIndex()
-			# 0=min, 1=hour, 2=day
-			sec *= 60
-			if unit > 0:
-				sec *= 60
-			if unit > 1:
-				sec *= 24
-			sec = int(sec)
-			if sec > 0:
-				time_delay = time_now + datetime.timedelta(0, sec)
-				spool_url += "&aftertime=" + urllib.quote(time_delay.strftime("%m %d %H:%M"))
-		# Tractor engine hostname
-		rpc = TrHttpRPC("tractor-engine")
-		# Send request to tractor engine
-		return rpc.Transaction(
-			spool_url, job_script,
-			xheaders={"Content-Type": "application/tractor-spool"}
-		)
 
 def go(renderNodes):
 	# Then show the dialog
 	global dialog
-	renderNodes = []
-	renderNodes.append(hou.node("/out/ris1"))
 	dialog = ExportDialog(hou.ui.mainQtWindow(), renderNodes)
 	dialog.show()
