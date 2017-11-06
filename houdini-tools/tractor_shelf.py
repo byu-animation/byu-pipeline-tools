@@ -25,50 +25,50 @@ class ExportDialog(QtWidgets.QWidget):
 	def initUI(self):
 		# Window layout
 		self.setFixedSize(360, 420)
-		self.setWindowTitle("Confirm Export")
+		self.setWindowTitle('Confirm Export')
 		main_layout = QtWidgets.QVBoxLayout()
 		self.setLayout(main_layout)
 
 		# Job Name Input Widget
-		self.jobName = QtWidgets.QLineEdit("DeleteMe")
+		self.jobName = QtWidgets.QLineEdit('JobName')
 		self.jobName.selectAll()
 		name_layout = QtWidgets.QHBoxLayout()
-		name_layout.addWidget(QtWidgets.QLabel("Job Name:"))
+		name_layout.addWidget(QtWidgets.QLabel('Job Name:'))
 		name_layout.addWidget(self.jobName)
 		main_layout.addLayout(name_layout)
 
 		# Priority and Start Time
 		# Priority
 		self.priority = QtWidgets.QComboBox()
-		priority_opt = ["Very Low", "Low", "Medium", "High", "Very High"]
+		priority_opt = ['Very Low', 'Low', 'Medium', 'High', 'Very High']
 		for opt in priority_opt:
 			self.priority.addItem(opt)
 		self.priority.setCurrentIndex(2)
 		# Begin time
 		self.delay = QtWidgets.QComboBox()
-		delay_opts = ["Immediate", "Manual", "Delayed"]
+		delay_opts = ['Immediate', 'Manual', 'Delayed']
 		for opt in delay_opts:
 			self.delay.addItem(opt)
 		self.delay.currentIndexChanged.connect(self.delaytime)
 		# Combo box options layout
 		opts_layout = QtWidgets.QHBoxLayout()
-		opts_layout.addWidget(QtWidgets.QLabel("Priority:"))
+		opts_layout.addWidget(QtWidgets.QLabel('Priority:'))
 		opts_layout.addWidget(self.priority)
-		opts_layout.addWidget(QtWidgets.QLabel("Begin:"))
+		opts_layout.addWidget(QtWidgets.QLabel('Begin:'))
 		opts_layout.addWidget(self.delay)
 		opts_layout.addStretch()
 		main_layout.addLayout(opts_layout)
 
 		# Time-frame selection for delayed jobs
-		self.delay_time = QtWidgets.QLineEdit("5")
+		self.delay_time = QtWidgets.QLineEdit('5')
 		self.delay_unit = QtWidgets.QComboBox()
-		delay_unit_opts = ["mins","hours","days"]
+		delay_unit_opts = ['mins','hours','days']
 		for opt in delay_unit_opts:
 			self.delay_unit.addItem(opt)
 		self.delay_unit.setCurrentIndex(0)
 		# Delay time layout
 		self.delay_layout = QtWidgets.QHBoxLayout()
-		self.delay_layout.addWidget(QtWidgets.QLabel("Delay time:"))
+		self.delay_layout.addWidget(QtWidgets.QLabel('Delay time:'))
 		self.delay_layout.addWidget(self.delay_time)
 		self.delay_layout.addWidget(self.delay_unit)
 		self.delay_layout.addStretch()
@@ -116,23 +116,23 @@ class ExportDialog(QtWidgets.QWidget):
 		time_now = datetime.datetime.now()
 
 		#Make a temp folder for the rib files based on the user and the current time
-		ribDir = "/groups/"+projectName+"/ribs/"+user+"_"+time_now.strftime("%m%d%y_%H%M%S")
-		print "ribDir", ribDir, " renderNodes size: ", len(self.renderNodes)
+		ribDir = '/groups/'+projectName+'/ribs/'+user+'_'+time_now.strftime('%m%d%y_%H%M%S')
+		print 'ribDir', ribDir, ' renderNodes size: ', len(self.renderNodes)
 		os.makedirs(ribDir)
 
 		# Sanitize job title
-		title = re.sub(r'[{}"\']', "", str(self.jobName.text())).strip(' \t\n\r')
+		title = re.sub(r'[{}'\']', '', str(self.jobName.text())).strip(' \t\n\r')
 		if len(title) == 0:
 			title = self.empty_text
 
 		# This job we send to tractor
 		job = author.Job()
-		job.title = title + " python job"
+		job.title = title + ' python job'
 		job.priority = self.priority.currentIndex()
-		path = os.environ["PATH"] + ":/opt/pixar/RenderManProServer-21.5/bin/"
-		job.envkey = ["setenv PATH=" + path + " RMANTREE=/opt/pixar/RenderManProServer-21.5"]
-		job.service = "PixarRender"
-		job.comment = "Spooled by " + user
+		path = os.environ['PATH'] + ':/opt/pixar/RenderManProServer-21.5/bin/'
+		job.envkey = ['setenv PATH=' + path + ' RMANTREE=/opt/pixar/RenderManProServer-21.5']
+		job.service = 'PixarRender'
+		job.comment = 'Spooled by ' + user
 
 		# Loop through each frame of our nodes and create frame tasks and append it to the job script
 		for index, node in enumerate(self.renderNodes):
@@ -144,17 +144,17 @@ class ExportDialog(QtWidgets.QWidget):
 				end = int(node.parm('f2').eval())
 				step = int(node.parm('f3').eval())
 				task = author.Task()
-				task.title = "%s [%d-%d]" % (name, start, end)
+				task.title = '%s [%d-%d]' % (name, start, end)
 
 				oldOutputMode = node.parm('rib_outputmode').eval()
 				try:
 					oldDiskFile = node.parm('soho_diskfile').expression()
 					useExpression = True
-					print "We are getting rid of expressiion"
+					print 'We are getting rid of expressiion'
 				except:
 					oldDiskFile = node.parm('soho_diskfile').eval()
 					useExpression = False
-					print "we didn't get rid of them"
+					print 'we didn't get rid of them'
 				# Activate rib output
 				node.parm('rib_outputmode').set(True)
 				node.parm('soho_diskfile').deleteAllKeyframes()
@@ -163,25 +163,28 @@ class ExportDialog(QtWidgets.QWidget):
 				# Loop through every frame in framerange
 				for frame in range(start, end+1, step):
 					subtask = author.Task()
-					subtask.title = "Frame %04d" % (frame)
-					ribFile = "%s/%s_%04d.rib" % (ribDir, name, frame)
-					print "Here is the rib file ", ribFile
+					subtask.title = 'Frame %04d' % (frame)
+					ribFile = '%s/%s_%04d.rib' % (ribDir, name, frame)
+					print 'Here is the rib file ', ribFile
 
 					# Commands for Debugging
 					cmdPATH = author.Command()
-					cmdPATH.argv = ["echo", "${PATH}"]
+					cmdPATH.argv = ['echo', '${PATH}']
 					cmdRMANTREE = author.Command()
-					cmdRMANTREE.argv = ["echo", "${RMANTREE}"]
+					cmdRMANTREE.argv = ['echo', '${RMANTREE}']
 					printenv = author.Command()
-					printenv.argv = ["printenv"]
+					printenv.argv = ['printenv']
+					locatePrman = author.Command()
+					locatePrman.argv = ['type', 'prman']
 					subtask.addCommand(cmdPATH)
 					subtask.addCommand(cmdRMANTREE)
 					subtask.addCommand(printenv)
+					subtask.addCommand(locatePrman)
 
 					# Real Commands
 					command = author.Command()
-					command.argv = ["prman", "-progress", ribFile]
-					command.service = "PixarRender"
+					command.argv = ['prman', '-progress', ribFile]
+					command.service = 'PixarRender'
 					subtask.addCommand(command)
 					task.addChild(subtask)
 					# Render this frame to the ifd file
@@ -196,20 +199,20 @@ class ExportDialog(QtWidgets.QWidget):
 					node.parm('soho_diskfile').set(oldDiskFile)
 
 		command = author.Command()
-		command.argv = ["rm", "-rf", ribDir]
+		command.argv = ['rm', '-rf', ribDir]
 		job.addCleanup(command)
 
-		# print "This is the new job script \n", job.asTcl()
+		# print 'This is the new job script \n', job.asTcl()
 
 		# Attempt to spool job, with the option to keep trying
 		choice = True
 		while choice:
 			try:
 				job.spool()
-				message_gui.info("Job sent to Tractor!")
+				message_gui.info('Job sent to Tractor!')
 				break
 			except Exception as err:
-				choice = message_gui.yes_or_no("We ran into this problem while spooling the job:\n" + str(err) + "\nWould you like to try again?", "Continue?")
+				choice = message_gui.yes_or_no('We ran into this problem while spooling the job:\n' + str(err) + '\nWould you like to try again?', 'Continue?')
 		#Cleanup ifd files, if they didn't want to retry
 		if not choice:
 			shutil.rmtree(ribDir)

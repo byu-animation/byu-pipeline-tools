@@ -4,50 +4,53 @@ from byugui import message_gui
 import tractor_shelf
 import os
 
-#TODO We need to make sure that we have updated the version number
+
+
+def prepRender(rib=False, openExr=False):
+	'''
+	Prepares the render. Return True if the render is ready to go. Otherwise false
+	'''
+	#Make sure layers all up-to-date
+	adjustNodes() #TODO We need to make sure that we have updated the version number of the render before we render. Right now it only updates when a layer is added. I think the adjust Nodes function should do that for us. Lets make sure before we get rid of this TODO
+	#Make sure we aren't outputing rib files
+	setRibOutputMode(rib)
+	#Make sure we are using the correnct display device
+	device = getEngineParts()['renderCtrl'].parm('ri_device').eval()
+	if openExr and device != "openexr":
+		message_gui.error('Make sure that the display device is set to "openexr" before sending a job to Tractor.')
+		return False
+	return True
+
 
 def localRender():
-	'''
-	Get all of the risNodes
-	unchecheck the diskfile.
-	click the render button
-	'''
-	setRibOutputMode(False)
-	print "Start Farm Render"
-	nodes = getEngineParts()
-	nodes["merge"].render()
+	if prepRender():
+		print 'Start Local Render'
+		try:
+			getEngineParts()['merge'].render()
+		except hou.OperationFailed, e:
+			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
 
 def farmRender():
-	'''
-	Get all of the risNodes
-	check the diskfile.
-	click the render button
-	make sure we do open EXR
-	send the job to the farm
-	'''
-	print "Start Farm Render"
-	nodes = getEngineParts()
-	tractor_shelf.go(nodes["merge"].inputAncestors())
+	if prepRender(rib=True, openExr=True):
+		print 'Start Tractor Render'
+		try:
+			tractor_shelf.go(getEngineParts()['merge'].inputAncestors())
+		except hou.OperationFailed, e:
+			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
 
 def gridmarketsRender():
-	print "Start Gridmarkets Render"
-	nodes = getEngineParts()
-	nodes['gridmarkets'].parm("submit_start").pressButton()
-	message_gui.info("Gridmarkets rendering is not yet supported")
-	'''
-	Get all of the risNodes
-	uncheck the diskfile.
-	make sure the display device is open exr
-	click the gridmarkets button
-	'''
+	if prepRender(openExr=True):
+		print 'Start Gridmarkets Render'
+		try:
+			getEngineParts()['gridmarkets'].parm('submit_start').pressButton()
+		except hou.OperationFailed, e:
+			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
 
 def setRibOutputMode(state):
 	nodes = getEngineParts()
-	risNodes = nodes["merge"].inputAncestors()
+	risNodes = nodes['merge'].inputAncestors()
 	for risNode in risNodes:
-		risNode.parm("rib_outputmode").set(state)
-
-	print "not supported"
+		risNode.parm('rib_outputmode').set(state)
 
 def getShotName():
 	project = Project()
@@ -55,7 +58,6 @@ def getShotName():
 	src_dir = os.path.dirname(scene)
 	element = project.get_checkout_element(src_dir)
 	if element is None:
-		print "We are not in a checkouted out element so we can't really render to a folder right now"
 		return None
 	return element.get_parent()
 
@@ -63,23 +65,20 @@ def get_subdirs(renderDir):
 	return [name for name in os.listdir(renderDir) if os.path.isdir(os.path.join(renderDir, name))]
 
 def getVersion(renderDir=None):
-	project = Project()
-	scene = hou.hipFile.name()
-	src_dir = os.path.dirname(scene)
-	element = project.get_checkout_element(src_dir)
-	parent = element.get_parent()
-	shot = project.get_shot(parent)
-	renderElement = shot.get_element(Department.RENDER)
-	print "This is the parent ", renderElement
-	print "This is the parent type ", type(renderElement)
-	if element is None:
-		print "We are not in a checkouted out element so we can't really render to a folder right now"
-		return None
-	elemDir = renderElement.get_dir()
-	renderDir = renderElement.get_render_dir()
+	if renderDir is None:
+		project = Project()
+		scene = hou.hipFile.name()
+		src_dir = os.path.dirname(scene)
+		element = project.get_checkout_element(src_dir)
+		if element is None:
+			return None
+		parent = element.get_parent()
+		shot = project.get_shot(parent)
+		renderElement = shot.get_element(Department.RENDER)
+		renderDir = renderElement.get_dir()
 
 	# Get the sub dir and figure out which is the next version
-	subDirs = get_subdirs(elemDir)
+	subDirs = get_subdirs(renderDir)
 	versions = list()
 	for subDir in subDirs:
 		try:
@@ -92,8 +91,8 @@ def getVersion(renderDir=None):
 	return versions[len(versions) - 1] + 1
 
 def setup():
-	subnet = hou.node('out').createNode('subnet', node_name="risNodes")
-	subnet.setName("render")
+	subnet = hou.node('out').createNode('subnet', node_name='risNodes')
+	subnet.setName('render')
 	merge = subnet.createNode('merge', 'risMerge')
 
 def getEngineParts():
@@ -118,20 +117,12 @@ def getEngineParts():
 def adjustNodes():
 	'''
 	This will go through my render node and create ris nodes for each layer and properly hook up everting.
-	Just in case we loose my node the "as Code" version is down bellow
+	Just in case we loose my node the 'as Code' version is down bellow
 	'''
-	getEngineParts()
-	out = hou.node('/out')
-	print out
-	project = Project()
-	renderCtrl = hou.pwd()
-	renderEngine = hou.node(renderCtrl.parent().path() + "/" + project.get_name() + 'RenderEngine')
-	if renderEngine is None:
-		renderEngine = renderCtrl.parent().createNode('subnet', node_name=project.get_name() + 'RenderEngine')
-	# Get nodes we need to work with
-	merge = hou.node(renderEngine.path() + '/risMerge')
-	if merge is None:
-		merge = renderEngine.createNode('merge', 'risMerge')
+	nodes = getEngineParts()
+	renderCtrl = nodes['renderCtrl']
+	renderEngine = nodes['renderEngine']
+	merge = nodes['merge']
 
 	# Get the number of layers we should have and the number of layers we actually have
 	numLayers = renderCtrl.parm('layers').evalAsInt()
@@ -140,13 +131,9 @@ def adjustNodes():
 
 	# Harmonize layer expectations to reality
 	if numLayers < numNodes:
-		print 'numLayers: ' + str(numLayers)
-		print 'numNodes: ' + str(numNodes)
 		for i in range(numNodes - numLayers):
 			risNodes[numNodes - (1 + i)].destroy()
 	else:
-		print 'numLayers: ' + str(numLayers)
-		print 'numNodes: ' + str(numNodes)
 		for i in range(numLayers - numNodes):
 			pos = numNodes + i
 			risNode = merge.createInputNode(pos, 'ris')
@@ -220,31 +207,33 @@ def adjustNodes():
 	for i in range(1, numLayers + 1):
 		shotName = getShotName()
 		if shotName is None:
-			rendFilePath = '$JOB/test-renders/'
-			versionNum = getVersion(dirPath=rendFilePath)
-			rendFilePath = rendFilePath + str(versionNum) + "/"
-			ribFilePath = rendFilePath + "rib/"
+			renderFilePath = os.path.join(os.environ['JOB'], 'production', 'test-renders')
+			if not os.path.exists(renderFilePath):
+				os.makedirs(renderFilePath)
+			versionNum = getVersion(renderDir=renderFilePath)
+			renderFilePath = os.path.join(renderFilePath, str(versionNum))
+			ribFilePath = os.path.join(renderFilePath, 'rib')
 		else:
 			versionNum = getVersion()
-			rendFilePath = '$JOB/production/shots/' + shotName + '/render/main/' + str(versionNum) + '/'
+			renderFilePath = '$JOB/production/shots/' + shotName + '/render/main/' + str(versionNum) + '/'
 			ribFilePath = '$JOB/production/ribs/' + shotName + '/' + str(versionNum) + '/'
 
 		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
-		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + rendFilePath + '",chs("filename' + str(i) + '")),".exr")')
-		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '",chs("filename' + str(i) + '")),".rib")')
+		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + renderFilePath + '/",chs("filename' + str(i) + '")),".exr")')
+		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '/",chs("filename' + str(i) + '")),".rib")')
 
 
 	renderEngine.layoutChildren()
 
 
 def createRenderNode():
-	print "Test"
+	print 'Test'
 	# Initialize parent node variable.
-	if locals().get("hou_parent") is None:
-		hou_parent = hou.node("/out")
+	if locals().get('hou_parent') is None:
+		hou_parent = hou.node('/out')
 
 	# Code for /out/tomato
-	hou_node = hou_parent.createNode("subnet", "tomato", run_init_scripts=False, load_contents=True, exact_type_name=True)
+	hou_node = hou_parent.createNode('subnet', 'tomato', run_init_scripts=False, load_contents=True, exact_type_name=True)
 	hou_node.move(hou.Vector2(-5.83874, 1.52403))
 	hou_node.bypass(False)
 	hou_node.hide(False)
@@ -253,7 +242,7 @@ def createRenderNode():
 
 	hou_parm_template_group = hou.ParmTemplateGroup()
 	# Code for parameter template
-	hou_parm_template = hou.ButtonParmTemplate("execute", "Render")
+	hou_parm_template = hou.ButtonParmTemplate('execute', 'Render')
 	hou_parm_template.setJoinWithNext(True)
 	hou_parm_template.setTags({"takecontrol": "always"})
 	hou_parm_template_group.append(hou_parm_template)
