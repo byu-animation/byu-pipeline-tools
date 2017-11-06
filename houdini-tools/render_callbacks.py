@@ -1,7 +1,7 @@
 import hou
 from byuam import Project, Department
 from byugui import message_gui
-import tractor_shelf
+import tractor
 import os
 
 
@@ -34,7 +34,7 @@ def farmRender():
 	if prepRender(rib=True, openExr=True):
 		print 'Start Tractor Render'
 		try:
-			tractor_shelf.go(getEngineParts()['merge'].inputAncestors())
+			tractor.go(getEngineParts()['merge'].inputAncestors())
 		except hou.OperationFailed, e:
 			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
 
