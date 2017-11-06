@@ -57,6 +57,10 @@
 			"annotation":"Cluster Interpolate",
 			"python_file":"cluster_interpolate.py"
 		}, {
+			"icon":"y.svg",
+			"annotation":"Attach Beard",
+			"python_file":"attach_beard.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
