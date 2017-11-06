@@ -62,6 +62,8 @@ def BYU_load_shelf():
 		python_file = button['python_file'][:-3]
 		shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
 	remove_unwanted_shelfs()
+	# Set default preferences
+	env.optionVars['generateUVTilePreviewsOnSceneLoad'] = 1
 
 def remove_unwanted_shelfs():
 	#There was a little bit of murmuring about the TURTLE shelf tab and how it not removeable. So I just removed at startup.
