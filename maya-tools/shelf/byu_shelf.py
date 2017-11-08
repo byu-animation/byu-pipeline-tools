@@ -65,6 +65,19 @@ def BYU_load_shelf():
 	# Set default preferences
 	env.optionVars['generateUVTilePreviewsOnSceneLoad'] = 1
 
+	import maya.cmds as cmds
+
+	saveLayouts = 0
+	restoreLayouts = 0
+
+	env.optionVars['useSaveScenePanelConfig'] = saveLayouts
+	cmds.file(uc=saveLayouts)
+	mel.eval('$gUseSaveScenePanelConfig=' + str(saveLayouts))
+
+	env.optionVars['useScenePanelConfig'] = restoreLayouts
+	cmds.file(uc=restoreLayouts)
+	mel.eval('$gUseScenePanelConfig=' + str(restoreLayouts))
+
 def remove_unwanted_shelfs():
 	#There was a little bit of murmuring about the TURTLE shelf tab and how it not removeable. So I just removed at startup.
 	import maya.cmds as cmds

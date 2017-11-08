@@ -8,4 +8,6 @@ python("import maya.cmds as cmds");
 python("cmds.loadPlugin('cvshapeinverter_plugin.py')");
 
 //Import SOuP
-python("cmds.loadPlugin('SOuP.so')");
+/*
+Let's remove soup for right now.
+python("cmds.loadPlugin('SOuP.so')");*/
