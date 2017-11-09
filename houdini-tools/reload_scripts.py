@@ -7,7 +7,7 @@ import publish
 import renderman_setup
 import rollback
 import test_geo
-import tractor_shelf
+import tractor_submit
 import reload_scripts
 import render_callbacks
 
@@ -23,4 +23,4 @@ def go():
 	reload(renderman_setup)
 	reload(rollback)
 	reload(test_geo)
-	reload(tractor_shelf)
+	reload(tractor_submit)

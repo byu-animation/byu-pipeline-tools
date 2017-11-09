@@ -61,6 +61,10 @@
 			"annotation":"Attach Beard",
 			"python_file":"attach_beard.py"
 		}, {
+			"icon":"new-body.svg",
+			"annotation":"Clear some stuff",
+			"python_file":"playground.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"

@@ -121,7 +121,7 @@ class ExportDialog(QtWidgets.QWidget):
 		os.makedirs(ribDir)
 
 		# Sanitize job title
-		title = re.sub(r'[{}'\']', '', str(self.jobName.text())).strip(' \t\n\r')
+		title = re.sub(r'[{}"\']', "", str(self.jobName.text())).strip(' \t\n\r')
 		if len(title) == 0:
 			title = self.empty_text
 
@@ -129,7 +129,7 @@ class ExportDialog(QtWidgets.QWidget):
 		job = author.Job()
 		job.title = title + ' python job'
 		job.priority = self.priority.currentIndex()
-		path = os.environ['PATH'] + ':/opt/pixar/RenderManProServer-21.5/bin/'
+		path = '/opt/pixar/RenderManProServer-21.5/bin/'
 		job.envkey = ['setenv PATH=' + path + ' RMANTREE=/opt/pixar/RenderManProServer-21.5']
 		job.service = 'PixarRender'
 		job.comment = 'Spooled by ' + user
@@ -154,7 +154,7 @@ class ExportDialog(QtWidgets.QWidget):
 				except:
 					oldDiskFile = node.parm('soho_diskfile').eval()
 					useExpression = False
-					print 'we didn't get rid of them'
+					print 'we didn\'t get rid of them'
 				# Activate rib output
 				node.parm('rib_outputmode').set(True)
 				node.parm('soho_diskfile').deleteAllKeyframes()
@@ -174,12 +174,9 @@ class ExportDialog(QtWidgets.QWidget):
 					cmdRMANTREE.argv = ['echo', '${RMANTREE}']
 					printenv = author.Command()
 					printenv.argv = ['printenv']
-					locatePrman = author.Command()
-					locatePrman.argv = ['type', 'prman']
-					subtask.addCommand(cmdPATH)
-					subtask.addCommand(cmdRMANTREE)
-					subtask.addCommand(printenv)
-					subtask.addCommand(locatePrman)
+					# subtask.addCommand(cmdPATH)
+					# subtask.addCommand(cmdRMANTREE)
+					# subtask.addCommand(printenv)
 
 					# Real Commands
 					command = author.Command()
@@ -188,7 +185,10 @@ class ExportDialog(QtWidgets.QWidget):
 					subtask.addCommand(command)
 					task.addChild(subtask)
 					# Render this frame to the ifd file
-					node.render([frame, frame])
+					try:
+						node.render([frame, frame])
+					except Exception as err:
+						message_gui.error("There was an error generating the rib files:\n + str(e)")
 				job.addChild(task)
 
 				# Restore rib output

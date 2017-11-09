@@ -1,7 +1,7 @@
 import hou
 from byuam import Project, Department
 from byugui import message_gui
-import tractor
+import tractor_submit as tractor
 import os
 
 
@@ -10,17 +10,38 @@ def prepRender(rib=False, openExr=False):
 	'''
 	Prepares the render. Return True if the render is ready to go. Otherwise false
 	'''
+	nodes = getEngineParts()
 	#Make sure layers all up-to-date
 	adjustNodes() #TODO We need to make sure that we have updated the version number of the render before we render. Right now it only updates when a layer is added. I think the adjust Nodes function should do that for us. Lets make sure before we get rid of this TODO
 	#Make sure we aren't outputing rib files
 	setRibOutputMode(rib)
+	#Make sure that all of the layers have names
+	numLayers = nodes['renderCtrl'].parm('layers').evalAsInt()
+	missingNames = []
+	for i in range(1, numLayers + 1):
+		layerName = nodes['renderCtrl'].parm('layername' + str(i)).eval()
+		if layerName == "":
+			missingNames.append(i)
+		print layerName
+	if len(missingNames) != 0:
+		message_gui.error('Make sure that you have named all of the layers.\n' + layerListToString(missingNames))
+		return False
 	#Make sure we are using the correnct display device
-	device = getEngineParts()['renderCtrl'].parm('ri_device').eval()
+	device = nodes['renderCtrl'].parm('ri_device').eval()
 	if openExr and device != "openexr":
 		message_gui.error('Make sure that the display device is set to "openexr" before sending a job to Tractor.')
 		return False
 	return True
 
+def layerListToString(nums):
+	if len(nums) == 1:
+		return "Layer " + str(nums[0]) + " doesn\'t have a name."
+	else:
+		missingNames = ""
+		for num in nums:
+			missingNames += str(num) + ","
+		missingNames = missingNames[0:len(missingNames) - 2] + " and " + missingNames[len(missingNames)-2]
+		return "Layers " + missingNames + " don\'t have names."
 
 def localRender():
 	if prepRender():

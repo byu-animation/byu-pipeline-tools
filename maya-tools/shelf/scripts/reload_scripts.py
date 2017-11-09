@@ -16,6 +16,7 @@ import cluster_interpolate
 import reference
 import reload_scripts
 import attach_beard
+import playground
 
 def go():
 	reload(alembic_static_exporter)
@@ -35,5 +36,6 @@ def go():
 	reload(reference)
 	reload(cluster_interpolate)
 	reload(attach_beard)
+	reload(playground)
 	# reload(byuam)
 	# reload(byugui)

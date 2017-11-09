@@ -1,4 +1,4 @@
-import sip
+# import sip
 import nuke
 import checkout
 import publish
