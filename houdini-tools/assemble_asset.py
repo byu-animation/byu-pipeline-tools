@@ -443,6 +443,8 @@ def hda_parameter_setup(hda, geo, project):
 	projectFolder.addParmTemplate(hide_toggle)
 	recook = hou.ButtonParmTemplate("re_cook_hda", "Reload", script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
 	projectFolder.addParmTemplate(recook)
+	version = hou.IntParmTemplate("abcversion", "Alembic Version", 1)
+	projectFolder.addParmTemplate(version)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
 
@@ -491,12 +493,12 @@ def geo_setup(parentNode, asset, project):
 
 	abc_set_model = rig_model_set_switch.createInputNode(0, 'alembic')
 	abc_set_model.setName('set_model_alembic')
-	abc_set_model.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + model.get_long_name() + '.abc"')
+	abc_set_model.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
 	abc_set_model.parm("groupnames").set(4)
 
 	abc_set_rig = rig_model_set_switch.createInputNode(1, 'alembic')
 	abc_set_rig.setName('set_rig_alembic')
-	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '.abc"')
+	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
 	abc_set_rig.parm("groupnames").set(4)
 
 	null_set = rig_model_set_switch.createInputNode(2, 'null')
@@ -515,13 +517,13 @@ def geo_setup(parentNode, asset, project):
 
 	abc_anim_model = rig_model_switch.createInputNode(0, 'alembic')
 	abc_anim_model.setName("animated_model")
-	abc_anim_model.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '.abc"')
+	abc_anim_model.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
 	abc_anim_model.parm("groupnames").set(4)
 	# abc_anim_model.parm('objectPath').set(model_reference)
 
 	abc_anim_rig = rig_model_switch.createInputNode(1, 'alembic')
 	abc_anim_rig.setName('animated_rig')
-	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '.abc"')
+	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
 	abc_anim_rig.parm("groupnames").set(4)
 	# abc_anim_rig.parm('objectPath').set(rig_reference)
 
