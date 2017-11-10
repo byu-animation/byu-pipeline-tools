@@ -1,0 +1,371 @@
+#! /usr/local/Nuke11.0v1/libnuke-11.0.1.so -nx
+#write_info Write1 file:"" format:"1920 1080 1" chans:":rgba.red:rgba.green:rgba.blue:" framerange:"1 100" fps:"0" colorspace:"default" datatype:"unknown" transfer:"unknown" views:"main" colorManagement:"Nuke"
+version 11.0 v1
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="0" w="2560" h="1414" maximized="1" screen="1">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="2000" stretch="1"/>
+            <splitter orientation="2">
+                <split size="802"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="564"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="512"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /groups/grendel/users/afiloteo/comp_template_script/grendel_general_template.nk
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x88ff88ff
+ label "GRENDEL\n"
+ note_font_size 40
+ note_font_color 0xa3ff00ff
+ xpos -612
+ ypos -1414
+ bdwidth 401
+ bdheight 487
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0xff8888ff
+ label BG
+ note_font_size 50
+ xpos 1158
+ ypos -694
+ bdwidth 621
+ bdheight 927
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode3
+ tile_color 0x8effffff
+ label "BEOWULF\n"
+ note_font_size 40
+ note_font_color 0xa3ff00ff
+ xpos 251
+ ypos -1187
+ bdwidth 443
+ bdheight 500
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode4
+ tile_color 0xff72ffff
+ label "FG\n"
+ note_font_size 50
+ xpos -1238
+ ypos 1007
+ bdwidth 682
+ bdheight 930
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode5
+ tile_color 0xffff00ff
+ label "VIKINGS\n"
+ note_font_size 40
+ note_font_color 0xa3ff00ff
+ xpos -1255
+ ypos -665
+ bdwidth 456
+ bdheight 537
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode6
+ tile_color 0xffff88ff
+ label "MD\n\n"
+ note_font_size 50
+ xpos -2052
+ ypos -169
+ bdwidth 682
+ bdheight 930
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode7
+ tile_color 0xff0000ff
+ label "This is a general template to facilitate the plug in of variaous layers for comp.\nFeel free to add or take away from this, its a just to get you started and is completely arbrituary.\n\n-Alan"
+ note_font "DejaVu Sans Bold"
+ note_font_size 40
+ note_font_color 0xffffffff
+ xpos -815
+ ypos -1733
+ bdwidth 2042
+ bdheight 227
+}
+Read {
+ inputs 0
+ file "/groups/grendel/HDR Images/HDRs/20_Subway_Lights_3k.hdr"
+ format "3200 1600 0 0 3200 1600 1 "
+ origset true
+ name Read5
+ xpos -1087
+ ypos 1102
+}
+Transform {
+ translate {-180 -868}
+ scale 0.5
+ center {1600 800}
+ name Transform2
+ xpos -1087
+ ypos 1297
+}
+Reformat {
+ name Reformat2
+ xpos -1087
+ ypos 1321
+}
+Grade {
+ name Grade5
+ xpos -1087
+ ypos 1357
+}
+ColorCorrect {
+ name ColorCorrect5
+ xpos -1087
+ ypos 1396
+}
+Dot {
+ name Dot4
+ xpos -1053
+ ypos 1885
+}
+Read {
+ inputs 0
+ file "/groups/grendel/HDR Images/HDRs/Brooklyn_Bridge_Planks_2k.hdr"
+ format "2048 1024 0 0 2048 1024 1 "
+ origset true
+ name Read6
+ xpos -1901
+ ypos -45
+}
+Transform {
+ translate {-180 -868}
+ scale 0.5
+ center {1600 800}
+ name Transform3
+ xpos -1901
+ ypos 46
+}
+Reformat {
+ name Reformat3
+ xpos -1901
+ ypos 99
+}
+Grade {
+ name Grade6
+ xpos -1901
+ ypos 135
+}
+ColorCorrect {
+ name ColorCorrect7
+ xpos -1901
+ ypos 174
+}
+Dot {
+ name Dot5
+ xpos -1867
+ ypos 709
+}
+Read {
+ inputs 0
+ file /groups/grendel/production/test-renders/6/Grid0001.exr
+ format "1280 720 0 0 1280 720 1 HD_720"
+ origset true
+ name Read3
+ xpos -1083
+ ypos -611
+}
+Transform {
+ translate {-337 -162}
+ scale 0.42
+ center {640 360}
+ name Transform1
+ xpos -1083
+ ypos -527
+}
+Grade {
+ name Grade3
+ xpos -1083
+ ypos -481
+}
+ColorCorrect {
+ name ColorCorrect3
+ xpos -1083
+ ypos -447
+}
+Dot {
+ name Dot3
+ xpos -1049
+ ypos -189
+}
+Read {
+ inputs 0
+ file /groups/grendel/production/test-renders/5/Sphere0001.exr
+ format "1280 720 0 0 1280 720 1 HD_720"
+ origset true
+ name Read2
+ xpos -462
+ ypos -1339
+}
+Grade {
+ name Grade1
+ xpos -462
+ ypos -1221
+}
+ColorCorrect {
+ name ColorCorrect1
+ xpos -462
+ ypos -1187
+}
+Dot {
+ name Dot1
+ xpos -428
+ ypos -728
+}
+Read {
+ inputs 0
+ file /groups/grendel/production/test-renders/5/Grid0001.exr
+ format "1280 720 0 0 1280 720 1 HD_720"
+ origset true
+ name Read1
+ xpos 420
+ ypos -1113
+}
+Grade {
+ name Grade2
+ xpos 420
+ ypos -981
+}
+ColorCorrect {
+ name ColorCorrect2
+ xpos 420
+ ypos -955
+}
+Dot {
+ name Dot2
+ xpos 454
+ ypos -728
+}
+Merge2 {
+ inputs 2
+ name Merge1
+ xpos 23
+ ypos -732
+}
+Merge2 {
+ inputs 2
+ name Merge3
+ xpos 23
+ ypos -193
+}
+Read {
+ inputs 0
+ file "/groups/grendel/HDR Images/HDRs/14-Hamarikyu_Bridge_B_3k.hdr"
+ format "3200 1600 0 0 3200 1600 1 "
+ origset true
+ name Read4
+ xpos 1355
+ ypos -614
+}
+Reformat {
+ name Reformat1
+ xpos 1355
+ ypos -496
+}
+Grade {
+ name Grade4
+ xpos 1355
+ ypos -390
+}
+ColorCorrect {
+ name ColorCorrect4
+ xpos 1355
+ ypos -356
+}
+Dot {
+ name Dot6
+ xpos 1389
+ ypos 158
+}
+Merge2 {
+ inputs 2
+ name Merge2
+ xpos 23
+ ypos 155
+}
+Merge2 {
+ inputs 2
+ name Merge5
+ xpos 22
+ ypos 705
+}
+Merge2 {
+ inputs 2
+ name Merge4
+ xpos 22
+ ypos 1881
+}
+Grain2 {
+ name Grain2_1
+ label "Kodak 5248"
+ xpos 22
+ ypos 2783
+ black {0 0 0}
+ minimum {0 0 0}
+}
+Grade {
+ name Grade7
+ xpos 22
+ ypos 2819
+}
+ColorCorrect {
+ name ColorCorrect6
+ xpos 22
+ ypos 2843
+}
+Write {
+ name Write1
+ xpos 22
+ ypos 2969
+}
+Viewer {
+ frame_range 1-100
+ name Viewer1
+ xpos 22
+ ypos 3124
+}

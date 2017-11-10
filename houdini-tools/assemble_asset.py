@@ -499,7 +499,7 @@ def geo_setup(parentNode, asset, project):
 	abc_set_rig = rig_model_set_switch.createInputNode(1, 'alembic')
 	abc_set_rig.setName('set_rig_alembic')
 	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_set_rig.parm("groupnames").set(4)
+	abc_set_rig.parm('groupnames').set(4)
 
 	null_set = rig_model_set_switch.createInputNode(2, 'null')
 	null_set.setName('no_set_model_found')
