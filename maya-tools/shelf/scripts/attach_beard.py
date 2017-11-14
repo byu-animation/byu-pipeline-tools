@@ -14,10 +14,13 @@ def attachBeard():
 	// Make sure to select the beard before the viking
 	string $list[] = `ls -selection`;
 	string $beard = `match "viking_beard_[0-9]+_rig_main_" $list[0] `;
-	string $viking = `match "viking_with_facial_rig_main_" $list[1] `;
+	string $viking = `match "viking_with_facial_rig_main_Viking_GRP_[0-9]+" $list[1] `;
+	string $body = "|viking_with_facial_rig_main_Viking_geo_GRP_01|viking_with_facial_rig_main_Viking_GEO_GRP_01|viking_with_facial_rig_main_Viking_body_GEO_01";
+	string $jaw = "|viking_with_facial_rig_main_Viking_facial_rig_GRP_01|viking_with_facial_rig_main_Viking_facial_controls_GRP_01|viking_with_facial_rig_main_Viking_facial_controls_head_constraint_os_grp_01|viking_with_facial_rig_main_Viking_jaw_cc_os_grp_01|viking_with_facial_rig_main_Viking_jaw_cc_01";
+	string $head = "|viking_with_facial_rig_main_Viking_body_rig_GRP_01|viking_with_facial_rig_main_Viking_controls_GRP_01|viking_with_facial_rig_main_Viking_secret_scale_os_grp_01|viking_with_facial_rig_main_Viking_primary_global_cc_01|viking_with_facial_rig_main_Viking_secondary_global_cc_os_grp_01|viking_with_facial_rig_main_Viking_secondary_global_cc_01|viking_with_facial_rig_main_Viking_head_controls_GRP_01|viking_with_facial_rig_main_Viking_head_cc_os_grp_01|viking_with_facial_rig_main_Viking_head_cc_01";
 	// Wrap deform beard base
 	select -r ($beard+"beard_base");
-	select -tgl ($viking+"Viking_body_GEO_01");
+	select -tgl ($viking+$body);
 	doWrapArgList "7" { "1","0","1", "2", "1", "1", "0", "0" };
 	string $wrap_array[] = `deformer -type wrap ($beard+"beard_base")`;
 	string $wrap = $wrap_array[0];
@@ -29,7 +32,7 @@ def attachBeard():
 	if( `objExists ($beard+"stache_base")` )
 	{
 	    select -r ($beard+"stache_base");
-	    select -tgl ($viking+"Viking_body_GEO_01");
+	    select -tgl ($viking+$body);
 	    doWrapArgList "7" { "1","0","1", "2", "1", "1", "0", "0" };
 	    $wrap_array = `deformer -type wrap ($beard+"stache_base")`;
 	    $wrap = $wrap_array[0];
@@ -39,12 +42,12 @@ def attachBeard():
 	    setAttr ($wrap+".maxDistance") .01;
 	}
 	// Parent beard to jaw
-	select -r ($viking+"Viking_jaw_cc_01");
+	select -r ($viking+$jaw);
 	select -tgl ($beard+"beard_master");
 	doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
 	parentConstraint -mo -weight 1;
 	// Parent stache to head
-	select -r ($viking+"Viking_head_cc_01");
+	select -r ($viking+$head);
 	select -tgl ($beard+"stache_master");
 	doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
 	parentConstraint -mo -weight 1;

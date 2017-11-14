@@ -171,13 +171,58 @@ def adjustNodes():
 			risNode.parm('f3').setExpression(f3)
 			camera = 'chsop("' + renderCtrl.path() + '/camera")'
 			risNode.parm('camera').setExpression(camera)
+			override_camerares = 'ch("' + renderCtrl.path() + '/override_camerares")'
+			risNode.parm('override_camerares').setExpression(override_camerares)
+			resFraction = 'chs("' + renderCtrl.path() + '/res_fraction")'
+			risNode.parm('res_fraction').setExpression(resFraction)
+			resOverridex = 'ch("' + renderCtrl.path() + '/res_overridex")'
+			risNode.parm('res_overridex').setExpression(resOverridex)
+			resOverridey = 'ch("' + renderCtrl.path() + '/res_overridey")'
+			risNode.parm('res_overridey').setExpression(resOverridey)
 			ri_device = 'chs("' + renderCtrl.path() + '/ri_device")'
 			risNode.parm('ri_device').setExpression(ri_device)
 
 			# Layer specific expressions
+			overrideOutput = renderCtrl.parm('overrideoutput' + chanNum).eval()
 			ri_display = 'chs("' + renderCtrl.path() + '/ri_display' + chanNum + '")'
-			risNode.parm('ri_display').setExpression(ri_display)
-
+			if overrideOutput == 0:
+				risNode.parm('ri_display').setExpression(ri_display)
+			#RIS
+			ri_pixelvariance = 'ch("' + renderCtrl.path() + '/ri_pixelvariance' + chanNum + '")'
+			risNode.parm('ri_pixelvariance').setExpression(ri_pixelvariance)
+			#Hider
+			ri_hider = 'chs("' + renderCtrl.path() + '/ri_hider' + chanNum + '")'
+			risNode.parm('ri_hider').setExpression(ri_hider)
+			ri_minsamples = 'ch("' + renderCtrl.path() + '/ri_minsamples' + chanNum + '")'
+			risNode.parm('ri_minsamples').setExpression(ri_minsamples)
+			ri_maxsamples = 'ch("' + renderCtrl.path() + '/ri_maxsamples' + chanNum + '")'
+			risNode.parm('ri_maxsamples').setExpression(ri_maxsamples)
+			ri_darkfalloff = 'ch("' + renderCtrl.path() + '/ri_darkfalloff' + chanNum + '")'
+			risNode.parm('ri_darkfalloff').setExpression(ri_darkfalloff)
+			ri_incremental = 'ch("' + renderCtrl.path() + '/ri_incremental' + chanNum + '")'
+			risNode.parm('ri_incremental').setExpression(ri_incremental)
+			ri_pixelfiltermode = 'chs("' + renderCtrl.path() + '/ri_pixelfiltermode' + chanNum + '")'
+			risNode.parm('ri_pixelfiltermode').setExpression(ri_pixelfiltermode)
+			ri_aperture1 = 'ch("' + renderCtrl.path() + '/ri_aperture1' + chanNum + '")'
+			risNode.parm('ri_aperture1').setExpression(ri_aperture1)
+			ri_aperture2 = 'ch("' + renderCtrl.path() + '/ri_aperture2' + chanNum + '")'
+			risNode.parm('ri_aperture2').setExpression(ri_aperture2)
+			ri_aperture3 = 'ch("' + renderCtrl.path() + '/ri_aperture3' + chanNum + '")'
+			risNode.parm('ri_aperture3').setExpression(ri_aperture3)
+			ri_aperture4 = 'ch("' + renderCtrl.path() + '/ri_aperture4' + chanNum + '")'
+			risNode.parm('ri_aperture4').setExpression(ri_aperture4)
+			ri_samplemotion = 'ch("' + renderCtrl.path() + '/ri_samplemotion' + chanNum + '")'
+			risNode.parm('ri_samplemotion').setExpression(ri_samplemotion)
+			ri_extrememotiondof = 'ch("' + renderCtrl.path() + '/ri_extrememotiondof' + chanNum + '")'
+			risNode.parm('ri_extrememotiondof').setExpression(ri_extrememotiondof)
+			ri_dofaspect = 'ch("' + renderCtrl.path() + '/ri_dofaspect' + chanNum + '")'
+			risNode.parm('ri_dofaspect').setExpression(ri_dofaspect)
+			ri_adaptall = 'ch("' + renderCtrl.path() + '/ri_adaptall' + chanNum + '")'
+			risNode.parm('ri_adaptall').setExpression(ri_adaptall)
+			ri_pixelsamplesx = 'ch("' + renderCtrl.path() + '/ri_pixelsamplesx' + chanNum + '")'
+			risNode.parm('ri_pixelsamplesx').setExpression(ri_pixelsamplesx)
+			ri_pixelsamplesy = 'ch("' + renderCtrl.path() + '/ri_pixelsamplesy' + chanNum + '")'
+			risNode.parm('ri_pixelsamplesy').setExpression(ri_pixelsamplesy)
 			#Objects
 			vobject = 'chsop("' + renderCtrl.path() + '/vobject' + chanNum + '")'
 			risNode.parm('vobject').setExpression(vobject)
@@ -198,18 +243,15 @@ def adjustNodes():
 			risNode.parm('forcelights').setExpression(forcelights)
 			excludelights = 'chsop("' + renderCtrl.path() + '/excludelights' + chanNum + '")'
 			risNode.parm('excludelights').setExpression(excludelights)
-			#Depth of Field
-			ri_dof = 'ch("' + renderCtrl.path() + '/ri_dof' + chanNum + '")'
-			risNode.parm('ri_dof').setExpression(ri_dof)
-			ri_focusregion = 'ch("' + renderCtrl.path() + '/ri_focusregion' + chanNum + '")'
-			risNode.parm('ri_focusregion').setExpression(ri_focusregion)
 			#Render Driver
 			target = 'chs("' + renderCtrl.path() + '/target' + chanNum + '")'
 			risNode.parm('target').setExpression(target)
 			rib_outputmode = 'ch("' + renderCtrl.path() + '/rib_outputmode' + chanNum + '")'
 			risNode.parm('rib_outputmode').setExpression(rib_outputmode)
 			soho_diskfile = 'chs("' + renderCtrl.path() + '/soho_diskfile' + chanNum + '")'
-			risNode.parm('soho_diskfile').setExpression(soho_diskfile)
+			overrideRib = renderCtrl.parm('overriderib' + chanNum).eval()
+			if overrideRib == 0:
+				risNode.parm('soho_diskfile').setExpression(soho_diskfile)
 
 	#rename the nodes so that we make sure we have the right names in the right order
 	risNodes = merge.inputAncestors()
@@ -239,7 +281,7 @@ def adjustNodes():
 			renderFilePath = '$JOB/production/shots/' + shotName + '/render/main/' + str(versionNum) + '/'
 			ribFilePath = '$JOB/production/ribs/' + shotName + '/' + str(versionNum) + '/'
 
-		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),"$F4")')
+		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),".$F4")')
 		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + renderFilePath + '/",chs("filename' + str(i) + '")),".exr")')
 		renderCtrl.parm('soho_diskfile' + str(i)).setExpression('strcat(strcat("' + ribFilePath + '/",chs("filename' + str(i) + '")),".rib")')
 
