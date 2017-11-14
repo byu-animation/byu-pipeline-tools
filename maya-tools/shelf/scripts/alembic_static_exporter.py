@@ -9,6 +9,7 @@ import byuam.pipeline_io as pio
 from byuam.environment import Environment
 from byuam.body import AssetType
 from byuam.project import Project
+from byugui import message_gui
 #from ui_tools import ui, messageSeverity
 
 def objExport(selected, path):
@@ -280,8 +281,13 @@ def generateGeometry(path=''):
 
 	filePath = cmds.file(q=True, sceneName=True)
 	fileDir = os.path.dirname(filePath)
+	print "This is the fileDir in question: ", fileDir
 	proj = Project()
 	checkout = proj.get_checkout(fileDir)
+	if checkout is None:
+		# TODO we need a better way out of this. This gets called when the asset is published. and it might confuse people if they get this message on the very first publish of an asset
+		message_gui.error("There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.")
+		return False
 	body = proj.get_body(checkout.get_body_name())
 	elem = body.get_element(checkout.get_department_name(), checkout.get_element_name())
 	abcFilePath = elem.get_cache_dir()
