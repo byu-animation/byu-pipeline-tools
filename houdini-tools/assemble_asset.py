@@ -138,8 +138,13 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 	for geo_file in geo_files:
 		geo_file_path = os.path.join(model_cache, geo_file)
 		name = ''.join(geo_file.split('.')[:-1])
-		print name
-		# TODO : what if it is a rig?
+		print "The name of the alembic file is ", name
+		# find the alembic version
+		elementName = '_main'
+		index = name.find(elementName)
+		versionNum = name[index + len(elementName):]
+		print "This is the versionNum ", versionNum
+		# TODO : what if it is a rig? I am begninng to wonder if maybe it will always be the model becuase in the rig file it is referencing the model.
 		index = name.find("_model")
 		if(index < 0):
 			index = name.find("_rig")
@@ -147,26 +152,38 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 			print "We couldn't find either a rig or a model for this asset. That means something went wrong or I need to rethink this tool."
 		asset_name = name[:index]
 		print asset_name
-		if(asset_name in used_hdas):
+		asset_version = str(asset_name) + str(versionNum)
+		if(asset_version in used_hdas):
 			print used_hdas
+			print "But I think is okay if it is in used_hdas because we have decided that it's cool to have multibples"
+			#TODO get rid of used_hdas if we don't need it anymore now that we are allowing duplication of assets
 			continue
 		try:
 			hda = set_hda.createNode(asset_name + "_main")
 		except:
-			message = "There is not asset named " + asset_name + ". You may need to assemble it first."
-			print message
-			message_gui.error(message)
-			message_gui.error("Here is an extra error message just incase the first one was blank.\nThere is an asset that hasn't been assembled yet and that is why this fails.")
+			message_gui.error("There is not asset named " + str(asset_name) + ". You may need to assemble it first.")
 			hda.destroy()
 			return
-		used_hdas.add(asset_name)
-		label_text = asset_name.replace('_', ' ').title()
-		geo_label = hou.LabelParmTemplate(asset_name, label_text)
-		hide_toggle_name = "hide_" + asset_name
+		used_hdas.add(asset_version)
+
+		# set the alembic version number
+		if versionNum != "":
+			try:
+				print "This is versionNum before the change ", versionNum
+				versionNum = int(versionNum)
+				print "This is versionNum after the change ", versionNum
+				hda.parm('abcversion').set(int(versionNum))
+			except Exception as err:
+				message_gui.error("There was an error assigning the version number. It may be because the asset needs to be reassembled. Check that the " + str(asset_name) + " node has the version slider. If not reassemble it and try again.\n" + str(err))
+
+		#finish the rest of the setup
+		label_text = asset_version.replace('_', ' ').title()
+		geo_label = hou.LabelParmTemplate(asset_version, label_text)
+		hide_toggle_name = "hide_" + asset_version
 		hide_toggle = hou.ToggleParmTemplate(hide_toggle_name, "Hide")
-		animate_toggle_name = "animate_" + asset_name
+		animate_toggle_name = "animate_" + asset_version
 		animate_toggle = hou.ToggleParmTemplate(animate_toggle_name, "Animate")
-		animate_toggle_to_int_name = "animate_toggle_to_int_" + asset_name
+		animate_toggle_to_int_name = "animate_toggle_to_int_" + asset_version
 		animate_toggle_to_int = hou.IntParmTemplate(animate_toggle_to_int_name, 'Toggle To Int', 1, is_hidden=True, default_expression=('ch("' + animate_toggle_name + '")',))
 		set_folder.addParmTemplate(geo_label)
 		set_folder.addParmTemplate(hide_toggle)
