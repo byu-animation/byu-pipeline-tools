@@ -17,6 +17,9 @@ def prepRender(rib=False, openExr=False):
 	setRibOutputMode(rib)
 	#Make sure that all of the layers have names
 	numLayers = nodes['renderCtrl'].parm('layers').evalAsInt()
+	if numLayers < 1:
+		message_gui.error('Make sure you have at least on layer.')
+		return False
 	missingNames = []
 	for i in range(1, numLayers + 1):
 		layerName = nodes['renderCtrl'].parm('layername' + str(i)).eval()
@@ -203,13 +206,13 @@ def adjustNodes():
 			risNode.parm('ri_incremental').setExpression(ri_incremental)
 			ri_pixelfiltermode = 'chs("' + renderCtrl.path() + '/ri_pixelfiltermode' + chanNum + '")'
 			risNode.parm('ri_pixelfiltermode').setExpression(ri_pixelfiltermode)
-			ri_aperture1 = 'ch("' + renderCtrl.path() + '/ri_aperture1' + chanNum + '")'
+			ri_aperture1 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '1")'
 			risNode.parm('ri_aperture1').setExpression(ri_aperture1)
-			ri_aperture2 = 'ch("' + renderCtrl.path() + '/ri_aperture2' + chanNum + '")'
+			ri_aperture2 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '2")'
 			risNode.parm('ri_aperture2').setExpression(ri_aperture2)
-			ri_aperture3 = 'ch("' + renderCtrl.path() + '/ri_aperture3' + chanNum + '")'
+			ri_aperture3 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '3")'
 			risNode.parm('ri_aperture3').setExpression(ri_aperture3)
-			ri_aperture4 = 'ch("' + renderCtrl.path() + '/ri_aperture4' + chanNum + '")'
+			ri_aperture4 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '4")'
 			risNode.parm('ri_aperture4').setExpression(ri_aperture4)
 			ri_samplemotion = 'ch("' + renderCtrl.path() + '/ri_samplemotion' + chanNum + '")'
 			risNode.parm('ri_samplemotion').setExpression(ri_samplemotion)
@@ -219,9 +222,9 @@ def adjustNodes():
 			risNode.parm('ri_dofaspect').setExpression(ri_dofaspect)
 			ri_adaptall = 'ch("' + renderCtrl.path() + '/ri_adaptall' + chanNum + '")'
 			risNode.parm('ri_adaptall').setExpression(ri_adaptall)
-			ri_pixelsamplesx = 'ch("' + renderCtrl.path() + '/ri_pixelsamplesx' + chanNum + '")'
+			ri_pixelsamplesx = 'ch("' + renderCtrl.path() + '/ri_pixelsamples' + chanNum + 'x")'
 			risNode.parm('ri_pixelsamplesx').setExpression(ri_pixelsamplesx)
-			ri_pixelsamplesy = 'ch("' + renderCtrl.path() + '/ri_pixelsamplesy' + chanNum + '")'
+			ri_pixelsamplesy = 'ch("' + renderCtrl.path() + '/ri_pixelsamples' + chanNum + 'y")'
 			risNode.parm('ri_pixelsamplesy').setExpression(ri_pixelsamplesy)
 			#Objects
 			vobject = 'chsop("' + renderCtrl.path() + '/vobject' + chanNum + '")'

@@ -140,9 +140,15 @@ class ExportDialog(QtWidgets.QWidget):
 			print node.name();
 			if self.select.item(index).isSelected():
 				name = node.name()
-				start = int(node.parm('f1').eval())
-				end = int(node.parm('f2').eval())
-				step = int(node.parm('f3').eval())
+				validFrameRange = node.parm('trange').eval()
+				if validFrameRange == 0:
+					start = hou.frame()
+					end = hou.frame()
+					step = 1
+				else:
+					start = int(node.parm('f1').eval())
+					end = int(node.parm('f2').eval())
+					step = int(node.parm('f3').eval())
 				task = author.Task()
 				task.title = '%s [%d-%d]' % (name, start, end)
 
