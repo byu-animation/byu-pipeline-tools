@@ -193,7 +193,7 @@ class AlembicExportDialog(QDialog):
 		end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
 
 		# Then here is the actual Alembic Export command for Mel.
-		command = 'AbcExport -j "%s -frameRange %s %s -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
+		command = 'AbcExport -j "%s -frameRange %s %s -stripNamespaces -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
 		return command
 
 	def get_tagged_node(self, ref):
