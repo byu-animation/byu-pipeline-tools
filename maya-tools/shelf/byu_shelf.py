@@ -62,6 +62,7 @@ def BYU_load_shelf():
 		python_file = button['python_file'][:-3]
 		shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
 	remove_unwanted_shelfs()
+	setUpSoup(gShelfTopLevel)
 	# Set default preferences
 	env.optionVars['generateUVTilePreviewsOnSceneLoad'] = 1
 
@@ -86,6 +87,27 @@ def remove_unwanted_shelfs():
 		print "You are now free from TURTLE. You're welcome!"
 	else:
 		print "There was no TURTLE to be removed."
+
+def setUpSoup(shelf):
+	if cmds.shelfLayout("soup", exists=True):
+		cmds.deleteUI("soup", lay=True)
+		print "We just got rid of the soup shelf so that we can load it in fresh"
+
+	shelfLayout("soup", cellWidth=33, cellHeight=33, p=shelf) #Try recreating the soup shelf
+	import maya.mel as mel
+	import os
+	melpath = os.path.join(os.environ['MAYA_SHELF_PATH'], 'shelf_soup.mel')
+	print melpath
+
+	melCmd = ''
+
+	melfile = open(melpath)
+	print melfile
+	for line in melfile:
+		melCmd += line
+
+	mel.eval(melCmd)
+	mel.eval('shelf_soup()')
 
 def BYU_delete_shelf():
 	if shelfLayout(PROJ, exists=True):
