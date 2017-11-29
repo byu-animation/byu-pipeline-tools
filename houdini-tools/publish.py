@@ -6,36 +6,49 @@ from byugui import PublishWindow, message_gui
 
 from byuam import Department, Project, Element, Environment
 
-def publish_hda(publish_window, asset, hda_name, src):
+def publish_hda(publishWindow, selectedHDA, src):
 	project = Project()
 	environment = Environment()
 
-	if publish_window.published:
-		user = publish_window.user
-		comment = publish_window.comment
+	if publishWindow.published:
+		user = publishWindow.user
+		comment = publishWindow.comment
 
-		if hda_name in project.list_assets():
-			body = project.get_asset(hda_name)
+		# Get name of the selectedHDA
+		hdaName = selectedHDA.type().name()
+		index = hdaName.find('_main')
+		if index > 0:
+			hdaName = hdaName[:index]
+
+		if hdaName in project.list_assets():
+			body = project.get_asset(hdaName)
 			department = Department.ASSEMBLY
-			element_type = "assembly"
-		elif hda_name in project.list_tools():
-			body = project.get_tool(hda_name)
+			element_type = 'assembly'
+		elif hdaName in project.list_tools():
+			body = project.get_tool(hdaName)
 			department = Department.HDA
-			element_type = "hda"
+			element_type = 'hda'
+		else:
+			message_gui.error('We couldn\'t find the selected asset in the pipeline.')
+			return
 
 		if os.path.exists(src):
 			if body is not None:
 				if Element.DEFAULT_NAME in body.list_elements(department):
-					#save node definition
-					asset.type().definition().updateFromNode(asset)
 					try:
-						asset.matchCurrentDefinition()
+						#save node definition this is the same as the Save Node Type menu option. Just to make sure I remember how this works - We are getting the definition of the selected hda and calling the function on it passing in the selected hda. We are not calling the funciton on the selected hda.
+						selectedHDA.type().definition().updateFromNode(selectedHDA)
+					except hou.OperationFailed, e:
+						print "There was a problem saving the node. This is a pretty serious problem. Because if it doesn't save then it's not in the pipe."
+						print str(e)
+						message_gui.error("There was a prolem publishing the HDA to the pipeline.\n" + str(e))
+						return
+					try:
+						selectedHDA.matchCurrentDefinition()
 					except hou.OperationFailed, e:
 						print str(e)
-						if not message_gui.yes_or_no("There was an error. Would you like to try and continue?\nIf you click no you will be able to see the error and try to fix it. But if you can't fix the error that it says then you might try continuing and see if it works."):
-							#The problem is that there are some warnings that cause the the operation failed exceptiong and I think we might be able to keep going.
-							message_gui.error(str(e))
-							return
+						#Here on the other hand we are just trying to match the current definition. If it doesn't do that it's not fatal. This is just for convience. We are currently having a lot of problem with unrecognized paramter warnings that are causing this to fail. But I can't figure out where they are coming from.
+						message_gui.warning('There was a problem while trying to match the current definition. It\'s not a critical problem but it is a little troubling. Take a look at it and see if you can resolve the problem. Rest assured that the publish did work though\n' + str(e))
 					element = body.get_element(department, Element.DEFAULT_NAME)
 					dst = element.publish(user, src, comment)
 					#Ensure file has correct permissions
@@ -44,59 +57,52 @@ def publish_hda(publish_window, asset, hda_name, src):
 					except:
 						pass
 					hou.hda.uninstallFile(src, change_oplibraries_file=False)
-					saveFile = hda_name + "_" + element_type + "_main.hdanc"
+					saveFile = hdaName + '_' + element_type + '_main.hdanc'
 					dst = os.path.join(environment.get_hda_dir(), saveFile)
 					hou.hda.installFile(dst)
 		else:
-			message_gui.error("File does not exist")
+			message_gui.error('File does not exist')
 
-def publish_shot(publish_window):
-	element = publish_window.result
+def publish_shot(publishWindow):
+	element = publishWindow.result
 
-	if publish_window.published:
+	if publishWindow.published:
 		hou.hipFile.save()
 
 		#Publish
-		user = publish_window.user
-		src = publish_window.src
-		comment = publish_window.comment
+		user = publishWindow.user
+		src = publishWindow.src
+		comment = publishWindow.comment
 		element.publish(user, src, comment)
 
-def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
-	print "Ya this is updated FOR REAL!!"
-	if hda is None:
+def publish_hda_go(selectedHDA=None, departments=[Department.ASSEMBLY]):
+	if selectedHDA is None:
 		nodes = hou.selectedNodes()
 		if len(nodes) == 1:
-			hda = nodes[0]
+			selectedHDA = nodes[0]
 		elif len(nodes) > 1:
-			message_gui.error("Please select only one node.")
+			message_gui.error('Please select only one node.')
 			return
 		else:
-			message_gui.error("Please select a node.")
+			message_gui.error('Please select a node.')
 			return
 
-	if hda.type().definition() is not None:
-		asset = hda
-		hda_name = asset.type().name() #get name of asset
-		index = hda_name.find("_main")
-		if index > 0:
-			hda_name = hda_name[:index]
-		src = asset.type().definition().libraryFilePath()
-		publish_window = PublishWindow(src, hou.ui.mainQtWindow(), departments)
+	if selectedHDA.type().definition() is not None:
+		src = selectedHDA.type().definition().libraryFilePath()
+		publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), departments)
 	else:
-		message_gui.error("The selected node is not a digital asset")
+		message_gui.error('The selected node is not a digital asset')
 		return
-	publish_window.finished.connect(lambda *args: publish_hda(publish_window, asset, hda_name, src))
+	publishWindow.finished.connect(lambda *args: publish_hda(publishWindow, selectedHDA, src))
 
 def publish_tool_go(node=None):
-	publish_hda_go(hda=node, departments=[Department.HDA])
+	publish_hda_go(selectedHDA=node, departments=[Department.HDA])
 
 def publish_asset_go(node=None):
-	publish_hda_go(hda=node, departments=[Department.ASSEMBLY])
+	publish_hda_go(selectedHDA=node, departments=[Department.ASSEMBLY])
 
 def publish_shot_go():
-	print "This is for sure updated"
 	scene = hou.hipFile.name()
 	print scene
-	publish_window = PublishWindow(scene, hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
-	publish_window.finished.connect(lambda *args: publish_shot(publish_window))
+	publishWindow = PublishWindow(scene, hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
+	publishWindow.finished.connect(lambda *args: publish_shot(publishWindow))
