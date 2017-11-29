@@ -31,8 +31,11 @@ def publish_hda():
 					try:
 						asset.matchCurrentDefinition()
 					except hou.OperationFailed, e:
-						print message_gui.error(str(e))
-						return
+						print str(e)
+						if not message_gui.yes_or_no("There was an error. Would you like to try and continue?\nIf you click no you will be able to see the error and try to fix it. But if you can't fix the error that it says then you might try continuing and see if it works."):
+							#The problem is that there are some warnings that cause the the operation failed exceptiong and I think we might be able to keep going.
+							message_gui.error(str(e))
+							return
 					element = body.get_element(department, Element.DEFAULT_NAME)
 					dst = element.publish(user, src, comment)
 					#Ensure file has correct permissions

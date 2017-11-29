@@ -70,6 +70,25 @@ def gridmarketsRender():
 		except hou.OperationFailed, e:
 			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
 
+def firstMiddleLast():
+	if prepRender():
+		print 'Start FML Render'
+		nodes = getEngineParts()
+		firstFrame = nodes['renderCtrl'].parm('f1').eval()
+		lastFrame = nodes['renderCtrl'].parm('f2').eval()
+		middleFrame = firstFrame + ((lastFrame - firstFrame)/2)
+
+		print 'first: ', firstFrame
+		print 'last: ', lastFrame
+		print 'middle: ', middleFrame
+
+		try:
+			nodes['merge'].render([firstFrame, firstFrame])
+			nodes['merge'].render([middleFrame, middleFrame])
+			nodes['merge'].render([lastFrame, lastFrame])
+		except hou.OperationFailed, e:
+			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
+
 def setRibOutputMode(state):
 	nodes = getEngineParts()
 	risNodes = nodes['merge'].inputAncestors()
