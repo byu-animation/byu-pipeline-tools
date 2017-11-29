@@ -6,7 +6,7 @@ from byugui import PublishWindow, message_gui
 
 from byuam import Department, Project, Element, Environment
 
-def publish_hda():
+def publish_hda(publish_window, asset, hda_name, src):
 	project = Project()
 	environment = Environment()
 
@@ -50,7 +50,7 @@ def publish_hda():
 		else:
 			message_gui.error("File does not exist")
 
-def publish_shot():
+def publish_shot(publish_window):
 	element = publish_window.result
 
 	if publish_window.published:
@@ -63,11 +63,7 @@ def publish_shot():
 		element.publish(user, src, comment)
 
 def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
-	global publish_window
-	global asset
-	global hda_name
-	global src
-
+	print "Ya this is updated FOR REAL!!"
 	if hda is None:
 		nodes = hou.selectedNodes()
 		if len(nodes) == 1:
@@ -90,7 +86,7 @@ def publish_hda_go(hda=None, departments=[Department.ASSEMBLY]):
 	else:
 		message_gui.error("The selected node is not a digital asset")
 		return
-	publish_window.finished.connect(publish_hda)
+	publish_window.finished.connect(lambda *args: publish_hda(publish_window, asset, hda_name, src))
 
 def publish_tool_go(node=None):
 	publish_hda_go(hda=node, departments=[Department.HDA])
@@ -99,9 +95,8 @@ def publish_asset_go(node=None):
 	publish_hda_go(hda=node, departments=[Department.ASSEMBLY])
 
 def publish_shot_go():
-	global publish_window
-
+	print "This is for sure updated"
 	scene = hou.hipFile.name()
 	print scene
 	publish_window = PublishWindow(scene, hou.ui.mainQtWindow(), [Department.LIGHTING, Department.FX])
-	publish_window.finished.connect(publish_shot)
+	publish_window.finished.connect(lambda *args: publish_shot(publish_window))
