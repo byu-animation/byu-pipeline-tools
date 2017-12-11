@@ -65,6 +65,10 @@
 			"annotation":"Clear some stuff",
 			"python_file":"playground.py"
 		}, {
+			"icon":"viking-reference.svg",
+			"annotation":"Do a viking-reference",
+			"python_file":"viking_reference.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"

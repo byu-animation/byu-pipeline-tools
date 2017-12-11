@@ -14,7 +14,7 @@ def maya_main_window():
 			return obj
 	raise RuntimeError('Could not find MayaWindow instance')
 
-def post_reference(dialog):
+def post_reference(dialog, useNamespace=False):
 	file_paths = dialog.filePaths
 	done = dialog.done
 	isReferenced = dialog.reference
@@ -37,7 +37,10 @@ def post_reference(dialog):
 				print basename
 				print str(millis)
 				print refNamespace
-				pm.system.createReference(path, namespace=refNamespace)
+				if useNamespace:
+					pm.system.createReference(path, namespace=refNamespace)
+				else:
+					pm.system.createReference(path)
 			else:
 				empty.append(path)
 
@@ -49,9 +52,9 @@ def post_reference(dialog):
 	#	 go()
 
 
-def go():
+def go(useNamespace=False):
 	parent = maya_main_window()
 	# filePath = pm.file(q=True, sceneName=True)
 	filePath = pm.system.sceneName()
 	maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG])
-	maya_reference_dialog.finished.connect(lambda: post_reference(maya_reference_dialog))
+	maya_reference_dialog.finished.connect(lambda: post_reference(maya_reference_dialog, useNamespace=useNamespace))
