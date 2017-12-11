@@ -28,7 +28,16 @@ def post_reference(dialog):
 			if os.path.exists(path):
 				#TODO do we want to add multiple references in with different namespaces? You know to get rid of conflicts? Or is our current system for handling that good enough?
 				# pm.system.createReference(path, namespace="HelloWorld1")
-				pm.system.createReference(path)
+				basename = os.path.basename(path)
+				import time
+				millis = long(time.time())
+				firstJan2017 = 1483254000
+				millis = millis - firstJan2017
+				refNamespace = basename + str(millis)
+				print basename
+				print str(millis)
+				print refNamespace
+				pm.system.createReference(path, namespace=refNamespace)
 			else:
 				empty.append(path)
 
