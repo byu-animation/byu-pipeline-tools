@@ -48,7 +48,7 @@ def publish_hda(publishWindow, selectedHDA, src):
 					except hou.OperationFailed, e:
 						print str(e)
 						#Here on the other hand we are just trying to match the current definition. If it doesn't do that it's not fatal. This is just for convience. We are currently having a lot of problem with unrecognized paramter warnings that are causing this to fail. But I can't figure out where they are coming from.
-						message_gui.warning('There was a problem while trying to match the current definition. It\'s not a critical problem but it is a little troubling. Take a look at it and see if you can resolve the problem. Rest assured that the publish did work though\n' + str(e))
+						message_gui.warning('There was a problem while trying to match the current definition. It\'s not a critical problem but it is a little troubling. Take a look at it and see if you can resolve the problem. Rest assured that the publish did work though', warning=str(e))
 					element = body.get_element(department, Element.DEFAULT_NAME)
 					dst = element.publish(user, src, comment)
 					#Ensure file has correct permissions

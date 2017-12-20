@@ -5,23 +5,22 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 
-def error(message, title="Error"):
-	'''Reports an error'''
-	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
-	msgBox.setIcon(QtWidgets.QMessageBox.Critical)
-	msgBox.setWindowTitle(title)
-	msgBox.addButton(QtWidgets.QMessageBox.Ok)
+def error(message, error=None, title="Error"):
+	message(message, details=warning, title=title)
 
-	msgBox.exec_()
+def warning(message, warning=None, title="Warning"):
+	message(message, details=warning, title=title)
 
-def warning(message, title="Warning"):
-	'''Reports an error'''
+def message(message, details=None, title="Message"):
+	'''Reports a message'''
 	msgBox = QtWidgets.QMessageBox()
 	msgBox.setText(msgBox.tr(message))
 	msgBox.setIcon(QtWidgets.QMessageBox.Warning)
 	msgBox.setWindowTitle(title)
 	msgBox.addButton(QtWidgets.QMessageBox.Ok)
+
+	if details is not None:
+		msgBox.setDetailedText(details)
 
 	msgBox.exec_()
 
