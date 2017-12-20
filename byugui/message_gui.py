@@ -15,6 +15,16 @@ def error(message, title="Error"):
 
 	msgBox.exec_()
 
+def warning(message, title="Warning"):
+	'''Reports an error'''
+	msgBox = QtWidgets.QMessageBox()
+	msgBox.setText(msgBox.tr(message))
+	msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+	msgBox.setWindowTitle(title)
+	msgBox.addButton(QtWidgets.QMessageBox.Ok)
+
+	msgBox.exec_()
+
 def info(message, title="Info"):
 	'''Reports an message'''
 	msgBox = QtWidgets.QMessageBox()
