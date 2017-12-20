@@ -7,7 +7,7 @@ from pymel.core import *
 # import utilities as amu #asset manager utilities
 import os
 import byuam
-from byuam.environment import Environment
+from byuam.environment import Environment, Department
 from byuam.project import Project
 
 WINDOW_WIDTH = 330
@@ -21,14 +21,14 @@ def maya_main_window():
 	raise RuntimeError('Could not find MayaWindow instance')
 
 class AlembicExportDialog(QDialog):
-	def __init__(self, parent=maya_main_window()):
+	def __init__(self, parent=maya_main_window(), cfx=False):
 	#def setup(self, parent):
 		QDialog.__init__(self, parent)
 		self.saveFile()
 		self.setWindowTitle('Select Objects for Export')
 		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
 		self.create_layout()
-		self.create_connections()
+		self.create_connections(cfx=False)
 		self.create_export_list()
 
 	def create_layout(self):
@@ -58,11 +58,11 @@ class AlembicExportDialog(QDialog):
 
 		self.setLayout(main_layout)
 
-	def create_connections(self):
+	def create_connections(self, cfx=False):
 		#Connect the buttons
 		#self.connect(self.export_button, SIGNAL('clicked()'), self.export_alembic)
 		#self.connect(self.cancel_button, SIGNAL('clicked()'), self.close_dialog)
-		self.export_button.clicked.connect(self.export_alembic)
+		self.export_button.clicked.connect(lambda: self.export_alembic(cfx=cfx))
 		self.cancel_button.clicked.connect(self.close_dialog)
 
 	def create_export_list(self):
@@ -107,7 +107,7 @@ class AlembicExportDialog(QDialog):
 			copyNum = refPath[start+1:end]
 		return os.path.basename(refPath).split('.')[0] + str(copyNum) + '.abc'
 
-	def export_alembic(self):
+	def export_alembic(self, cfx=False):
 		self.saveFile()
 
 		selectedReferences = []
@@ -128,7 +128,11 @@ class AlembicExportDialog(QDialog):
 			body = proj.get_body(checkout.get_body_name())
 			dept = checkout.get_department_name()
 			elem = body.get_element(dept, checkout.get_element_name())
-			abcFilePath = elem.get_cache_dir()
+			cfxElem = body.get_element(Department.CFX, checkout.get_element_name())
+			if cfx:
+				abcFilePath = elem.get_cache_dir()
+			else:
+				abcFilePath = elem.get_cache_dir()
 
 			for ref in selectedReferences:
 				refAbcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
@@ -281,8 +285,8 @@ class AlembicExportDialog(QDialog):
 	def close_dialog(self):
 		self.close()
 
-def go():
-	dialog = AlembicExportDialog()
+def go(cfx=False):
+	dialog = AlembicExportDialog(cfx=cfx)
 	dialog.show()
 
 if __name__ == '__main__':
