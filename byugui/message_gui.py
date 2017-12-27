@@ -5,16 +5,16 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 
-def error(message, error=None, title="Error"):
-	message(message, details=warning, title=title)
+def error(text, error=None, title="Error"):
+	message(text, details=warning, title=title)
 
-def warning(message, warning=None, title="Warning"):
-	message(message, details=warning, title=title)
+def warning(text, warning=None, title="Warning"):
+	message(text, details=warning, title=title)
 
-def message(message, details=None, title="Message"):
+def message(text, details=None, title="Message"):
 	'''Reports a message'''
 	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
+	msgBox.setText(msgBox.tr(text))
 	msgBox.setIcon(QtWidgets.QMessageBox.Warning)
 	msgBox.setWindowTitle(title)
 	msgBox.addButton(QtWidgets.QMessageBox.Ok)
@@ -24,21 +24,21 @@ def message(message, details=None, title="Message"):
 
 	msgBox.exec_()
 
-def info(message, title="Info"):
+def info(text, title="Info"):
 	'''Reports an message'''
 	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
+	msgBox.setText(msgBox.tr(text))
 	msgBox.setIcon(QtWidgets.QMessageBox.Information)
 	msgBox.setWindowTitle(title)
 	msgBox.addButton(QtWidgets.QMessageBox.Ok)
 
 	msgBox.exec_()
 
-def light_error(message, title="Warning"):
+def light_error(text, title="Warning"):
 	'''Reports an error that can be resolved with a yes or no'''
 	'''returns True if yes, otherwise False'''
 	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
+	msgBox.setText(msgBox.tr(text))
 	msgBox.setIcon(QtWidgets.QMessageBox.Warning)
 	msgBox.setWindowTitle(title)
 	noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
@@ -51,11 +51,11 @@ def light_error(message, title="Warning"):
 	elif msgBox.clickedButton() == noButton:
 		return False
 
-def yes_or_no(message, title="Question"):
+def yes_or_no(text, title="Question"):
 	'''Reports an error that can be resolved with a yes or no'''
 	'''returns True if yes, otherwise False'''
 	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
+	msgBox.setText(msgBox.tr(text))
 	msgBox.setWindowTitle(title)
 	msgBox.setIcon(QtWidgets.QMessageBox.Question)
 	noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
@@ -68,11 +68,11 @@ def yes_or_no(message, title="Question"):
 	elif msgBox.clickedButton() == noButton:
 		return False
 
-def binary_option(message, optionOne, optionTwo, title="Question"):
+def binary_option(text, optionOne, optionTwo, title="Question"):
 	'''Gives the user a message and a binary choice'''
 	'''returns True if option one is selected, false if the second option is selected, otherwise None'''
 	msgBox = QtWidgets.QMessageBox()
-	msgBox.setText(msgBox.tr(message))
+	msgBox.setText(msgBox.tr(text))
 	msgBox.setIcon(QtWidgets.QMessageBox.Question)
 	msgBox.setWindowTitle(title)
 	fristButton = msgBox.addButton(msgBox.tr(optionOne), QtWidgets.QMessageBox.ActionRole)
