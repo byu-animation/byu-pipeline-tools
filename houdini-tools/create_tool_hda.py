@@ -36,7 +36,7 @@ def create_hda():
 	if not hda.canCreateDigitalAsset():
 		if hda.type().definition is not None:
 			# we are dealing with an premade hda
-			result = message_gui.yes_or_no("The selected node is already a digial asset. Would you like to copy the definition into the pipeline")
+			result = message_gui.yes_or_no('The selected node is already a digial asset. Would you like to copy the definition into the pipeline')
 			if not result:
 				return
 			#TODO handle premade hdas here
@@ -64,7 +64,7 @@ def create_hda():
 	if copyHDA:
 		parent = hda.parent()
 
-		subnet = parent.createNode("subnet")
+		subnet = parent.createNode('subnet')
 
 		hda_node = subnet.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
 
@@ -76,22 +76,22 @@ def create_hda():
 		#TODO copy over sections
 		sects = hdaDef.sections()
 		for sectName in sects:
-			print "Copying over section: " + str(sectName)
+			print 'Copying over section: ' + str(sectName)
 			hda_nodeDef.addSection(sectName, sects[sectName].contents())
 
 		#Copy over NodeGroups
 		nodeGroups = hda.nodeGroups()
 		for ng in nodeGroups:
 			newNg = hda_node.addNodeGroup(ng.name())
-			print "New group: " + str(newNg)
+			print 'New group: ' + str(newNg)
 			for node in ng.nodes():
 				nodePath = hda_node.path() + '/' + str(node.name())
-				print "The Node path is:" + str(nodePath)
+				print 'The Node path is:' + str(nodePath)
 				newNode = hou.node(nodePath)
 				if newNode is None:
-					print ("Ya that node was null that is a problem")
+					print ('Ya that node was null that is a problem')
 					continue
-				print "The new Node is: " + str(newNode)
+				print 'The new Node is: ' + str(newNode)
 				newNg.addNode(newNode)
 
 		# Copy over paramters
@@ -101,7 +101,7 @@ def create_hda():
 		try:
 			hda_node = hda.createDigitalAsset(name=operatorName, description=operatorLabel, hda_file_name=saveToLibrary, min_num_inputs=num_inputs)
 		except hou.OperationFailed, e:
-			print message_gui.error(str(e))
+			print message_gui.error('There was a problem creating a digital asset', details=str(e))
 			return
 
 	assetTypeDef = hda_node.type().definition()

@@ -24,7 +24,7 @@ def objExport(selected, path):
 
 		@post: directory for 'path' is created if it wasn't already
 	'''
-	mc.loadPlugin("objExport")
+	mc.loadPlugin('objExport')
 
 	if not os.path.exists(path):
 		os.makedirs(path)
@@ -32,16 +32,16 @@ def objExport(selected, path):
 	size = len(selected)
 
 	mc.sysFile(path, makeDir=True)
-	optionsStr = "groups=0;ptgroups=0;materials=0;smoothing=0;normals=0;uvs=1"
-	exportType = "OBJexport"
+	optionsStr = 'groups=0;ptgroups=0;materials=0;smoothing=0;normals=0;uvs=1'
+	exportType = 'OBJexport'
 
 	objfiles = []
 
 	for geo in selected:
 		mc.select(geo, r=True)
-		geoName = formatFilename(geo) + ".obj"
+		geoName = formatFilename(geo) + '.obj'
 		filename = os.path.join(path, geoName)
-		print("Exporting \'" + filename + "\'...")
+		print('Exporting "' + filename + '"...')
 		mc.file(filename,
 				force=True,
 				options=optionsStr,
@@ -49,7 +49,7 @@ def objExport(selected, path):
 				preserveReferences=True,
 				exportSelected=True)
 
-		print("\tCOMPLETED")
+		print('\tCOMPLETED')
 		objfiles.append(filename)
 
 	return objfiles
@@ -60,15 +60,15 @@ def abcExport(selected, path):
 
 	abcfiles = []
 
-	loadPlugin("AbcExport")
+	loadPlugin('AbcExport')
 	for geo in selected:
 		chop = geo.rfind('|')
 		parent_geo = geo[:chop]
 		abcFile = geo[(chop+1):]
-		abcFile = formatFilename(abcFile) + ".abc"
+		abcFile = formatFilename(abcFile) + '.abc'
 		abcFilePath = os.path.join(path, abcFile)
 		print abcFilePath
-		command = "AbcExport -j \"-frameRange 1 1 -root "+parent_geo+" -nn -uv -file "+abcFilePath+"\";"
+		command = 'AbcExport -j "-frameRange 1 1 -root '+parent_geo+' -nn -uv -file '+abcFilePath+'";'
 		print command
 		Mel.eval(command)
 		abcfiles.append(abcFilePath)
@@ -78,14 +78,14 @@ def abcExport(selected, path):
 def getLoadedReferences():
 	references = mc.ls(references=True)
 	loaded=[]
-	print "Loaded References: "
+	print 'Loaded References: '
 	for ref in references:
-		print "Checking status of " + ref
+		print 'Checking status of ' + ref
 		try:
 			if cmds.referenceQuery(ref, isLoaded=True):
 				loaded.append(ref)
 		except:
-			print "Warning: " + ref + " was not associated with a reference file"
+			print 'Warning: ' + ref + ' was not associated with a reference file'
 	return loaded
 
 def abcExportLoadedReferences(path):
@@ -100,25 +100,25 @@ def abcExportLoadedReferences(path):
 		print ref
 		refNodes = mc.referenceQuery(unicode(ref), nodes=True)
 		rootNode = ls(refNodes[0])
-		roots_string = ""
+		roots_string = ''
 		#TODO check if the root has been tagged
 		# if not check to see if its children have been tagged
 		# At this point we have a node that is ready for export
 		for alem_obj in rootNode:
-			roots_string += (" -root %s"%(alem_obj))
+			roots_string += (' -root %s'%(alem_obj))
 
-		print "roots_string: " + roots_string
+		print 'roots_string: ' + roots_string
 
-		abcFile = formatFilename(ref) + ".abc"
+		abcFile = formatFilename(ref) + '.abc'
 		abcFilePath = os.path.join(path, abcFile)
-		print "The file path: " + str(abcFilePath)
+		print 'The file path: ' + str(abcFilePath)
 		command = 'AbcExport -j "%s -frameRange 1 1 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, abcFilePath)
-		print "The command: " + command
+		print 'The command: ' + command
 		Mel.eval(command)
-		print "Export successful! " + str(i) + " of " + str(len(loadedRefs))
+		print 'Export successful! ' + str(i) + ' of ' + str(len(loadedRefs))
 		abcfiles.append(abcFilePath)
 
-	print "all exports complete"
+	print 'all exports complete'
 	return abcfiles
 
 
@@ -126,7 +126,7 @@ def abcExportAll(name, path):
 	if not os.path.exists(path):
 		os.makedirs(path)
 
-	abcFile = name + ".abc"
+	abcFile = name + '.abc'
 	abcFilePath = os.path.join(path, abcFile)
 
 	loadPlugin('AbcExport')
@@ -142,8 +142,8 @@ def abcExportAll(name, path):
 
 
 def formatFilename(filename):
-	filename = filename.replace("Shape", "")
-	filename = filename.replace("RN", "")
+	filename = filename.replace('Shape', '')
+	filename = filename.replace('RN', '')
 	filename = pio.alphanumeric(filename)
 	return filename
 
@@ -159,18 +159,18 @@ def checkFiles(files):
 	missingFiles = []
 
 	for filename in files:
-		print "CHECKING********** " + filename
+		print 'CHECKING********** ' + filename
 		if not os.path.exists(filename):
 			missingFiles.append(filename)
 
 	if not len(missingFiles) == 0:
-		errorMessage = ""
+		errorMessage = ''
 		for f in missingFiles:
-			errorMessage += "MISSING FILE: " + f + "\n"
+			errorMessage += 'MISSING FILE: ' + f + '\n'
 		print(errorMessage)
-		errorMessage = str(len(missingFiles)) + " Files Missing:\n\n" + errorMessage
-		#mc.confirmDialog(title="Error exporting files", message=errorMessage)
-		#ui.infoWindow(errorMessage, wtitle="Error exporting files", msev=messageSeverity.Error)
+		errorMessage = str(len(missingFiles)) + ' Files Missing:\n\n' + errorMessage
+		#mc.confirmDialog(title='Error exporting files', message=errorMessage)
+		#ui.infoWindow(errorMessage, wtitle='Error exporting files', msev=messageSeverity.Error)
 
 	return missingFiles
 
@@ -182,7 +182,7 @@ def decodeFileName():
 		@return: Array = [assetName, assetType, version]
 	'''
 	encodedFolderName = os.path.basename(os.path.dirname(mc.file(q=True, sceneName=True)))
-	namesAry = encodedFolderName.split("_")
+	namesAry = encodedFolderName.split('_')
 	version   = namesAry.pop()
 	assetType = namesAry.pop()
 	assetName = '_'.join(namesAry)
@@ -203,7 +203,7 @@ def installGeometry(path=''):
 		@throws: a shutil exception if the move failed
 	'''
 
-	print "install newly created geo in files"
+	print 'install newly created geo in files'
 	path=os.path.dirname(mc.file(q=True, sceneName=True))
 	assetName, assetType, version = decodeFileName()
 
@@ -281,12 +281,12 @@ def generateGeometry(path=''):
 
 	filePath = cmds.file(q=True, sceneName=True)
 	fileDir = os.path.dirname(filePath)
-	print "This is the fileDir in question: ", fileDir
+	print 'This is the fileDir in question: ', fileDir
 	proj = Project()
 	checkout = proj.get_checkout(fileDir)
 	if checkout is None:
 		# TODO we need a better way out of this. This gets called when the asset is published. and it might confuse people if they get this message on the very first publish of an asset
-		message_gui.error("There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.")
+		message_gui.error('There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.')
 		return False
 	body = proj.get_body(checkout.get_body_name())
 	elem = body.get_element(checkout.get_department_name(), checkout.get_element_name())
@@ -312,8 +312,8 @@ def generateGeometry(path=''):
 			abcs = abcExportAll(elem.get_long_name(), ABCPATH)
 	else:
 		abcs = abcExportAll(elem.get_long_name(), ABCPATH)
-	print str(body.is_asset()) + " it is an asset"
-	print "The type is " + body.get_type()
+	print str(body.is_asset()) + ' it is an asset'
+	print 'The type is ' + body.get_type()
 	if not len(checkFiles(abcs)) == 0:
 		return False
 
@@ -323,7 +323,7 @@ def go():
 	if generateGeometry():
 		installGeometry()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# Uncomment this line if you want to read in a new destination from
 	# command line. Intended to be a new destination for files to go.
 	#dest = sys.argv[1]

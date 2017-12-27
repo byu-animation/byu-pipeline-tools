@@ -121,7 +121,7 @@ class ExportDialog(QtWidgets.QWidget):
 		os.makedirs(ribDir)
 
 		# Sanitize job title
-		title = re.sub(r'[{}"\']', "", str(self.jobName.text())).strip(' \t\n\r')
+		title = re.sub(r'[{}"\']', '', str(self.jobName.text())).strip(' \t\n\r')
 		if len(title) == 0:
 			title = self.empty_text
 
@@ -194,7 +194,7 @@ class ExportDialog(QtWidgets.QWidget):
 					try:
 						node.render([frame, frame])
 					except Exception as err:
-						message_gui.error("There was an error generating the rib files:\n + str(e)")
+						message_gui.error('There was an error generating the rib files.', details =str(err))
 				job.addChild(task)
 
 				# Restore rib output
@@ -218,7 +218,7 @@ class ExportDialog(QtWidgets.QWidget):
 				message_gui.info('Job sent to Tractor!')
 				break
 			except Exception as err:
-				choice = message_gui.yes_or_no('We ran into this problem while spooling the job:\n' + str(err) + '\nWould you like to try again?', 'Continue?')
+				choice = message_gui.yes_or_no('We ran into this problem while spooling the job:\nWould you like to try again?', details=str(err), title='Continue?')
 		#Cleanup ifd files, if they didn't want to retry
 		if not choice:
 			shutil.rmtree(ribDir)

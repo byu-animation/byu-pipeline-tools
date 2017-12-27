@@ -112,15 +112,15 @@ class PublishWindow(QtWidgets.QWidget):
 		   last_publish = element_obj.get_last_publish()
 		   last_publish_comment = None
 		   if last_publish is not None:
-			  last_publish_comment = "Last published {0} by {1} \n \"{2}\"".format(last_publish[1], last_publish[0], last_publish[2])
+			  last_publish_comment = 'Last published {0} by {1} \n "{2}"'.format(last_publish[1], last_publish[0], last_publish[2])
 		   else:
-			  last_publish_comment = "No publishes for this element"
+			  last_publish_comment = 'No publishes for this element'
 		   self.lastPublish.setText(last_publish_comment)
 
 	def publish(self):
 
-		if str(self.comment.toPlainText()) == "":
-			message_gui.error("Please add a publish comment.\nComments help to track the progress.")
+		if str(self.comment.toPlainText()) == '':
+			message_gui.error('Please add a publish comment.\nComments help to track the progress.')
 			return
 
 		self.elementType = str(self.menu.currentText())
@@ -166,7 +166,7 @@ class ElementList(QtWidgets.QListWidget):
 			self.elements = self.project.list_tools()
 		else:
 			self.elements = list()
-			message_gui.error("There was a problem loading in the elements from of " + element  + " type.")
+			message_gui.error('There was a problem loading in the elements from of ' + element  + ' type.')
 		self.clear()
 		for e in self.elements:
 			self.addItem(e)

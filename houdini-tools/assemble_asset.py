@@ -17,21 +17,21 @@ def rego():
 	selection = hou.selectedNodes()
 
 	if len(selection) > 1:
-		message_gui.error("Please only select one item")
+		message_gui.error('Please only select one item')
 		return
 	if len(selection) <1:
-		message_gui.error("Please select an item to be reassembled")
+		message_gui.error('Please select an item to be reassembled')
 		return
 
 	hda = selection[0]
 
 	name = hda.type().name()
-	index = name.rfind("_")
+	index = name.rfind('_')
 	main = name[index:]
 	asset_name = name[:index]
 
-	if main.find("_main") == -1:
-		message_gui.error("There was something wrong with the name. Try tabbing in the asset again and trying one more time.")
+	if main.find('_main') == -1:
+		message_gui.error('There was something wrong with the name. Try tabbing in the asset again and trying one more time.')
 		return
 
 	project = Project()
@@ -80,8 +80,8 @@ return set_list
 	project = Project()
 	if(value == None):
 		if len(project.list_sets()) < 1:
-			message_gui.error("There are currently no sets in created in the film. Because of how this node works you are going to have to create at least one set before assembling anything.")
-			raise("No sets in the project")
+			message_gui.error('There are currently no sets in created in the film. Because of how this node works you are going to have to create at least one set before assembling anything.')
+			raise('No sets in the project')
 		default_set = (str(project.list_sets()[0]),)
 	else:
 		default_set = (value,)
@@ -89,7 +89,7 @@ return set_list
 	set_menu = hou.StringParmTemplate('set', 'Set', 1, item_generator_script=item_gen_script, is_hidden=hidden, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python, default_value=default_set)
 	print set_menu.defaultValue()
 	if hideWhen is not None:
-		set_menu.setConditional( hou.parmCondType.HideWhen, "{ " + hideWhen + " }")
+		set_menu.setConditional( hou.parmCondType.HideWhen, '{ ' + hideWhen + ' }')
 	return set_menu
 
 def create_shot_menu(hideWhen=None, callback_script=None):
@@ -113,12 +113,12 @@ return directory_list
 	shot = hou.StringParmTemplate('shot', 'Shot', 1, item_generator_script=script, menu_type=hou.menuType.Normal, script_callback=callback_script, script_callback_language=hou.scriptLanguage.Python, default_value=first_shot)
 	print shot.defaultValue()
 	if hideWhen is not None:
-		shot.setConditional( hou.parmCondType.HideWhen, "{ " + hideWhen + " }")
+		shot.setConditional( hou.parmCondType.HideWhen, '{ ' + hideWhen + ' }')
 	return shot
 
 def assemble_set(project, environment, assembly, asset, checkout_file):
 	set_hda = create_hda(asset, assembly, project, environment, checkout_file)
-	print "This is a set"
+	print 'This is a set'
 	model = asset.get_element(Department.MODEL)
 
 	# Get all of the static geo
@@ -138,52 +138,53 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 	for geo_file in geo_files:
 		geo_file_path = os.path.join(model_cache, geo_file)
 		name = ''.join(geo_file.split('.')[:-1])
-		print "The name of the alembic file is ", name
+		print 'The name of the alembic file is ', name
 		# find the alembic version
 		elementName = '_main'
 		index = name.find(elementName)
 		versionNum = name[index + len(elementName):]
-		print "This is the versionNum ", versionNum
+		print 'This is the versionNum ', versionNum
 		# TODO : what if it is a rig? I am begninng to wonder if maybe it will always be the model becuase in the rig file it is referencing the model.
-		index = name.find("_model")
+		index = name.find('_model')
 		if(index < 0):
-			index = name.find("_rig")
+			index = name.find('_rig')
 		if(index < 0):
-			print "We couldn't find either a rig or a model for this asset. That means something went wrong or I need to rethink this tool."
+			print 'We couldn\'t find either a rig or a model for this asset. That means something went wrong or I need to rethink this tool.'
 		asset_name = name[:index]
 		print asset_name
 		asset_version = str(asset_name) + str(versionNum)
 		if(asset_version in used_hdas):
 			print used_hdas
-			print "But I think is okay if it is in used_hdas because we have decided that it's cool to have multibples"
+			print 'But I think is okay if it is in used_hdas because we have decided that it\'s cool to have multibples'
 			#TODO get rid of used_hdas if we don't need it anymore now that we are allowing duplication of assets
 			continue
 		try:
-			hda = set_hda.createNode(asset_name + "_main")
+			hda = set_hda.createNode(asset_name + '_main')
 		except:
-			message_gui.error("There is not asset named " + str(asset_name) + ". You may need to assemble it first.")
+			message_gui.error('There is no asset named ' + str(asset_name) + '. You may need to assemble it first.')
 			hda.destroy()
 			return
 		used_hdas.add(asset_version)
 
 		# set the alembic version number
-		if versionNum != "":
+		if versionNum != '':
 			try:
-				print "This is versionNum before the change ", versionNum
+				print 'This is versionNum before the change ', versionNum
 				versionNum = int(versionNum)
-				print "This is versionNum after the change ", versionNum
+				print 'This is versionNum after the change ', versionNum
 				hda.parm('abcversion').set(int(versionNum))
 			except Exception as err:
-				message_gui.error("There was an error assigning the version number. It may be because the asset needs to be reassembled. Check that the " + str(asset_name) + " node has the version slider. If not reassemble it and try again.\n" + str(err))
+				errorMessage = 'There was an error assigning the version number. It may be because the asset needs to be reassembled. Check that the ' + str(asset_name) + ' node has the version slider. If not reassemble it and try again.\n'
+				message_gui.error(errorMessage, details=str(err))
 
 		#finish the rest of the setup
 		label_text = asset_version.replace('_', ' ').title()
 		geo_label = hou.LabelParmTemplate(asset_version, label_text)
-		hide_toggle_name = "hide_" + asset_version
-		hide_toggle = hou.ToggleParmTemplate(hide_toggle_name, "Hide")
-		animate_toggle_name = "animate_" + asset_version
-		animate_toggle = hou.ToggleParmTemplate(animate_toggle_name, "Animate")
-		animate_toggle_to_int_name = "animate_toggle_to_int_" + asset_version
+		hide_toggle_name = 'hide_' + asset_version
+		hide_toggle = hou.ToggleParmTemplate(hide_toggle_name, 'Hide')
+		animate_toggle_name = 'animate_' + asset_version
+		animate_toggle = hou.ToggleParmTemplate(animate_toggle_name, 'Animate')
+		animate_toggle_to_int_name = 'animate_toggle_to_int_' + asset_version
 		animate_toggle_to_int = hou.IntParmTemplate(animate_toggle_to_int_name, 'Toggle To Int', 1, is_hidden=True, default_expression=('ch("' + animate_toggle_name + '")',))
 		set_folder.addParmTemplate(geo_label)
 		set_folder.addParmTemplate(hide_toggle)
@@ -212,7 +213,7 @@ def addMaterialOptions(geo, groups):
 		group_names.append(group.name())
 
 	groups = hou.StringParmTemplate('group#', 'Group', 1, menu_items=group_names, menu_type=hou.menuType.StringToggle)
-	materials = hou.StringParmTemplate("mat_path#", "Material", 1, default_value=([""]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	materials = hou.StringParmTemplate('mat_path#', 'Material', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
 	# Create a new parameter for RenderMan 'Displacement Shader'
 	displacement_shader = hou.StringParmTemplate('shop_displacepath#', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
 	displacement_shader.setHelp('RiDisplace')
@@ -271,9 +272,9 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	renderman_folder = hou.FolderParmTemplate('renderman', 'RenderMan', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
 
 	# Create a new parameter for RenderMan 'Interpolate Boundary'
-	interpolate_boundary = hou.ToggleParmTemplate("ri_interpolateboundary", "Interpolate Boundary", default_value=False)
-	interpolate_boundary.setHelp("RiSubdivisionMesh - interpolateboundary")
-	interpolate_boundary.setTags({"spare_category": "Geometry"})
+	interpolate_boundary = hou.ToggleParmTemplate('ri_interpolateboundary', 'Interpolate Boundary', default_value=False)
+	interpolate_boundary.setHelp('RiSubdivisionMesh - interpolateboundary')
+	interpolate_boundary.setTags({'spare_category': 'Geometry'})
 	renderman_folder.addParmTemplate(interpolate_boundary)
 
 	# Create a new parameter for Render Man 'Render as Subdivision' option
@@ -320,7 +321,7 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 		hou_parm.setAutoscope(False)
 
 	# Code for ri_interpolateboundary parm
-	hou_parm = geo.parm("ri_interpolateboundary")
+	hou_parm = geo.parm('ri_interpolateboundary')
 	hou_parm.lock(False)
 	hou_parm.set(1)
 	hou_parm.setAutoscope(False)
@@ -420,13 +421,13 @@ def assemble(project, environment, assembly, asset, checkout_file):
 	hda = hda_parameter_setup(hda, geo, project)
 
 def reassemble(hda, project, environment, assembly, asset, checkout_file):
-	shop = hda.node(asset.get_name() + "_shopnet")
+	shop = hda.node(asset.get_name() + '_shopnet')
 
-	geos = [c for c in hda.children() if c.type().name() == "geo"]
+	geos = [c for c in hda.children() if c.type().name() == 'geo']
 	for geo in geos:
 		geo.destroy()
 
-	touching = [c for c in hda.children() if c.name() == "dont_touch_this_subnet"]
+	touching = [c for c in hda.children() if c.name() == 'dont_touch_this_subnet']
 	for touch in touching:
 		touch.destroy()
 
@@ -437,7 +438,7 @@ def reassemble(hda, project, environment, assembly, asset, checkout_file):
 	hda = hda_parameter_setup(hda, geo, project)
 
 def reset_parameters(hda):
-	subnet = hou.node("obj").createNode('subnet')
+	subnet = hou.node('obj').createNode('subnet')
 	parmGroup = subnet.parmTemplateGroup()
 	hda.type().definition().setParmTemplateGroup(parmGroup)
 	subnet.destroy()
@@ -445,7 +446,7 @@ def reset_parameters(hda):
 
 def hda_parameter_setup(hda, geo, project):
 	parmGroup = hda.parmTemplateGroup()
-	projectName = project.get_name().lower().replace(" ", "_")
+	projectName = project.get_name().lower().replace(' ', '_')
 	projectFolder = hou.FolderParmTemplate(projectName, project.get_name(), folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
 
 	source_menu = hou.MenuParmTemplate('source', 'Source', ('set', 'animated', 'object_space'), menu_labels=('Set', 'Animated', 'Object Space'), default_value=2)
@@ -456,11 +457,11 @@ def hda_parameter_setup(hda, geo, project):
 	cook_script='hou.node("./' + geo.name() + '").parm("cook").pressButton()\nprint "Asset Refreshed"'
 	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1', callback_script=cook_script))
 	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0', callback_script=cook_script))
-	hide_toggle = hou.ToggleParmTemplate("hide", "Hide")
+	hide_toggle = hou.ToggleParmTemplate('hide', 'Hide')
 	projectFolder.addParmTemplate(hide_toggle)
-	recook = hou.ButtonParmTemplate("re_cook_hda", "Reload", script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
+	recook = hou.ButtonParmTemplate('re_cook_hda', 'Reload', script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
 	projectFolder.addParmTemplate(recook)
-	version = hou.IntParmTemplate("abcversion", "Alembic Version", 1)
+	version = hou.IntParmTemplate('abcversion', 'Alembic Version', 1)
 	projectFolder.addParmTemplate(version)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
@@ -476,7 +477,11 @@ def get_model_alembic_cache(model, project):
 	geo_files = clean_file_list(geo_files, '.abc')
 
 	if len(geo_files) > 1 or len(geo_files) < 1:
-		message_gui.error("There was a problem importing the geo. Please re-export the geo from maya.")
+		if len(geo_files) > 1:
+			details = 'There is more than one alembic file. There should only be one.'
+		else:
+			details = 'There was not an alembic file. It might not have been exported yet.'
+		message_gui.error('There was a problem importing the geo. Please re-export the geo from maya.', details=details)
 		return
 
 	return geo_files[0]
@@ -501,12 +506,12 @@ def geo_setup(parentNode, asset, project):
 	# Some of the referenced geo is going to be from rigs and some is going to be from models so we need to plan for either to happen. Later we will add an expression that will use the alemibic that has geo in it.
 
 	#I think these two lines where just from when we were still doing seperated peices
-	#rig_reference = "/" + rig.get_long_name() + "_" + os.path.splitext(geo_file_name)[0]
-	#model_reference = "/" + model.get_long_name() + "_" + os.path.splitext(geo_file_name)[0]
+	#rig_reference = '/' + rig.get_long_name() + '_' + os.path.splitext(geo_file_name)[0]
+	#model_reference = '/' + model.get_long_name() + '_' + os.path.splitext(geo_file_name)[0]
 
 	# Alembic from selected set
 	rig_model_set_switch = geo.createNode('switch')
-	rig_model_set_switch.setName("set_switch")
+	rig_model_set_switch.setName('set_switch')
 
 	abc_set_model = rig_model_set_switch.createInputNode(0, 'alembic')
 	abc_set_model.setName('set_model_alembic')
@@ -523,25 +528,25 @@ def geo_setup(parentNode, asset, project):
 
 	# Object Space Alembic
 	abc_object_space = geo.createNode('alembic')
-	abc_object_space.setName("object_space_alembic")
+	abc_object_space.setName('object_space_alembic')
 	abc_object_space.parm('fileName').set(geo_file_path)
-	abc_object_space.parm("groupnames").set(4)
+	abc_object_space.parm('groupnames').set(4)
 
 	# Animated Alembics
 	# Get all of the animated geo
 	rig_model_switch = geo.createNode('switch')
-	rig_model_switch.setName("shot_switch")
+	rig_model_switch.setName('shot_switch')
 
 	abc_anim_model = rig_model_switch.createInputNode(0, 'alembic')
-	abc_anim_model.setName("animated_model")
+	abc_anim_model.setName('animated_model')
 	abc_anim_model.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_anim_model.parm("groupnames").set(4)
+	abc_anim_model.parm('groupnames').set(4)
 	# abc_anim_model.parm('objectPath').set(model_reference)
 
 	abc_anim_rig = rig_model_switch.createInputNode(1, 'alembic')
 	abc_anim_rig.setName('animated_rig')
 	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_anim_rig.parm("groupnames").set(4)
+	abc_anim_rig.parm('groupnames').set(4)
 	# abc_anim_rig.parm('objectPath').set(rig_reference)
 
 	null_shot = rig_model_switch.createInputNode(2, 'null')
@@ -588,14 +593,14 @@ for node in switch.inputs():
 	try:
 		groups = static_geo.primGroups()
 	except:
-		message_gui.error("The static_geo has no groups.\n\n Details:\nstr(geometry) =  " + str(static_geo))
-		print "This is what static_geo is and it's not working: " + str(static_geo)
+		message_gui.error('The static_geo has no groups.', details='str(geometry) =  ' + str(static_geo))
+		print 'This is what static_geo is and it\'s not working: ' + str(static_geo)
 	geo = addMaterialOptions(geo, groups)
 
 	mat = out.createOutputNode('material')
 	mat.setDisplayFlag(True)
 	mat.setRenderFlag(True)
-	mat.parm("num_materials").setExpression('ch("../num_materials")')
+	mat.parm('num_materials').setExpression('ch("../num_materials")')
 	for i, group in enumerate(groups):
 		group_num = str(i + 1)
 		geo.parm('group' + group_num).set(group.name())
@@ -611,38 +616,38 @@ for node in switch.inputs():
 		try:
 			rig_model_switch.cook()
 		except:
-			print "There was a problem with one of the things but I think that is okay"
+			print 'There was a problem with one of the things but I think that is okay'
 	geo.cook()
 
 
 	# Here is the temporary solution to the can't-assign-renderman-displacement-by-group-problem
 	# In addition to getting rid of this code you will also need to implement the new way to do displacement by group if Renderman in Houdini ever gets that capability.
 	# For example, in the future the displacement shader and bound would only need to be applied in the material parameter tab and not in the Renderman tab. But since we are using the same code for the geo nodes in the dont_touch_this_subnet subnet it doesn't make senese to remove it just yet.
-	subnet = geo.parent().createNode("subnet")
+	subnet = geo.parent().createNode('subnet')
 	for i, group in enumerate(groups):
 		group_num = str(i + 1)
-		group_geo = subnet.createNode("geo")
+		group_geo = subnet.createNode('geo')
 		group_geo.setName(group.name())
 		mat_path_expr = 'chsop("../../' + geo.name() + '/mat_path' + group_num + '")'
 		displacePathExpr = 'chsop("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
 		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
 		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr, add_displacement=True)
-		group_geo.parm("shop_materialpath").setExpression(mat_path_expr)
+		group_geo.parm('shop_materialpath').setExpression(mat_path_expr)
 
 		for child in group_geo.children():
 			child.destroy()
-		obj_merge = group_geo.createNode("object_merge")
-		obj_merge.parm("objpath1").set("../../../" + geo.name() + "/" + out.name())
-		blast = obj_merge.createOutputNode("blast")
-		blast.parm("group").set(group.name())
-		blast.parm("group").setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)
-		blast.parm("negate").set(True)
+		obj_merge = group_geo.createNode('object_merge')
+		obj_merge.parm('objpath1').set('../../../' + geo.name() + '/' + out.name())
+		blast = obj_merge.createOutputNode('blast')
+		blast.parm('group').set(group.name())
+		blast.parm('group').setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)
+		blast.parm('negate').set(True)
 		blast.setRenderFlag(True)
 		blast.setDisplayFlag(True)
 
 	subnet.layoutChildren()
-	subnet.setName("dont_touch_this_subnet")
-	tempHideDisplay = geo.createNode("null")
+	subnet.setName('dont_touch_this_subnet')
+	tempHideDisplay = geo.createNode('null')
 	tempHideDisplay.setRenderFlag(True)
 	tempHideDisplay.setDisplayFlag(True)
 	# End temp solution
