@@ -23,28 +23,28 @@ def prepRender(rib=False, openExr=False):
 	missingNames = []
 	for i in range(1, numLayers + 1):
 		layerName = nodes['renderCtrl'].parm('layername' + str(i)).eval()
-		if layerName == "":
+		if layerName == '':
 			missingNames.append(i)
 		print layerName
 	if len(missingNames) != 0:
-		message_gui.error('Make sure that you have named all of the layers.\n' + layerListToString(missingNames))
+		message_gui.error('Make sure that you have named all of the layers.', details=layerListToString(missingNames))
 		return False
 	#Make sure we are using the correnct display device
 	device = nodes['renderCtrl'].parm('ri_device').eval()
-	if openExr and device != "openexr":
+	if openExr and device != 'openexr':
 		message_gui.error('Make sure that the display device is set to "openexr" before sending a job to Tractor.')
 		return False
 	return True
 
 def layerListToString(nums):
 	if len(nums) == 1:
-		return "Layer " + str(nums[0]) + " doesn\'t have a name."
+		return 'Layer ' + str(nums[0]) + ' doesn\'t have a name.'
 	else:
-		missingNames = ""
+		missingNames = ''
 		for num in nums:
-			missingNames += str(num) + ","
-		missingNames = missingNames[0:len(missingNames) - 2] + " and " + missingNames[len(missingNames)-2]
-		return "Layers " + missingNames + " don\'t have names."
+			missingNames += str(num) + ','
+		missingNames = missingNames[0:len(missingNames) - 2] + ' and ' + missingNames[len(missingNames)-2]
+		return 'Layers ' + missingNames + ' don\'t have names.'
 
 def localRender():
 	if prepRender():
@@ -52,7 +52,7 @@ def localRender():
 		try:
 			getEngineParts()['merge'].render()
 		except hou.OperationFailed, e:
-			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
+			message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
 
 def farmRender():
 	if prepRender(rib=True, openExr=True):
@@ -60,7 +60,7 @@ def farmRender():
 		try:
 			tractor.go(getEngineParts()['merge'].inputAncestors())
 		except hou.OperationFailed, e:
-			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
+			message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
 
 def gridmarketsRender():
 	if prepRender(openExr=True):
@@ -68,7 +68,7 @@ def gridmarketsRender():
 		try:
 			getEngineParts()['gridmarkets'].parm('submit_start').pressButton()
 		except hou.OperationFailed, e:
-			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
+			message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
 
 def firstMiddleLast():
 	if prepRender():
@@ -87,7 +87,7 @@ def firstMiddleLast():
 			nodes['merge'].render([middleFrame, middleFrame])
 			nodes['merge'].render([lastFrame, lastFrame])
 		except hou.OperationFailed, e:
-			message_gui.error(str(e) + "\nThere was an error completeing the render. Check the ris nodes in the render engine node for details.")
+			message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
 
 def setRibOutputMode(state):
 	nodes = getEngineParts()
@@ -157,6 +157,10 @@ def getEngineParts():
 		nodes['gridmarkets'] = nodes['merge'].createOutputNode('render_submit', 'GridMarketsSubmit')
 	return nodes
 
+def setParmExp(destNode, srcNode, parmName):
+	expressionString = 'ch(' + srcPath + parmName + ')'
+	destNode.parm(parmName).setExpression(expressionString)
+
 def adjustNodes():
 	'''
 	This will go through my render node and create ris nodes for each layer and properly hook up everting.
@@ -209,6 +213,7 @@ def adjustNodes():
 			ri_display = 'chs("' + renderCtrl.path() + '/ri_display' + chanNum + '")'
 			if overrideOutput == 0:
 				risNode.parm('ri_display').setExpression(ri_display)
+			viewimg = 'ch' #TODO get this view button to press the other view button
 			#RIS
 			ri_pixelvariance = 'ch("' + renderCtrl.path() + '/ri_pixelvariance' + chanNum + '")'
 			risNode.parm('ri_pixelvariance').setExpression(ri_pixelvariance)
@@ -256,6 +261,21 @@ def adjustNodes():
 			risNode.parm('phantom_objects').setExpression(phantom_objects)
 			excludeobject = 'chsop("' + renderCtrl.path() + '/excludeobject' + chanNum + '")'
 			risNode.parm('excludeobject').setExpression(excludeobject)
+			#Display
+			# ri_channels = 'chs("")'
+			# risNode.parm('ri_channels').setExpression(ri_channels)
+			# ri_quantize = 'ch("")'
+			# risNode.parm('ri_quantize').setExpression(ri_quantize)
+			# ri_pixelfilter
+			# risNode.parm('ri_pixelfilter').setExpression(ri_pixelfilter)
+			# ri_pixelfilterwidth
+			# risNode.parm('ri_pixelfilterwidth').setExpression(ri_pixelfilterwidth)
+			# ri_gamma
+			# risNode.parm('ri_gamma').setExpression(ri_gamma)
+			# ri_gain
+			# risNode.parm('ri_gain').setExpression(ri_gain)
+			#RiAOV
+
 			#Lights
 			sololight = 'chsop("' + renderCtrl.path() + '/sololight' + chanNum + '")'
 			risNode.parm('sololight').setExpression(sololight)
