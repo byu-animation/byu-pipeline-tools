@@ -142,8 +142,8 @@ class ExportDialog(QtWidgets.QWidget):
 				name = node.name()
 				validFrameRange = node.parm('trange').eval()
 				if validFrameRange == 0:
-					start = hou.frame()
-					end = hou.frame()
+					start = int(hou.frame())
+					end = int(hou.frame())
 					step = 1
 				else:
 					start = int(node.parm('f1').eval())
