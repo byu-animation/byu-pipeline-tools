@@ -157,9 +157,215 @@ def getEngineParts():
 		nodes['gridmarkets'] = nodes['merge'].createOutputNode('render_submit', 'GridMarketsSubmit')
 	return nodes
 
-def setParmExp(destNode, srcNode, parmName):
-	expressionString = 'ch(' + srcPath + parmName + ')'
-	destNode.parm(parmName).setExpression(expressionString)
+def setParmExp(destNode, srcNode, parmName, layerNum='', channelType='ch', size=1, useXYZ=False, useRGB=False):
+	print "Dest Node ", destNode
+	# print "Source Node ", srcNode
+	for i in range(1, size + 1):
+		if useXYZ:
+			if i is 1:
+				index = 'x'
+			elif i is 2:
+				index = 'y'
+			elif i is 3:
+				index = 'z'
+		elif useRGB:
+			if i is 1:
+				index = 'r'
+			elif i is 2:
+				index = 'g'
+			elif i is 3:
+				index = 'b'
+		else:
+			index = i
+		parmNamewithLayer = parmName + str(layerNum) + (str(index) if size > 1 else '')
+		print "Parm Name", parmNamewithLayer
+		expressionString = channelType + '("' + srcNode.path() + '/' + parmNamewithLayer + '")'
+		parmNameWithSize = parmName + (str(index) if size > 1 else '')
+		print "Parm Name with Size", parmNameWithSize
+		destNode.parm(parmNameWithSize).setExpression(expressionString)
+
+def setGlobalCtrls(renderCtrl, risNode):
+	setParmExp(risNode, renderCtrl, 'trange')
+	setParmExp(risNode, renderCtrl, 'f1')
+	setParmExp(risNode, renderCtrl, 'f2')
+	setParmExp(risNode, renderCtrl, 'f3')
+	setParmExp(risNode, renderCtrl, 'camera', channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'override_camerares')
+	setParmExp(risNode, renderCtrl, 'res_fraction', channelType='chs')
+	setParmExp(risNode, renderCtrl, 'res_overridex')
+	setParmExp(risNode, renderCtrl, 'res_overridey')
+	setParmExp(risNode, renderCtrl, 'ri_device', channelType='chs')
+
+def setLayers(renderCtrl, risNode, layerNum):
+	# Layer specific expressions
+	overrideOutput = renderCtrl.parm('overrideoutput' + layerNum).eval()
+	if overrideOutput == 0:
+		setParmExp(risNode, renderCtrl, 'ri_display', layerNum=layerNum, channelType='chs')
+
+	viewimg = 'ch' #TODO get this view button to press the other view button
+
+	setObjects(renderCtrl, risNode, layerNum)
+	setProperties(renderCtrl, risNode, layerNum)
+	setAdvanced(renderCtrl, risNode, layerNum)
+	setNotes(renderCtrl, risNode, layerNum)
+
+def setObjects(renderCtrl, risNode, layerNum):
+	#Objects
+	setParmExp(risNode, renderCtrl, 'vobject', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'forceobject', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'matte_objects', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'phantom_objects', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'excludeobject', layerNum=layerNum, channelType='chsop')
+
+	#Lights
+	setParmExp(risNode, renderCtrl, 'sololight', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'alights', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'forcelights', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'excludelights', layerNum=layerNum, channelType='chsop')
+
+def setProperties(renderCtrl, risNode, layerNum):
+	setRIS(renderCtrl, risNode, layerNum)
+	setDisplay(renderCtrl, risNode, layerNum)
+	setRiAOV(renderCtrl, risNode, layerNum)
+	setHider(renderCtrl, risNode, layerNum)
+	setRender(renderCtrl, risNode, layerNum)
+	setAttributes(renderCtrl, risNode, layerNum)
+
+def setRIS(renderCtrl, risNode, layerNum):
+	#RIS
+	setParmExp(risNode, renderCtrl, 'shop_integratorpath', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'ri_pixelvariance', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'soho_denoisemode', layerNum=layerNum)
+
+def setDisplay(renderCtrl, risNode, layerNum):
+	#Display
+	setParmExp(risNode, renderCtrl, 'ri_channels', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_quantize', layerNum=layerNum, size=4)
+	setParmExp(risNode, renderCtrl, 'ri_pixelfilter', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_pixelfilterwidth', layerNum=layerNum, size=2, useXYZ=True)
+	setParmExp(risNode, renderCtrl, 'ri_gamma', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_gain', layerNum=layerNum)
+
+def setRiAOV(renderCtrl, risNode, layerNum):
+	#TODO RiAOV is going to be tricky. Lets come back to it.
+	return None
+
+def setHider(renderCtrl, risNode, layerNum):
+	#Hider
+	setParmExp(risNode, renderCtrl, 'ri_hider', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_minsamples', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_maxsamples', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_darkfalloff', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_incremental', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_pixelfiltermode', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_aperture', layerNum=layerNum, size=4)
+	setParmExp(risNode, renderCtrl, 'ri_samplemotion', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_extrememotiondof', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_dofaspect', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_adaptall', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_pixelsamples', layerNum=layerNum, size=2, useXYZ=True)
+
+def setRender(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'render_viewcamera', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'render_any_envmap', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_autobias', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_tracebias', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_tracedisplace', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_texturegaussian', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_texturelerp', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_bucketsize', layerNum=layerNum, size=2, useXYZ=True)
+
+def setAttributes(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_visibletransmission', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_indirect', layerNum=layerNum)
+
+def setAdvanced(renderCtrl, risNode, layerNum):
+	setDicing(renderCtrl, risNode, layerNum)
+	setDriver(renderCtrl, risNode, layerNum)
+	setScripts(renderCtrl, risNode, layerNum)
+	setStatistics(renderCtrl, risNode, layerNum)
+	setNotHookedUp(renderCtrl, risNode, layerNum)
+	setLimits(renderCtrl, risNode, layerNum)
+
+def setDicing(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_micropolygonlength', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_relativemicropolygonlength', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_resetrelativemicropolygonlength', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_watertight', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_dicepretessellate', layerNum=layerNum)
+
+def setDriver(renderCtrl, risNode, layerNum):
+	#Render Driver
+	setParmExp(risNode, renderCtrl, 'target', layerNum=layerNum, channelType='chs')
+	overrideRib = renderCtrl.parm('overriderib' + layerNum).eval()
+	setParmExp(risNode, renderCtrl, 'rib_outputmode', layerNum=layerNum)
+	if overrideRib == 0:
+		setParmExp(risNode, renderCtrl, 'soho_diskfile', layerNum=layerNum, channelType='chs')
+
+def setScripts(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'tprerender', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'prerender', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'lprerender', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'tpreframe', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'preframe', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'lpreframe', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'tpostframe', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'postframe', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'lpostframe', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'tpostrender', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'postrender', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'lpostrender', layerNum=layerNum, channelType='chs')
+
+def setStatistics(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_statistics', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_statxmlfilename', layerNum=layerNum)
+
+def setNotHookedUp(renderCtrl, risNode, layerNum):
+	setMotionBlur(renderCtrl, risNode, layerNum)
+	setDepthOfField(renderCtrl, risNode, layerNum)
+	setPath(renderCtrl, risNode, layerNum)
+	setLPE(renderCtrl, risNode, layerNum)
+
+def setMotionBlur(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'allowmotionblur', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_shutteropening', layerNum=layerNum, size=2)
+	setParmExp(risNode, renderCtrl, 'xform_motionsamples', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'geo_motionsamples', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'shutteroffset', layerNum=layerNum)
+
+def setDepthOfField(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_dof', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_focusregion', layerNum=layerNum)
+
+def setPath(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_rixplugin', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_shaderpath', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_texturepath', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_proceduralpath', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_dirmap', layerNum=layerNum, channelType='chs')
+
+def setLPE(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_diffuse2', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_diffuse3', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular2', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular3', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular4', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular5', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular6', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular7', layerNum=layerNum, channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_specular8', layerNum=layerNum, channelType='chs')
+
+def setLimits(renderCtrl, risNode, layerNum):
+	setParmExp(risNode, renderCtrl, 'ri_texturememory', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_opacitycachememory', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_geocachememory', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_othreshold', layerNum=layerNum, size=3, useRGB=True)
+	setParmExp(risNode, renderCtrl, 'ri_zthreshold', layerNum=layerNum, size=3, useRGB=True)
+
+def setNotes(renderCtrl, risNode, layerNum):
+	#So far there is nothing in notes that needs to be spread to the RIS Nodes
+	# setParmExp(risNode, renderCtrl, '', layerNum=layerNum)
+	return None
 
 def adjustNodes():
 	'''
@@ -184,116 +390,11 @@ def adjustNodes():
 		for i in range(numLayers - numNodes):
 			pos = numNodes + i
 			risNode = merge.createInputNode(pos, 'ris')
-			chanNum = risNode.name()[3:]
+			layerNum = risNode.name()[3:]
 
 			# Create all of the exporessions
-			trange = 'ch("' + renderCtrl.path() + '/trange")'
-			risNode.parm('trange').setExpression(trange)
-			f1 = 'ch("' + renderCtrl.path() + '/f1")'
-			f2 = 'ch("' + renderCtrl.path() + '/f2")'
-			f3 = 'ch("' + renderCtrl.path() + '/f3")'
-			risNode.parm('f1').setExpression(f1)
-			risNode.parm('f2').setExpression(f2)
-			risNode.parm('f3').setExpression(f3)
-			camera = 'chsop("' + renderCtrl.path() + '/camera")'
-			risNode.parm('camera').setExpression(camera)
-			override_camerares = 'ch("' + renderCtrl.path() + '/override_camerares")'
-			risNode.parm('override_camerares').setExpression(override_camerares)
-			resFraction = 'chs("' + renderCtrl.path() + '/res_fraction")'
-			risNode.parm('res_fraction').setExpression(resFraction)
-			resOverridex = 'ch("' + renderCtrl.path() + '/res_overridex")'
-			risNode.parm('res_overridex').setExpression(resOverridex)
-			resOverridey = 'ch("' + renderCtrl.path() + '/res_overridey")'
-			risNode.parm('res_overridey').setExpression(resOverridey)
-			ri_device = 'chs("' + renderCtrl.path() + '/ri_device")'
-			risNode.parm('ri_device').setExpression(ri_device)
-
-			# Layer specific expressions
-			overrideOutput = renderCtrl.parm('overrideoutput' + chanNum).eval()
-			ri_display = 'chs("' + renderCtrl.path() + '/ri_display' + chanNum + '")'
-			if overrideOutput == 0:
-				risNode.parm('ri_display').setExpression(ri_display)
-			viewimg = 'ch' #TODO get this view button to press the other view button
-			#RIS
-			ri_pixelvariance = 'ch("' + renderCtrl.path() + '/ri_pixelvariance' + chanNum + '")'
-			risNode.parm('ri_pixelvariance').setExpression(ri_pixelvariance)
-			#Hider
-			ri_hider = 'chs("' + renderCtrl.path() + '/ri_hider' + chanNum + '")'
-			risNode.parm('ri_hider').setExpression(ri_hider)
-			ri_minsamples = 'ch("' + renderCtrl.path() + '/ri_minsamples' + chanNum + '")'
-			risNode.parm('ri_minsamples').setExpression(ri_minsamples)
-			ri_maxsamples = 'ch("' + renderCtrl.path() + '/ri_maxsamples' + chanNum + '")'
-			risNode.parm('ri_maxsamples').setExpression(ri_maxsamples)
-			ri_darkfalloff = 'ch("' + renderCtrl.path() + '/ri_darkfalloff' + chanNum + '")'
-			risNode.parm('ri_darkfalloff').setExpression(ri_darkfalloff)
-			ri_incremental = 'ch("' + renderCtrl.path() + '/ri_incremental' + chanNum + '")'
-			risNode.parm('ri_incremental').setExpression(ri_incremental)
-			ri_pixelfiltermode = 'chs("' + renderCtrl.path() + '/ri_pixelfiltermode' + chanNum + '")'
-			risNode.parm('ri_pixelfiltermode').setExpression(ri_pixelfiltermode)
-			ri_aperture1 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '1")'
-			risNode.parm('ri_aperture1').setExpression(ri_aperture1)
-			ri_aperture2 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '2")'
-			risNode.parm('ri_aperture2').setExpression(ri_aperture2)
-			ri_aperture3 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '3")'
-			risNode.parm('ri_aperture3').setExpression(ri_aperture3)
-			ri_aperture4 = 'ch("' + renderCtrl.path() + '/ri_aperture' + chanNum + '4")'
-			risNode.parm('ri_aperture4').setExpression(ri_aperture4)
-			ri_samplemotion = 'ch("' + renderCtrl.path() + '/ri_samplemotion' + chanNum + '")'
-			risNode.parm('ri_samplemotion').setExpression(ri_samplemotion)
-			ri_extrememotiondof = 'ch("' + renderCtrl.path() + '/ri_extrememotiondof' + chanNum + '")'
-			risNode.parm('ri_extrememotiondof').setExpression(ri_extrememotiondof)
-			ri_dofaspect = 'ch("' + renderCtrl.path() + '/ri_dofaspect' + chanNum + '")'
-			risNode.parm('ri_dofaspect').setExpression(ri_dofaspect)
-			ri_adaptall = 'ch("' + renderCtrl.path() + '/ri_adaptall' + chanNum + '")'
-			risNode.parm('ri_adaptall').setExpression(ri_adaptall)
-			ri_pixelsamplesx = 'ch("' + renderCtrl.path() + '/ri_pixelsamples' + chanNum + 'x")'
-			risNode.parm('ri_pixelsamplesx').setExpression(ri_pixelsamplesx)
-			ri_pixelsamplesy = 'ch("' + renderCtrl.path() + '/ri_pixelsamples' + chanNum + 'y")'
-			risNode.parm('ri_pixelsamplesy').setExpression(ri_pixelsamplesy)
-			#Objects
-			vobject = 'chsop("' + renderCtrl.path() + '/vobject' + chanNum + '")'
-			risNode.parm('vobject').setExpression(vobject)
-			forceobject = 'chsop("' + renderCtrl.path() + '/forceobject' + chanNum + '")'
-			risNode.parm('forceobject').setExpression(forceobject)
-			matte_objects = 'chsop("' + renderCtrl.path() + '/matte_objects' + chanNum + '")'
-			risNode.parm('matte_objects').setExpression(matte_objects)
-			phantom_objects = 'chsop("' + renderCtrl.path() + '/phantom_objects' + chanNum + '")'
-			risNode.parm('phantom_objects').setExpression(phantom_objects)
-			excludeobject = 'chsop("' + renderCtrl.path() + '/excludeobject' + chanNum + '")'
-			risNode.parm('excludeobject').setExpression(excludeobject)
-			#Display
-			# ri_channels = 'chs("")'
-			# risNode.parm('ri_channels').setExpression(ri_channels)
-			# ri_quantize = 'ch("")'
-			# risNode.parm('ri_quantize').setExpression(ri_quantize)
-			# ri_pixelfilter
-			# risNode.parm('ri_pixelfilter').setExpression(ri_pixelfilter)
-			# ri_pixelfilterwidth
-			# risNode.parm('ri_pixelfilterwidth').setExpression(ri_pixelfilterwidth)
-			# ri_gamma
-			# risNode.parm('ri_gamma').setExpression(ri_gamma)
-			# ri_gain
-			# risNode.parm('ri_gain').setExpression(ri_gain)
-			#RiAOV
-
-			#Lights
-			sololight = 'chsop("' + renderCtrl.path() + '/sololight' + chanNum + '")'
-			risNode.parm('sololight').setExpression(sololight)
-			alights = 'chsop("' + renderCtrl.path() + '/alights' + chanNum + '")'
-			risNode.parm('alights').setExpression(alights)
-			forcelights = 'chsop("' + renderCtrl.path() + '/forcelights' + chanNum + '")'
-			risNode.parm('forcelights').setExpression(forcelights)
-			excludelights = 'chsop("' + renderCtrl.path() + '/excludelights' + chanNum + '")'
-			risNode.parm('excludelights').setExpression(excludelights)
-			#Render Driver
-			target = 'chs("' + renderCtrl.path() + '/target' + chanNum + '")'
-			risNode.parm('target').setExpression(target)
-			rib_outputmode = 'ch("' + renderCtrl.path() + '/rib_outputmode' + chanNum + '")'
-			risNode.parm('rib_outputmode').setExpression(rib_outputmode)
-			soho_diskfile = 'chs("' + renderCtrl.path() + '/soho_diskfile' + chanNum + '")'
-			overrideRib = renderCtrl.parm('overriderib' + chanNum).eval()
-			if overrideRib == 0:
-				risNode.parm('soho_diskfile').setExpression(soho_diskfile)
+			setGlobalCtrls(renderCtrl, risNode)
+			setLayers(renderCtrl, risNode, layerNum)
 
 	#rename the nodes so that we make sure we have the right names in the right order
 	risNodes = merge.inputAncestors()
