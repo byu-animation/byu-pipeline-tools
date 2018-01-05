@@ -62,7 +62,7 @@ class NewBodyWindow(QtWidgets.QWidget):
 		self.label = QtWidgets.QLabel('Enter the %s name' % self.element)
 		self.textField = QtWidgets.QLineEdit()
 		self.okBtn = QtWidgets.QPushButton('Ok')
-		self.okBtn.clicked.connect(self.createBody)
+		self.okBtn.clicked.connect(self.createBodyHandler)
 		self.cancelBtn = QtWidgets.QPushButton('Cancel')
 		self.cancelBtn.clicked.connect(self.parent.close)
 		#set image
@@ -82,52 +82,55 @@ class NewBodyWindow(QtWidgets.QWidget):
 		grid.addWidget(self.cancelBtn, 2, 2)
 
 	#generate directories
-	def createBody(self):
+	def createBodyHandler(self):
 		try:
 			name = str(self.textField.text())
 			name = name.replace(' ', '_')
-			project = Project()
-			if self.element == 'asset':
-
-				msgBox = QtWidgets.QMessageBox()
-				msgBox.setText(self.tr("What type of asset is this?"))
-				# noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
-				# yesButton = msgBox.addButton(QtWidgets.QMessageBox.Yes)
-				cancelButton = msgBox.addButton(QtWidgets.QMessageBox.Cancel)
-				setButton = msgBox.addButton(self.tr("Set"), QtWidgets.QMessageBox.YesRole)
-				propButton = msgBox.addButton(self.tr("Prop"), QtWidgets.QMessageBox.YesRole)
-				characterButton = msgBox.addButton(self.tr("Character"), QtWidgets.QMessageBox.YesRole)
-				accessoryButton = msgBox.addButton(self.tr("Accessory"), QtWidgets.QMessageBox.YesRole)
-
-				msgBox.exec_()
-
-				if msgBox.clickedButton() == propButton:
-					asset_type = AssetType.PROP
-				elif msgBox.clickedButton() == characterButton:
-					asset_type = AssetType.CHARACTER
-				elif msgBox.clickedButton() == setButton:
-					asset_type = AssetType.SET
-				elif msgBox.clickedButton() == accessoryButton:
-					asset_type = AssetType.ACCESSORY
-
-				print asset_type + " is the asset type"
-				asset = project.create_asset(name, asset_type)
-			elif self.element == 'shot':
-				shot = project.create_shot(name)
-			elif self.element == 'tool':
-				tool = project.create_tool(name)
-			else:
-				message_gui.error(self.element + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
+			createBody(self.element, name)
 			self.parent.accept()
 		except EnvironmentError, e:
+			message_gui.error('There is already an crowd cycle with that name.', details=e)
 			print e
 			self.parent.accept()
 
 	def keyPressEvent(self, event):
 		key = event.key()
 		if key == QtCore.Qt.Key_Return:
-			self.createBody()
+			self.createBodyHandler()
 
+def createBody(bodyType, name):
+	project = Project()
+	if bodyType == 'asset':
+
+		msgBox = QtWidgets.QMessageBox()
+		msgBox.setText(msgBox.tr("What type of asset is this?"))
+		# noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
+		# yesButton = msgBox.addButton(QtWidgets.QMessageBox.Yes)
+		cancelButton = msgBox.addButton(QtWidgets.QMessageBox.Cancel)
+		setButton = msgBox.addButton(msgBox.tr("Set"), QtWidgets.QMessageBox.YesRole)
+		propButton = msgBox.addButton(msgBox.tr("Prop"), QtWidgets.QMessageBox.YesRole)
+		characterButton = msgBox.addButton(msgBox.tr("Character"), QtWidgets.QMessageBox.YesRole)
+		accessoryButton = msgBox.addButton(msgBox.tr("Accessory"), QtWidgets.QMessageBox.YesRole)
+
+		msgBox.exec_()
+
+		if msgBox.clickedButton() == propButton:
+			asset_type = AssetType.PROP
+		elif msgBox.clickedButton() == characterButton:
+			asset_type = AssetType.CHARACTER
+		elif msgBox.clickedButton() == setButton:
+			asset_type = AssetType.SET
+		elif msgBox.clickedButton() == accessoryButton:
+			asset_type = AssetType.ACCESSORY
+
+		print asset_type + " is the asset type"
+		asset = project.create_asset(name, asset_type)
+	elif bodyType == 'shot':
+		shot = project.create_shot(name)
+	elif bodyType == 'tool':
+		tool = project.create_tool(name)
+	else:
+		message_gui.error(bodyType + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
 
 if __name__ == '__main__':
 	app = QtWidgets.QApplication(sys.argv)

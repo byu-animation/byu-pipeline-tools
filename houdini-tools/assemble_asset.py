@@ -1,6 +1,5 @@
 import hou
 import os
-# import pyqt_houdini
 from PySide2 import QtGui, QtWidgets, QtCore
 
 from byuam import Department, Project, Environment

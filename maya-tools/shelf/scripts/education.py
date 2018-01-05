@@ -1,5 +1,5 @@
 import pymel.core as pm
-from byugui mport message_gui
+from byugui import message_gui
 
 def go():
 	pm.FileInfo()['license'] = 'education'

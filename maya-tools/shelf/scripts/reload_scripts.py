@@ -17,6 +17,7 @@ import reference
 import reload_scripts
 import attach_beard
 import playground
+import education
 
 def go():
 	reload(alembic_static_exporter)
@@ -37,5 +38,6 @@ def go():
 	reload(cluster_interpolate)
 	reload(attach_beard)
 	reload(playground)
+	reload(education)
 	# reload(byuam)
 	# reload(byugui)

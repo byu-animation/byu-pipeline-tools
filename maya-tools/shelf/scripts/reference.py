@@ -1,5 +1,6 @@
 from byugui.reference_gui import ReferenceWindow
 from byuam.environment import Department
+from byuam import byuutil
 import pymel.core as pm
 from PySide2 import QtWidgets
 import maya.OpenMayaUI as omu
@@ -29,10 +30,7 @@ def post_reference(dialog, useNamespace=False):
 				#TODO do we want to add multiple references in with different namespaces? You know to get rid of conflicts? Or is our current system for handling that good enough?
 				# pm.system.createReference(path, namespace="HelloWorld1")
 				basename = os.path.basename(path)
-				import time
-				millis = long(time.time())
-				firstJan2017 = 1483254000
-				millis = millis - firstJan2017
+				millis = byuutil.timestampThisYear()
 				refNamespace = basename + str(millis)
 				print basename
 				print str(millis)
