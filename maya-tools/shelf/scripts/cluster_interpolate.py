@@ -262,8 +262,8 @@ class ClusterInterpolationWindow():
 
 		pm.text(label='Invert')
 		self.invert = pm.optionMenu()
-		pm.menuItem(label='invert')
-		pm.menuItem(label='not invert')
+		pm.menuItem(label='Yes')
+		pm.menuItem(label='No')
 
 		#Set up Axis Menu
 		pm.text(label='Axies for Dist Measurement')
