@@ -9,6 +9,7 @@ import os
 import byuam
 from byuam.environment import Environment, Department
 from byuam.project import Project
+from byugui import message_gui
 
 WINDOW_WIDTH = 330
 WINDOW_HEIGHT = 300
@@ -28,7 +29,7 @@ class AlembicExportDialog(QDialog):
 		self.setWindowTitle('Select Objects for Export')
 		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
 		self.create_layout()
-		self.create_connections(cfx=False)
+		self.create_connections(cfx=cfx)
 		self.create_export_list()
 
 	def create_layout(self):
@@ -130,7 +131,7 @@ class AlembicExportDialog(QDialog):
 			elem = body.get_element(dept, checkout.get_element_name())
 			cfxElem = body.get_element(Department.CFX, checkout.get_element_name())
 			if cfx:
-				abcFilePath = elem.get_cache_dir()
+				abcFilePath = cfxElem.get_cache_dir()
 			else:
 				abcFilePath = elem.get_cache_dir()
 
@@ -267,6 +268,9 @@ class AlembicExportDialog(QDialog):
 			par = const.listRelatives(p=True)
 			constNS = par[0].split(':')[0]
 			targetList = cmds.parentConstraint(unicode(const), q=True, tl=True)
+			if targetList is None:
+				message_gui.warning("There was a problem getting the dependent children for the this geo. This might not be a problem. Check that the alembic looks okay and let me know if there is anything weird about it.", details=str(const))
+				continue
 			targetNS = targetList[0].split(':')[0]
 			if constNS != targetNS and targetNS not in depList:
 				depList.append(targetNS + 'RN')
