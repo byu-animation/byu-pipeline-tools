@@ -57,9 +57,13 @@
 			"annotation":"Cluster Interpolate",
 			"python_file":"cluster_interpolate.py"
 		}, {
-			"icon":"y.svg",
+			"icon":"viking-beard.svg",
 			"annotation":"Attach Beard",
 			"python_file":"attach_beard.py"
+		}, {
+			"icon":"beardling.svg",
+			"annotation":"Attach Beardling",
+			"python_file":"attach_beardling.py"
 		}, {
 			"icon":"new-body.svg",
 			"annotation":"Clear some stuff",
