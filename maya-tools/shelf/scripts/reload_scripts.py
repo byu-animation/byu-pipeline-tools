@@ -18,6 +18,8 @@ import reload_scripts
 import attach_beard
 import playground
 import education
+import attach_beardling
+import viking_reference
 
 def go():
 	reload(alembic_static_exporter)
@@ -39,5 +41,7 @@ def go():
 	reload(attach_beard)
 	reload(playground)
 	reload(education)
+	reload(attach_beardling)
+	reload(viking_reference)
 	# reload(byuam)
 	# reload(byugui)
