@@ -68,7 +68,7 @@ def abcExport(selected, path):
 		abcFile = formatFilename(abcFile) + '.abc'
 		abcFilePath = os.path.join(path, abcFile)
 		print abcFilePath
-		command = 'AbcExport -j "-frameRange 1 1 -root '+parent_geo+' -nn -uv -file '+abcFilePath+'";'
+		command = 'AbcExport -j "-frameRange 1 1 -stripNamespaces -root '+parent_geo+' -nn -uv -file '+abcFilePath+'";'
 		print command
 		Mel.eval(command)
 		abcfiles.append(abcFilePath)
@@ -112,7 +112,7 @@ def abcExportLoadedReferences(path):
 		abcFile = formatFilename(ref) + '.abc'
 		abcFilePath = os.path.join(path, abcFile)
 		print 'The file path: ' + str(abcFilePath)
-		command = 'AbcExport -j "%s -frameRange 1 1 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, abcFilePath)
+		command = 'AbcExport -j "%s -frameRange 1 1 -stripNamespaces -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, abcFilePath)
 		print 'The command: ' + command
 		Mel.eval(command)
 		print 'Export successful! ' + str(i) + ' of ' + str(len(loadedRefs))
@@ -131,7 +131,7 @@ def abcExportAll(name, path):
 
 	loadPlugin('AbcExport')
 
-	command = 'AbcExport -j "-writeVisibility -noNormals -uvWrite -worldSpace -file ' + abcFilePath + '";'
+	command = 'AbcExport -j "-stripNamespaces -writeVisibility -noNormals -uvWrite -worldSpace -file ' + abcFilePath + '";'
 	Mel.eval(command)
 
 	abcFiles = []
