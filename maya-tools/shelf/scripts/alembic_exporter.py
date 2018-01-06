@@ -10,6 +10,7 @@ import byuam
 from byuam.environment import Environment, Department
 from byuam.project import Project
 from byugui import message_gui
+import alembic_export_common as abcCom
 
 WINDOW_WIDTH = 330
 WINDOW_HEIGHT = 300
@@ -111,6 +112,10 @@ class AlembicExportDialog(QDialog):
 	def export_alembic(self, cfx=False):
 		self.saveFile()
 
+		# Start the export 5 frames before the beginning and end it 5 frames after the end for reason? I don't know I didn't write it. But I'm sure it's important.
+		start_frame = cmds.playbackOptions(q=1, animationStartTime=True) - 5
+		end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
+
 		selectedReferences = []
 		selectedItems = self.selection_list.selectedItems()
 		print "HERE IS WHERE WE HAVE THE LIST OF SELECTED ITEMS: " + str(selectedItems)
@@ -130,16 +135,25 @@ class AlembicExportDialog(QDialog):
 			dept = checkout.get_department_name()
 			elem = body.get_element(dept, checkout.get_element_name())
 			cfxElem = body.get_element(Department.CFX, checkout.get_element_name())
+			print "We are looking at the cfx stuff right now"
 			if cfx:
 				abcFilePath = cfxElem.get_cache_dir()
 			else:
 				abcFilePath = elem.get_cache_dir()
 
 			for ref in selectedReferences:
+				print "Preparing", ref, "for export."
 				refAbcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
 				print "fileName for reference", self.get_filename_for_reference(ref)
-				print "abcFilePath", refAbcFilePath
-				command = self.build_alembic_command(ref, refAbcFilePath)
+				print "just before going in abcFilePath", refAbcFilePath
+				try:
+					command = abcCom.build_tagged_alembic_command(ref, refAbcFilePath, start_frame, end_frame)
+					print "Command:", command
+				except Exception:
+					self.showNoTagFoundDialog(unicode(ref))
+					print "We are in this exception"
+					self.close_dialog()
+					return
 				print "Export Alembic command: ", command
 				Mel.eval(command)
 				os.system('chmod 774 ' + refAbcFilePath)
@@ -157,126 +171,6 @@ class AlembicExportDialog(QDialog):
 								 , defaultButton = 'Yes'
 								 , cancelButton  = 'No'
 								 , dismissString = 'No')
-
-	def build_alembic_command(self, ref, abcfilepath):
-		# First check and see if the reference has a tagged node on it.
-		tagged = self.get_tagged_node(ref)
-
-		if tagged == "":
-			return ""
-
-		# Then we get the dependencies of that item to be tagged.
-		depList = self.get_dependencies(ref)
-
-		# Visualize Referenses
-		print ref
-
-		# This determines the pieces that are going to be exported via alembic.
-		roots_string = ""
-		print "tagged: "
-		print tagged
-
-		# Each of these should be in a list, so it should know how many to add the -root tag to the alembic.
-		for alem_obj in tagged:
-			print "alem_obj: " + alem_obj
-			roots_string += (" -root %s"%(alem_obj))
-		# roots_string = " ".join([roots_string, "-root %s"%(' '.join(tagged))])
-		print "roots_string: " + roots_string
-
-		# Commented out 10/16/16: Testing to see if dependency list is necessary in export. Currently there are parenting/ancestor relationship conflicts - Trevor Barrus
-		# But it seems we add the dependencies to the thing being exported.
-		#for dep in depList:depListdepList
-		#	depRef = ls(dep)
-		#	if len(depRef) > 0:
-		#		tagged = self.get_tagged_node(depRef[0]).name()
-		#	else:
-		#		tagged = dep[:-2]
-
-		#	roots_string = " ".join([roots_string, "-root %s"%(tagged)])
-
-		start_frame = cmds.playbackOptions(q=1, animationStartTime=True) - 5
-		end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
-
-		# Then here is the actual Alembic Export command for Mel.
-		command = 'AbcExport -j "%s -frameRange %s %s -stripNamespaces -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
-		return command
-
-	def get_tagged_node(self, ref):
-		# Looks for a tagged node that has the BYU Alembic Export flag on it.
-		refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
-		rootNode = ls(refNodes[0])
-		taggedNode = []
-		if rootNode[0].hasAttr("BYU_Alembic_Export_Flag"):
-			# taggedNode = rootNode[0]
-			taggedNode.append(rootNode[0])
-		else:
-			# Otherwise get the tagged node that is in the children.
-			taggedNode = self.get_tagged_children(rootNode[0])
-
-		if not taggedNode:
-			self.showNoTagFoundDialog(unicode(ref))
-			return ""
-
-		print "taggedNode ", taggedNode
-		return taggedNode
-
-	def get_tagged_children(self, node):
-		# Too bad this is similar to the get_tagged_node method. Maybe this could be combined...
-		# This needs to grab multiple pieces of geometry - currently this only grabs one.
-		# Can we export multiple pieces of geometry? Usually it's been a little different since the mesh is in one place,
-		# but it might be good to set it up so that geo in multiple places can be grabbed.
-		tagged_children = []
-		# for child in node.listRelatives(c=True):
-		# 	if child.hasAttr("BYU_Alembic_Export_Flag"):
-		# 		return child
-		# 	else:
-		# 		taggedChild = self.get_tagged_children(child)
-		# 		if taggedChild != "":
-		# 			return taggedChild
-		# return ""
-		for child in node.listRelatives(c=True):
-			if child.hasAttr("BYU_Alembic_Export_Flag"):
-				# print "tagged child: "
-				# print child
-				tagged_children.append(str(child))
-			else:
-				taggedChild = self.get_tagged_children(child)
-				# if taggedChild != "":
-				if taggedChild: # Check if the list is empty
-					# print "tagged children: "
-					# print taggedChild
-					# return taggedChild
-					# If ther child below has any elements in the list, then we need to add then here...
-					# We need to add them one at a time, and somehow check for uniqueness.
-					for tag in taggedChild:
-						tagged_children.append(tag)
-		# print "tagged children: "
-		# print tagged_children
-		return tagged_children
-
-	def get_dependencies(self, ref):
-		# Looks like the
-		refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
-		rootNode = ls(refNodes[0])
-		depList = self.get_dependent_children(rootNode[0])
-
-		return depList
-
-	def get_dependent_children(self, node):
-		depList = []
-		for const in node.listRelatives(ad=True, type="parentConstraint"):
-			par = const.listRelatives(p=True)
-			constNS = par[0].split(':')[0]
-			targetList = cmds.parentConstraint(unicode(const), q=True, tl=True)
-			if targetList is None:
-				message_gui.warning("There was a problem getting the dependent children for the this geo. This might not be a problem. Check that the alembic looks okay and let me know if there is anything weird about it.", details=str(const))
-				continue
-			targetNS = targetList[0].split(':')[0]
-			if constNS != targetNS and targetNS not in depList:
-				depList.append(targetNS + 'RN')
-
-		print 'depList: ', depList
-		return depList
 
 	def showNoTagFoundDialog(self, ref):
 		return cmds.confirmDialog( title		 = 'No Alembic Tag Found'
