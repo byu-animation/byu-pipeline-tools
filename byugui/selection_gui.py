@@ -14,18 +14,18 @@ from byuam.environment import Department, Environment
 WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 600
 
-class SelectionWindow(QtWidgets.QWidget):
+class SelectionWindow(QtWidgets.QDialog):
 
 	finished = QtCore.Signal()
 
-	def __init__(self, parent, dept_list=Department.ALL):
+	def __init__(self, parent, dept_list=Department.ALL, showWindow=True):
 		super(SelectionWindow, self).__init__()
 		self.parent = parent
 		self.project = Project()
 		self.environment = Environment()
-		self.initUI(dept_list)
+		self.initUI(dept_list, showWindow)
 
-	def initUI(self, dept_list):
+	def initUI(self, dept_list, showWindow):
 		#define gui elements
 		self.resize(WINDOW_WIDTH,WINDOW_HEIGHT)
 		self.setWindowTitle('Select Asset')
@@ -64,7 +64,8 @@ class SelectionWindow(QtWidgets.QWidget):
 		main_layout.addWidget(self.dept_tabs)
 		main_layout.addLayout(button_layout)
 
-		self.show()
+		if showWindow:
+			self.show()
 
 	def createTabs(self):
 		#remember the current index so that we can restore it when we create the tabs
@@ -106,9 +107,9 @@ class SelectionWindow(QtWidgets.QWidget):
 		last_publish = element_obj.get_last_publish()
 		last_publish_comment = None
 		if last_publish is not None:
-			last_publish_comment = "Last published {0} by {1} \n \"{2}\"".format(last_publish[1], last_publish[0], last_publish[2])
+			last_publish_comment = 'Last published {0} by {1} \n \"{2}\"'.format(last_publish[1], last_publish[0], last_publish[2])
 		else:
-			last_publish_comment = "No publishes for this element"
+			last_publish_comment = 'No publishes for this element'
 		currentTab = self.dept_tabs.currentWidget()
 
 	def hasPreviousPublish(self, body, department):
@@ -120,10 +121,10 @@ class SelectionWindow(QtWidgets.QWidget):
 		return True
 
 	def select(self):
-		"""
+		'''
 		Selects the currently selected item
 		:return:
-		"""
+		'''
 		current_user = self.environment.get_current_username()
 		current_dept = self.dept_list[self.dept_tabs.currentIndex()]
 
@@ -136,6 +137,12 @@ class SelectionWindow(QtWidgets.QWidget):
 	def closeEvent(self, event):
 		self.finished.emit()
 		event.accept()
+
+def getSelectedElement(parent, deptList=Department.ALL):
+	window = SelectionWindow(parent, dept_list=deptList, showWindow=False)
+	help(window)
+	window.exec_()
+	return window.result
 
 class DepartmentTab(QtWidgets.QWidget):
 	def __init__(self, parent):

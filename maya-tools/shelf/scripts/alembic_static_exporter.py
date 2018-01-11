@@ -121,7 +121,6 @@ def abcExportLoadedReferences(path):
 	print 'all exports complete'
 	return abcfiles
 
-
 def abcExportAll(name, path):
 	if not os.path.exists(path):
 		os.makedirs(path)
@@ -139,7 +138,6 @@ def abcExportAll(name, path):
 	abcFiles.append(abcFilePath)
 
 	return abcFiles
-
 
 def formatFilename(filename):
 	filename = filename.replace('Shape', '')
@@ -173,7 +171,6 @@ def checkFiles(files):
 		#ui.infoWindow(errorMessage, wtitle='Error exporting files', msev=messageSeverity.Error)
 
 	return missingFiles
-
 
 def decodeFileName():
 	'''

@@ -5,15 +5,14 @@ from byugui.publish_gui import PublishWindow
 from PySide2 import QtWidgets
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
-import alembic_static_exporter
 import os
-import alembic_exporter
+import alembic_export
 from byugui import message_gui
 
 maya_publish_dialog = None
 
 def maya_main_window():
-	"""Return Maya's main window"""
+	'''Return Maya's main window'''
 	for obj in QtWidgets.qApp.topLevelWidgets():
 		if obj.objectName() == 'MayaWindow':
 			return obj
@@ -37,18 +36,11 @@ def post_publish():
 		except:
 			pass
 
-		print "TODO: export playblast"
+		print 'TODO: export playblast'
 		print maya_publish_dialog.result.get_name()
 
-		#TODO I put this here becuase we have a people with the alemic export that will always fail unless the user is publishing or exporting from an already checkouted file. Without this whenever we do the first publish they will get an error duing the alembic export process that would be disconcerting and pershaps suggest that the publish was unsucessful. So I want them to feel confident that the publish was successfull. Ultimatly I want this gone so the process is more streamlined. So when the exporter is fixed so that it can export on the first publish then we will be fine.
-		message_gui.info("Publish Complete. Starting Alembic Export")
-
-		if element.get_department() == Department.MODEL:
-			print "Exporting Alembic"
-			alembic_static_exporter.go()
-		if element.get_department() == Department.ANIM:
-			print "Giving the Animator the opportunity to export alembic"
-			alembic_exporter.go()
+		print 'Publish Complete. Begin Exporting Alembic'
+		alembic_export.go(element=element)
 
 def go():
 	parent = maya_main_window()
