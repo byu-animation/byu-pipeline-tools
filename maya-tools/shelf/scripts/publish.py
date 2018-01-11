@@ -6,7 +6,7 @@ from PySide2 import QtWidgets
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 import os
-import alembic_export
+import alembic_exporter
 from byugui import message_gui
 
 maya_publish_dialog = None
@@ -40,7 +40,7 @@ def post_publish():
 		print maya_publish_dialog.result.get_name()
 
 		print 'Publish Complete. Begin Exporting Alembic'
-		alembic_export.go(element=element)
+		alembic_exporter.go(element=element)
 
 def go():
 	parent = maya_main_window()

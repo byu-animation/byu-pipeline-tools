@@ -1,8 +1,7 @@
 import maya.cmds as mc
 import alembic_static_exporter
 import alembic_exporter
-import alembic_export
-import alembic_export_common
+import reference_selection
 import alembic_tagger
 import alembic_untagger
 import checkout
@@ -25,6 +24,7 @@ import viking_reference
 def go():
 	reload(alembic_static_exporter)
 	reload(alembic_exporter)
+	reload(reference_selection)
 	reload(alembic_tagger)
 	reload(alembic_untagger)
 	reload(checkout)
@@ -35,7 +35,6 @@ def go():
 	reload(publish)
 	reload(rollback)
 	reload(fk_ik_snapping)
-	reload(alembic_export)
 	reload(reload_scripts)
 	reload(reference)
 	reload(cluster_interpolate)
@@ -44,6 +43,5 @@ def go():
 	reload(education)
 	reload(attach_beardling)
 	reload(viking_reference)
-	reload(alembic_export_common)
 	# reload(byuam)
 	# reload(byugui)

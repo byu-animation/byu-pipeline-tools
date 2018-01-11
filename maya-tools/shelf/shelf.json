@@ -23,7 +23,7 @@
 		}, {
 			"icon":"alembic-export.svg",
 			"annotation":"Export as Alembic",
-			"python_file":"alembic_export.py"
+			"python_file":"alembic_exporter.py"
 		}, {
 			"icon":"tag.svg",
 			"annotation":"Tag Selected Objects for Export",
