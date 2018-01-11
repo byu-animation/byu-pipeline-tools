@@ -73,6 +73,10 @@
 			"annotation":"Do a viking-reference",
 			"python_file":"viking_reference.py"
 		}, {
+			"icon":"education.svg",
+			"annotation":"Change the licence to education",
+			"python_file":"education.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
