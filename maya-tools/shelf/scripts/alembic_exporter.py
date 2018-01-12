@@ -9,7 +9,7 @@ import os
 class NoTaggedGeo(Exception):
 	'''Raised when the geo has no tags'''
 
-def go(element=None, dept=None, cfx=False):
+def go(element=None, dept=None, cfx=False, selection=None):
 	if cfx:
 		print 'There is a new way. Come talk to me about it.'
 		raise Exception
@@ -29,16 +29,16 @@ def go(element=None, dept=None, cfx=False):
 			parent = QtWidgets.QApplication.activeWindow()
 			element = selection_gui.getSelectedElement(parent)
 			if element is None:
-				return
+				return None
 		else:
 			bodyName = checkout.get_body_name()
 			deptName = checkout.get_department_name()
 			elemName = checkout.get_element_name()
 			body = proj.get_body(bodyName)
 			element = body.get_element(deptName, name=elemName)
-	export(element)
+	return export(element, selection=selection)
 
-def export(element):
+def export(element, selection=None):
 	proj = Project()
 	bodyName = element.get_parent()
 	body = proj.get_body(bodyName)
@@ -53,7 +53,7 @@ def export(element):
 		else:
 			files = exportAll(abcFilePath, static=True)
 	elif body.is_crowd_cycle():
-		files = exportSelected(static=False, tag='BYU_Alembic_Export_Flag')
+		files = exportSelected(selection, abcFilePath, static=False, tag='BYU_Alembic_Export_Flag')
 
 	if not files:
 		#Maybe this is a bad distinction but None is if it was canceled or something and empty is if it went but there weren't any alembics
@@ -66,9 +66,33 @@ def export(element):
 		os.system('chmod 774 ' + abcFile)
 
 	#TODO install the geometry
+	print "These are the files that we are returning", files
+	return files
 
-def exportSelected():
-	print 'export selected'
+
+def exportSelected(selection, destination, static=False, tag=None):
+	print "This is the selection", selection
+	if not static:
+		# Start the export 5 frames before the beginning and end it 5 frames after the end for reason? I don't know I didn't write it. But I'm sure it's important.
+		start_frame = pm.playbackOptions(q=True, animationStartTime=True)
+		end_frame = pm.playbackOptions(q=True, animationEndTime=True)
+	else:
+		start_frame = 1
+		end_frame = 1
+
+	abcFiles = []
+	for node in selection:
+		abcFilePath = os.path.join(destination, str(node) + '.abc')
+		try:
+			command = build_tagged_alembic_command(node, abcFilePath, tag, start_frame, end_frame)
+			print 'Command:', command
+		except NoTaggedGeo, e:
+			message_gui.error('Unable to locate Alembic Export tag for ' + str(ref), title='No Alembic Tag Found')
+			return
+		print 'Export Alembic command: ', command
+		pm.Mel.eval(command)
+		abcFiles.append(abcFilePath)
+	return abcFiles
 
 def exportAll():
 	alembic_static_exporter.go()
@@ -162,6 +186,6 @@ def get_tagged_nodes(node, tag):
 	#Otherwise search all the children for any nodes with the flag
 	tagged_children = []
 	for child in node.listRelatives(c=True):
-		tagged_children.extend(get_tagged_tree(child, tag))
+		tagged_children.extend(get_tagged_nodes(child, tag))
 
 	return tagged_children

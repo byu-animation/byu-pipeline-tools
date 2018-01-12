@@ -29,18 +29,23 @@ def post_publish():
 		user = maya_publish_dialog.user
 		src = maya_publish_dialog.src
 		comment = maya_publish_dialog.comment
-		dst = element.publish(user, src, comment)
-		#Ensure file has correct permissions
-		try:
-			os.chmod(dst, 0660)
-		except:
-			pass
+		publishElement(element, user, src, comment)
 
-		print 'TODO: export playblast'
-		print maya_publish_dialog.result.get_name()
+def publishElement(element, user, src, comment):
+	dst = element.publish(user, src, comment)
+	#Ensure file has correct permissions
+	try:
+		os.chmod(dst, 0660)
+	except:
+		pass
 
-		print 'Publish Complete. Begin Exporting Alembic'
-		alembic_exporter.go(element=element)
+	#Export a playblast
+	print 'TODO: export playblast'
+	print element.get_name()
+
+	#Export Alembics
+	print 'Publish Complete. Begin Exporting Alembic'
+	alembic_exporter.go(element=element)
 
 def go():
 	parent = maya_main_window()
@@ -52,5 +57,5 @@ def go():
 		cmds.file(rename=filePath)
 		cmds.file(save=True)
 	global maya_publish_dialog
-	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX])
+	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX, Department.CYCLES])
 	maya_publish_dialog.finished.connect(post_publish)

@@ -20,6 +20,7 @@ import playground
 import education
 import attach_beardling
 import viking_reference
+import crowdCycle
 
 def go():
 	reload(alembic_static_exporter)
@@ -43,5 +44,6 @@ def go():
 	reload(education)
 	reload(attach_beardling)
 	reload(viking_reference)
+	reload(crowdCycle)
 	# reload(byuam)
 	# reload(byugui)

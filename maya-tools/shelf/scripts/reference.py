@@ -22,11 +22,15 @@ def post_reference(dialog, useNamespace=False):
 
 	print "The filePaths are", file_paths
 	print "The reference is", isReferenced
+	reference(file_paths, isReferenced=isReferenced, useNamespace=True)
 
-	if file_paths is not None and isReferenced:
+def reference(filePaths, isReferenced=True, useNamespace=False):
+	if filePaths is not None and isReferenced:
 		empty = []
-		for path in file_paths:
+		for path in filePaths:
+			print "This is the path that we are working with", path
 			if os.path.exists(path):
+				print path, "exists"
 				#TODO do we want to add multiple references in with different namespaces? You know to get rid of conflicts? Or is our current system for handling that good enough?
 				# pm.system.createReference(path, namespace="HelloWorld1")
 				basename = os.path.basename(path)
@@ -40,6 +44,7 @@ def post_reference(dialog, useNamespace=False):
 				else:
 					pm.system.createReference(path)
 			else:
+				print path, "don't exist"
 				empty.append(path)
 
 		if empty:
@@ -48,7 +53,6 @@ def post_reference(dialog, useNamespace=False):
 			error_dialog.showMessage("The following elements are empty. Nothing has been published to them, so they can't be referenced.\n"+empty_str)
 	# if not done:
 	#	 go()
-
 
 def go(useNamespace=False):
 	parent = maya_main_window()

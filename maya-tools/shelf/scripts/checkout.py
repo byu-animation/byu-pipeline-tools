@@ -32,7 +32,7 @@ def open_file():
 def go():
 	parent = maya_main_window()
 	global maya_checkout_dialog
-	maya_checkout_dialog = CheckoutWindow(parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX])
+	maya_checkout_dialog = CheckoutWindow(parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX, Department.CYCLES])
 	maya_checkout_dialog.finished.connect(open_file)
 	# if dialog.exec_():
 	#	 print self.result

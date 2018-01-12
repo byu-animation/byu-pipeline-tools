@@ -112,7 +112,7 @@ class Project:
 		filepath = os.path.join(self._env.get_crowds_dir(), name)
 		if not os.path.exists(filepath):
 			return None
-		return Crowd(filepath)
+		return CrowdCycle(filepath)
 
 	def get_body(self, name):
 		'''

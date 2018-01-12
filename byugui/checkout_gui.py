@@ -98,6 +98,12 @@ class CheckoutWindow(QtWidgets.QWidget):
 						item = QtWidgets.QListWidgetItem(shot)
 						element_list.addItem(item)
 						element_list.currentItemChanged.connect(self.set_current_item)
+			elif dept in Department.CROWD_DEPTS:
+				for crowdCycle in self.project.list_crowd_cycles():
+					if not self.show_published.isChecked() or self.hasPreviousPublish(crowdCycle, dept):
+						item = QtWidgets.QListWidgetItem(crowdCycle)
+						element_list.addItem(item)
+						element_list.currentItemChanged.connect(self.set_current_item)
 			tab_layout.addWidget(element_list)
 			tab_layout.addWidget(commentBox)
 			tab.setLayout(tab_layout)
@@ -123,6 +129,9 @@ class CheckoutWindow(QtWidgets.QWidget):
 			self.current_item = str(index.text())
 		elif current_dept in Department.SHOT_DEPTS:
 			self.current_item = str(index.text())
+		elif current_dept in Department.CROWD_DEPTS:
+			self.current_item = str(index.text())
+			#TODO what the heck? Why do we have three identical results from three different conditions? What are we trying to accomplish here? Admitadly the last one I added just following the crowd.
 
 		asset_obj = self.project.get_body(self.current_item)
 		element_obj = asset_obj.get_element(current_dept)

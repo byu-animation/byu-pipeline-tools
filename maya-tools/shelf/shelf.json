@@ -77,6 +77,10 @@
 			"annotation":"Change the licence to education",
 			"python_file":"education.py"
 		}, {
+			"icon":"agent.svg",
+			"annotation":"Bake Crowd Cycle",
+			"python_file":"crowdCycle.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
