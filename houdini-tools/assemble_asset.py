@@ -189,10 +189,15 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 		set_folder.addParmTemplate(hide_toggle)
 		set_folder.addParmTemplate(animate_toggle)
 		set_folder.addParmTemplate(animate_toggle_to_int)
-		hda.parm('hide').setExpression('ch("../' + hide_toggle_name + '")')
-		hda.parm('shot').setExpression('chs("../shot")')
-		hda.parm('set').setExpression('chs("../set")')
-		hda.parm('source').setExpression('chs("../' + animate_toggle_to_int_name + '")')
+		try:
+			hda.parm('hide').setExpression('ch("../' + hide_toggle_name + '")')
+			hda.parm('shot').setExpression('chs("../shot")')
+			hda.parm('set').setExpression('chs("../set")')
+			hda.parm('source').setExpression('chs("../' + animate_toggle_to_int_name + '")')
+		except AttributeError, e:
+			message_gui.error("There was an error adding " + str(asset_name) + " to the set. Please make sure that the node exists and has all of the necessary parameters (hide, shot, set, source) and try again. Contact the pipeline team if you need help. We will continue assembling so you can see the output, but you will need to assemble this set again.", details=str(e))
+		except Exception, e:
+			message_gui.error('There was a problem with this node: ' + str(asset_name), details=str(e))
 
 	assetTypeDef = set_hda.type().definition()
 	hda_parm_group = assetTypeDef.parmTemplateGroup()
