@@ -1,297 +1,192 @@
+import reference_selection
+import alembic_static_exporter
+from byugui import selection_gui, message_gui
+from byuam.body import AssetType
 from PySide2 import QtWidgets
-from PySide2.QtWidgets import *
-
-import maya.cmds as cmds
-import maya.OpenMayaUI as omu
-from pymel.core import *
-# import utilities as amu #asset manager utilities
+from byuam import Project
+import pymel.core as pm
 import os
-import byuam
-from byuam.environment import Environment, Department
-from byuam.project import Project
-from byugui import message_gui
 
-WINDOW_WIDTH = 330
-WINDOW_HEIGHT = 300
+class NoTaggedGeo(Exception):
+	'''Raised when the geo has no tags'''
 
-def maya_main_window():
-	"""Return Maya's main window"""
-	for obj in QtWidgets.qApp.topLevelWidgets():
-		if obj.objectName() == 'MayaWindow':
-			return obj
-	raise RuntimeError('Could not find MayaWindow instance')
+def go(element=None, dept=None, selection=None, startFrame=None, endFrame=None):
+	pm.loadPlugin('AbcExport')
 
-class AlembicExportDialog(QDialog):
-	def __init__(self, parent=maya_main_window(), cfx=False):
-	#def setup(self, parent):
-		QDialog.__init__(self, parent)
-		self.saveFile()
-		self.setWindowTitle('Select Objects for Export')
-		self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
-		self.create_layout()
-		self.create_connections(cfx=cfx)
-		self.create_export_list()
+	if not pm.sceneName() == '':
+		pm.saveFile(force=True)
 
-	def create_layout(self):
-		#Create the selected item list
-		self.selection_list = QListWidget()
-		self.selection_list.setSelectionMode(QAbstractItemView.ExtendedSelection);
-		self.selection_list.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-
-		#Create Export Alembic and Cancel buttons
-		self.export_button = QPushButton('Export Alembic')
-		self.cancel_button = QPushButton('Cancel')
-
-		#Create button layout
-		button_layout = QHBoxLayout()
-		button_layout.setSpacing(2)
-		button_layout.addStretch()
-
-		button_layout.addWidget(self.export_button)
-		button_layout.addWidget(self.cancel_button)
-
-		#Create main layout
-		main_layout = QVBoxLayout()
-		main_layout.setSpacing(2)
-		main_layout.setMargin(2)
-		main_layout.addWidget(self.selection_list)
-		main_layout.addLayout(button_layout)
-
-		self.setLayout(main_layout)
-
-	def create_connections(self, cfx=False):
-		#Connect the buttons
-		#self.connect(self.export_button, SIGNAL('clicked()'), self.export_alembic)
-		#self.connect(self.cancel_button, SIGNAL('clicked()'), self.close_dialog)
-		self.export_button.clicked.connect(lambda: self.export_alembic(cfx=cfx))
-		self.cancel_button.clicked.connect(self.close_dialog)
-
-	def create_export_list(self):
-		#Remove all items from the list before repopulating
-		self.selection_list.clear()
-
-		#Add the list to select from
-		loadedRef = self.getLoadedReferences()
-
-		for ref in loadedRef:
-			item = QListWidgetItem(ref)
-			item.setText(ref)
-			self.selection_list.addItem(item)
-
-		self.selection_list.sortItems()
-
-	def getLoadedReferences(self):
-		references = cmds.ls(references=True)
-		loaded=[]
-		print "Loaded References: "
-		for ref in references:
-			print "Checking status of " + ref
-			try:
-				if cmds.referenceQuery(ref, isLoaded=True):
-					loaded.append(ref)
-			except:
-				print "Warning: " + ref + " was not associated with a reference file"
-		return loaded
-
-
-	########################################################################
-	# SLOTS
-	########################################################################
-
-	def get_filename_for_reference(self, ref):
-		refPath = cmds.referenceQuery(unicode(ref), filename=True)
-		start = refPath.find("{")
-		end = refPath.find("}")
-		if start == -1 or end == -1:
-			copyNum = ""
+	if element is None:
+		filePath = pm.sceneName()
+		fileDir = os.path.dirname(filePath)
+		proj = Project()
+		checkout = proj.get_checkout(fileDir)
+		if checkout is None:
+			parent = QtWidgets.QApplication.activeWindow()
+			element = selection_gui.getSelectedElement(parent)
+			if element is None:
+				return None
 		else:
-			copyNum = refPath[start+1:end]
-		return os.path.basename(refPath).split('.')[0] + str(copyNum) + '.abc'
+			bodyName = checkout.get_body_name()
+			deptName = checkout.get_department_name()
+			elemName = checkout.get_element_name()
+			body = proj.get_body(bodyName)
+			element = body.get_element(deptName, name=elemName)
 
-	def export_alembic(self, cfx=False):
-		self.saveFile()
+	#Get the element from the right Department
+	if dept is not None and not element.get_department() == dept:
+		print 'We are overwriting the', element.get_department(), 'with', dept
+		body = element.get_parent()
+		element = body.get_element(dept)
 
-		selectedReferences = []
-		selectedItems = self.selection_list.selectedItems()
-		print "HERE IS WHERE WE HAVE THE LIST OF SELECTED ITEMS: " + str(selectedItems)
-		for item in selectedItems:
-			print item.text()
-			selectedReferences.append(item.text())
-		print "Here are the references: ", selectedReferences
+	return export(element, selection=selection, startFrame=startFrame, endFrame=endFrame)
 
-		if self.showConfirmAlembicDialog(selectedReferences) == 'Yes':
-			loadPlugin("AbcExport")
-			filePath = cmds.file(q=True, sceneName=True)
-			fileDir = os.path.dirname(filePath)
+def export(element, selection=None, startFrame=None, endFrame=None):
+	proj = Project()
+	bodyName = element.get_parent()
+	body = proj.get_body(bodyName)
+	abcFilePath = element.get_cache_dir()
+	#TODO we don't want to put them into the element cache right away. We want to put them in a seperate place and then copy them over later.
 
-			proj = Project()
-			checkout = proj.get_checkout(fileDir)
-			body = proj.get_body(checkout.get_body_name())
-			dept = checkout.get_department_name()
-			elem = body.get_element(dept, checkout.get_element_name())
-			cfxElem = body.get_element(Department.CFX, checkout.get_element_name())
-			if cfx:
-				abcFilePath = cfxElem.get_cache_dir()
-			else:
-				abcFilePath = elem.get_cache_dir()
+	if startFrame is None:
+		startFrame = pm.playbackOptions(q=True, animationStartTime=True)
+	if endFrame is None:
+		endFrame = pm.playbackOptions(q=True, animationEndTime=True)
 
-			for ref in selectedReferences:
-				refAbcFilePath = os.path.join(abcFilePath, self.get_filename_for_reference(ref))
-				print "fileName for reference", self.get_filename_for_reference(ref)
-				print "abcFilePath", refAbcFilePath
-				command = self.build_alembic_command(ref, refAbcFilePath)
-				print "Export Alembic command: ", command
-				Mel.eval(command)
-				os.system('chmod 774 ' + refAbcFilePath)
-
-		self.close_dialog()
-
-	def saveFile(self):
-		if not cmds.file(q=True, sceneName=True) == '':
-			cmds.file(save=True, force=True) #save file
-
-	def showConfirmAlembicDialog(self, references):
-		return cmds.confirmDialog( title		 = 'Export Alembic'
-								 , message	   = 'Export Alembic for:\n' + str(references)
-								 , button		= ['Yes', 'No']
-								 , defaultButton = 'Yes'
-								 , cancelButton  = 'No'
-								 , dismissString = 'No')
-
-	def build_alembic_command(self, ref, abcfilepath):
-		# First check and see if the reference has a tagged node on it.
-		tagged = self.get_tagged_node(ref)
-
-		if tagged == "":
-			return ""
-
-		# Then we get the dependencies of that item to be tagged.
-		depList = self.get_dependencies(ref)
-
-		# Visualize Referenses
-		print ref
-
-		# This determines the pieces that are going to be exported via alembic.
-		roots_string = ""
-		print "tagged: "
-		print tagged
-
-		# Each of these should be in a list, so it should know how many to add the -root tag to the alembic.
-		for alem_obj in tagged:
-			print "alem_obj: " + alem_obj
-			roots_string += (" -root %s"%(alem_obj))
-		# roots_string = " ".join([roots_string, "-root %s"%(' '.join(tagged))])
-		print "roots_string: " + roots_string
-
-		# Commented out 10/16/16: Testing to see if dependency list is necessary in export. Currently there are parenting/ancestor relationship conflicts - Trevor Barrus
-		# But it seems we add the dependencies to the thing being exported.
-		#for dep in depList:depListdepList
-		#	depRef = ls(dep)
-		#	if len(depRef) > 0:
-		#		tagged = self.get_tagged_node(depRef[0]).name()
-		#	else:
-		#		tagged = dep[:-2]
-
-		#	roots_string = " ".join([roots_string, "-root %s"%(tagged)])
-
-		start_frame = cmds.playbackOptions(q=1, animationStartTime=True) - 5
-		end_frame = cmds.playbackOptions(q=1, animationEndTime=True) + 5
-
-		# Then here is the actual Alembic Export command for Mel.
-		command = 'AbcExport -j "%s -frameRange %s %s -stripNamespaces -step 0.25 -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(start_frame), str(end_frame), abcfilepath)
-		return command
-
-	def get_tagged_node(self, ref):
-		# Looks for a tagged node that has the BYU Alembic Export flag on it.
-		refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
-		rootNode = ls(refNodes[0])
-		taggedNode = []
-		if rootNode[0].hasAttr("BYU_Alembic_Export_Flag"):
-			# taggedNode = rootNode[0]
-			taggedNode.append(rootNode[0])
+	if body.is_shot():
+		startFrame += 5
+		endFrame += 5
+		files = exportReferences(abcFilePath, tag='BYU_Alembic_Export_Flag', selectionMode=True, startFrame=startFrame, endFrame=endFrame)
+	elif body.is_asset():
+		if body.get_type() == AssetType.SET:
+			files = exportReferences(abcFilePath)
 		else:
-			# Otherwise get the tagged node that is in the children.
-			taggedNode = self.get_tagged_children(rootNode[0])
+			files = exportAll(abcFilePath)
+	elif body.is_crowd_cycle():
+		files = exportSelected(selection, abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
 
-		if not taggedNode:
-			self.showNoTagFoundDialog(unicode(ref))
-			return ""
+	if not files:
+		#Maybe this is a bad distinction but None is if it was canceled or something and empty is if it went but there weren't any alembics
+		if files is None:
+			return
+		message_gui.error('No alembics were exported')
+		return
 
-		print "taggedNode ", taggedNode
-		return taggedNode
+	for abcFile in files:
+		os.system('chmod 774 ' + abcFile)
 
-	def get_tagged_children(self, node):
-		# Too bad this is similar to the get_tagged_node method. Maybe this could be combined...
-		# This needs to grab multiple pieces of geometry - currently this only grabs one.
-		# Can we export multiple pieces of geometry? Usually it's been a little different since the mesh is in one place,
-		# but it might be good to set it up so that geo in multiple places can be grabbed.
-		tagged_children = []
-		# for child in node.listRelatives(c=True):
-		# 	if child.hasAttr("BYU_Alembic_Export_Flag"):
-		# 		return child
-		# 	else:
-		# 		taggedChild = self.get_tagged_children(child)
-		# 		if taggedChild != "":
-		# 			return taggedChild
-		# return ""
-		for child in node.listRelatives(c=True):
-			if child.hasAttr("BYU_Alembic_Export_Flag"):
-				# print "tagged child: "
-				# print child
-				tagged_children.append(str(child))
+	#TODO install the geometry
+	print 'These are the files that we are returning', files
+	return files
+
+
+def exportSelected(selection, destination, tag=None, startFrame=1, endFrame=1):
+	abcFiles = []
+	for node in selection:
+		abcFilePath = os.path.join(destination, str(node) + '.abc')
+		try:
+			command = buildTaggedAlembicCommand(node, abcFilePath, tag, startFrame, endFrame)
+			print 'Command:', command
+		except NoTaggedGeo, e:
+			message_gui.error('Unable to locate Alembic Export tag for ' + str(node), title='No Alembic Tag Found')
+			return
+		print 'Export Alembic command: ', command
+		pm.Mel.eval(command)
+		abcFiles.append(abcFilePath)
+	return abcFiles
+
+def exportAll(startFrame=1, endFrame=1):
+	alembic_static_exporter.go()
+
+def exportReferences(destination, tag=None, selectionMode=False, startFrame=1, endFrame=1):
+	if selectionMode:
+		selection = reference_selection.getSelectedReferences()
+	else:
+		selection = reference_selection.getLoadedReferences()
+
+	if selection is None:
+		return
+
+	abcFiles = []
+
+	for ref in selection:
+		# refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
+		refPath = pm.referenceQuery(unicode(ref), filename=True)
+		print 'the refpath', refPath
+		refNodes = pm.referenceQuery(unicode(refPath), nodes=True )
+		print 'the refNode', refNodes
+		rootNode = pm.ls(refNodes[0])[0]
+		print 'rootNode', rootNode
+		refAbcFilePath = os.path.join(destination, getFilenameForReference(rootNode))
+		print refAbcFilePath
+		try:
+			if tag is None:
+				command = buildAlembicCommand([rootNode], refAbcFilePath, startFrame, endFrame)
 			else:
-				taggedChild = self.get_tagged_children(child)
-				# if taggedChild != "":
-				if taggedChild: # Check if the list is empty
-					# print "tagged children: "
-					# print taggedChild
-					# return taggedChild
-					# If ther child below has any elements in the list, then we need to add then here...
-					# We need to add them one at a time, and somehow check for uniqueness.
-					for tag in taggedChild:
-						tagged_children.append(tag)
-		# print "tagged children: "
-		# print tagged_children
-		return tagged_children
+				command = buildTaggedAlembicCommand(rootNode, refAbcFilePath, tag, startFrame, endFrame)
+			print 'Command:', command
+		except NoTaggedGeo, e:
+			message_gui.error('Unable to locate Alembic Export tag for ' + str(ref), title='No Alembic Tag Found')
+			return
+		print 'Export Alembic command: ', command
+		pm.Mel.eval(command)
+		abcFiles.append(refAbcFilePath)
+	return abcFiles
 
-	def get_dependencies(self, ref):
-		# Looks like the
-		refNodes = cmds.referenceQuery(unicode(ref), nodes=True)
-		rootNode = ls(refNodes[0])
-		depList = self.get_dependent_children(rootNode[0])
+def getFilenameForReference(ref):
+	#TODO Make sure that we test for multiple files
+	# When we get the file name we need to make sure that we also get the reference number. This will allow us to have multiple alembics from a duplicated reference.
+	# refPath = ref.fileName(False,True,True)
+	refPath = refPath = pm.referenceQuery(unicode(ref), filename=True)
+	start = refPath.find('{')
+	end = refPath.find('}')
+	if start == -1 or end == -1:
+		copyNum = ''
+	else:
+		copyNum = refPath[start+1:end]
+	return os.path.basename(refPath).split('.')[0] + str(copyNum) + '.abc'
 
-		return depList
+def buildTaggedAlembicCommand(rootNode, filepath, tag, startFrame, endFrame, step=0.25):
+	# First check and see if the reference has a tagged node on it.
+	taggedNodes = getTaggedNodes(rootNode, tag)
 
-	def get_dependent_children(self, node):
-		depList = []
-		for const in node.listRelatives(ad=True, type="parentConstraint"):
-			par = const.listRelatives(p=True)
-			constNS = par[0].split(':')[0]
-			targetList = cmds.parentConstraint(unicode(const), q=True, tl=True)
-			if targetList is None:
-				message_gui.warning("There was a problem getting the dependent children for the this geo. This might not be a problem. Check that the alembic looks okay and let me know if there is anything weird about it.", details=str(const))
-				continue
-			targetNS = targetList[0].split(':')[0]
-			if constNS != targetNS and targetNS not in depList:
-				depList.append(targetNS + 'RN')
+	if not taggedNodes:
+		raise NoTaggedGeo
 
-		print 'depList: ', depList
-		return depList
+	# Visualize References and tags
+	print rootNode
+	print 'Tagged:', taggedNodes
 
-	def showNoTagFoundDialog(self, ref):
-		return cmds.confirmDialog( title		 = 'No Alembic Tag Found'
-								 , message	   = 'Unable to locate Alembic Export tag for ' + ref + '.'
-								 , button		= ['OK']
-								 , defaultButton = 'OK'
-								 , cancelButton  = 'OK'
-								 , dismissString = 'OK')
+	return buildAlembicCommand(taggedNodes, filepath, startFrame, endFrame, step=step)
 
-	def close_dialog(self):
-		self.close()
+def buildAlembicCommand(geoList, outFilePath, startFrame, endFrame, step=0.25):
+	# This determines the pieces that are going to be exported via alembic.
+	roots_string = ''
 
-def go(cfx=False):
-	dialog = AlembicExportDialog(cfx=cfx)
-	dialog.show()
+	# Each of these should be in a list, so it should know how many to add the -root tag to the alembic.
+	for alem_obj in geoList:
+		print 'alem_obj: ' + alem_obj
+		roots_string += (' -root %s'%(alem_obj))
+	print 'roots_string: ' + roots_string
 
-if __name__ == '__main__':
-	go()
+	# Then here is the actual Alembic Export command for Mel.
+	command = 'AbcExport -j "%s -frameRange %s %s -stripNamespaces -step %s -writeVisibility -noNormals -uvWrite -worldSpace -file %s"'%(roots_string, str(startFrame), str(endFrame), str(step), outFilePath)
+	print 'Command', command
+	return command
+
+def getTaggedNodes(node, tag):
+	# Looks for a tagged node that has the BYU Alembic Export flag on it.
+	# If the parent has a tag all the children will be exported
+	print 'has attr?', node, tag
+	if node.hasAttr(tag):
+		print 'returning'
+		return [node]
+
+	print 'children'
+	#Otherwise search all the children for any nodes with the flag
+	tagged_children = []
+	print 'we made it here before crashing', node.listRelatives(c=True)
+	for child in node.listRelatives(c=True):
+		tagged_children.extend(getTaggedNodes(child, tag))
+
+	return tagged_children

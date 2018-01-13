@@ -23,7 +23,7 @@
 		}, {
 			"icon":"alembic-export.svg",
 			"annotation":"Export as Alembic",
-			"python_file":"alembic_export.py"
+			"python_file":"alembic_exporter.py"
 		}, {
 			"icon":"tag.svg",
 			"annotation":"Tag Selected Objects for Export",
@@ -72,6 +72,14 @@
 			"icon":"viking-reference.svg",
 			"annotation":"Do a viking-reference",
 			"python_file":"viking_reference.py"
+		}, {
+			"icon":"education.svg",
+			"annotation":"Change the licence to education",
+			"python_file":"education.py"
+		}, {
+			"icon":"agent.svg",
+			"annotation":"Bake Crowd Cycle",
+			"python_file":"crowdCycle.py"
 		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",

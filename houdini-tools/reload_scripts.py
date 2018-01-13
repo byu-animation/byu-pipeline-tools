@@ -10,6 +10,7 @@ import test_geo
 import tractor_submit
 import reload_scripts
 import render_callbacks
+import matchDefinition
 
 def go():
 	reload(assemble_asset)
@@ -24,3 +25,4 @@ def go():
 	reload(rollback)
 	reload(test_geo)
 	reload(tractor_submit)
+	reload(matchDefinition)

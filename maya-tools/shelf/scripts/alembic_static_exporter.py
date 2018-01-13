@@ -10,49 +10,7 @@ from byuam.environment import Environment
 from byuam.body import AssetType
 from byuam.project import Project
 from byugui import message_gui
-#from ui_tools import ui, messageSeverity
-
-def objExport(selected, path):
-	'''
-		Creates .obj files from a selection of objects
-
-		@param: selected - a list of strings representing the geometry
-		@param: path - a string to the path of the directory for .obj files to go
-
-		@return: a list of strings that contain the full paths to all of the .obj
-				files that were created
-
-		@post: directory for 'path' is created if it wasn't already
-	'''
-	mc.loadPlugin('objExport')
-
-	if not os.path.exists(path):
-		os.makedirs(path)
-
-	size = len(selected)
-
-	mc.sysFile(path, makeDir=True)
-	optionsStr = 'groups=0;ptgroups=0;materials=0;smoothing=0;normals=0;uvs=1'
-	exportType = 'OBJexport'
-
-	objfiles = []
-
-	for geo in selected:
-		mc.select(geo, r=True)
-		geoName = formatFilename(geo) + '.obj'
-		filename = os.path.join(path, geoName)
-		print('Exporting "' + filename + '"...')
-		mc.file(filename,
-				force=True,
-				options=optionsStr,
-				type=exportType,
-				preserveReferences=True,
-				exportSelected=True)
-
-		print('\tCOMPLETED')
-		objfiles.append(filename)
-
-	return objfiles
+import reference_selection as rs
 
 def abcExport(selected, path):
 	if not os.path.exists(path):
@@ -75,19 +33,6 @@ def abcExport(selected, path):
 
 	return abcfiles
 
-def getLoadedReferences():
-	references = mc.ls(references=True)
-	loaded=[]
-	print 'Loaded References: '
-	for ref in references:
-		print 'Checking status of ' + ref
-		try:
-			if cmds.referenceQuery(ref, isLoaded=True):
-				loaded.append(ref)
-		except:
-			print 'Warning: ' + ref + ' was not associated with a reference file'
-	return loaded
-
 def abcExportLoadedReferences(path):
 	if not os.path.exists(path):
 		os.makedirs(path)
@@ -95,7 +40,7 @@ def abcExportLoadedReferences(path):
 	abcfiles = []
 
 	loadPlugin('AbcExport')
-	loadedRefs = getLoadedReferences()
+	loadedRefs = rs.getLoadedReferences()
 	for i, ref in enumerate(loadedRefs):
 		print ref
 		refNodes = mc.referenceQuery(unicode(ref), nodes=True)
@@ -121,7 +66,6 @@ def abcExportLoadedReferences(path):
 	print 'all exports complete'
 	return abcfiles
 
-
 def abcExportAll(name, path):
 	if not os.path.exists(path):
 		os.makedirs(path)
@@ -139,7 +83,6 @@ def abcExportAll(name, path):
 	abcFiles.append(abcFilePath)
 
 	return abcFiles
-
 
 def formatFilename(filename):
 	filename = filename.replace('Shape', '')
@@ -173,7 +116,6 @@ def checkFiles(files):
 		#ui.infoWindow(errorMessage, wtitle='Error exporting files', msev=messageSeverity.Error)
 
 	return missingFiles
-
 
 def decodeFileName():
 	'''
