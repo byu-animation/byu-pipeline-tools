@@ -185,9 +185,37 @@ if node:
 				]]>
 			</scriptCode>
 		</scriptItem>
+
+		<scriptItem id="opmenu.matchProduction">
+			<label>Match Production Definition...</label>
+			<insertBefore>opmenu.create_hda</insertBefore>
+			<expression>
+from byuam import Project
+node = kwargs.get('node', None)
+if node:
+	if not node.isLockedHDA():
+		if node.type().definition() is not None:
+			node_name = node.type().name()
+			index = node_name.find('_main')
+			node_name = node_name[:index]
+			if node_name in Project().list_assets():
+				return 1
+return 0
+			</expression>
+			<scriptCode scriptType="python">
+				<![CDATA[
+import matchDefinition
+node = kwargs.get('node', None)
+if node:
+	matchDefinition.matchDefinition(node)
+				]]>
+			</scriptCode>
+		</scriptItem>
+
 	</menu>
 
     <removeItem id="opmenu.create_hda"/>
+	<removeItem id="opmenu.synchronize"/>
 	<removeItem id="opmenu.unsynchronize"/>
 	<removeItem id="opmenu.saveoptype"/>
 	<!--<removeItem id="opmenu.synchronize"/>-->

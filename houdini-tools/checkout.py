@@ -48,8 +48,8 @@ def checkout_hda(hda, project, environment):
 					message_gui.error('There was a problem checking out the selected hda', details='The body for this HDA could not be found. This seems weird because we were able to find the asset_name in the list of assets. Right off the top of my head I don\'t know why it would do this. We\'ll have to take closer look.')
 					return None
 				element_path = element.checkout(current_user)
-				hou.hda.uninstallFile(src, change_oplibraries_file=False)
 				hou.hda.installFile(element_path)
+				hou.hda.uninstallFile(src, change_oplibraries_file=False)
 				hda.allowEditingOfContents()
 				return element_path
 	return None

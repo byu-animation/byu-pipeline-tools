@@ -58,5 +58,5 @@ def go(useNamespace=False):
 	parent = maya_main_window()
 	# filePath = pm.file(q=True, sceneName=True)
 	filePath = pm.system.sceneName()
-	maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG])
+	maya_reference_dialog = ReferenceWindow(parent, filePath, [Department.MODEL, Department.RIG], Department.CYLCES)
 	maya_reference_dialog.finished.connect(lambda: post_reference(maya_reference_dialog, useNamespace=useNamespace))

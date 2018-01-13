@@ -3,6 +3,7 @@ from byugui import message_gui
 # from byuam.environment import Environment, Department, Status
 from byuam import Project, Department
 import alembic_exporter
+from byuam import byuutil
 import os
 
 def go():
@@ -11,27 +12,42 @@ def go():
 
 	#Check to see if there are unsaved changes
 	if listOfChanges is not None:
-		result = message_gui.save('In order to continue the file will need to be saved and closed. Are you ready to proceed?')
+		result = message_gui.yes_or_no('In order to continue the file will need to be saved and closed. Are you ready to proceed?')
 		if not result:
 			return None
 
 	name = message_gui.input('What is the name of this cycle?')
 	if name is None:
 		return None
-	else:
-		print 'This is the name that we got', name
+
+	invalidInput = True
+	while(invalidInput):
+		firstFrame = message_gui.input('What is the first frame of the cycle?')
+		try:
+			firstFrame = int(firstFrame)
+		except ValueError:
+			message_gui.error('Please enter a number')
+			continue
+		invalidInput = False
+
+	invalidInput = True
+	while(invalidInput):
+		lastFrame = message_gui.input('What is the last frame of the cycle?')
+		try:
+			lastFrame = int(lastFrame)
+		except ValueError:
+			message_gui.error('Please enter a number')
+			continue
+		invalidInput = False
 
 	name = name.replace(' ', '_')
-	print "This is the name", name
 	project = Project()
-	print "this is the project", project
 	try:
 		cycleAsset = project.create_crowd_cycle(name)
 	except EnvironmentError, e:
 		message_gui.error('There is already an crowd cycle with that name.', details=e)
 		return None
 
-	print "Here is the cycle asset", cycleAsset
 	element = cycleAsset.get_element(Department.CYCLES)
 
 	projDir = project.get_project_dir()
@@ -42,20 +58,16 @@ def go():
 	fileName = name + '.mb'
 	fileName = os.path.join(crowdCache, fileName)
 
-	print 'This is the file name for the exported thing', fileName
-
 	#now that we have gotten past all the things that could go wrong we will make a quick grouping to the selection that we don't want the user to know about.
 	try:
 		pm.group(name=name)
 	except:
-		# millis = byuutil.timestampThisYear()
-		millis = 1
+		millis = byuutil.timestampThisYear()
 		name = name + str(millis)
 		pm.group(name=name)
 
 	#get the file name for our new asset
 	cycleFile = pm.exportSelected(fileName, preserveReferences=1, force=1)
-	print "This is the exported File", cycleFile
 	pm.saveFile() #Make sure we save it so that we will have that group again when we open it.
 	pm.openFile(cycleFile, force=True)
 
@@ -64,13 +76,11 @@ def go():
 
 	element.publish(user, cycleFile, comment)
 
+	# Select the group then grab the selection
 	selection = pm.select(name)
 	selection = pm.ls(selection=True)
 
-	print selection
-
-	alembics = alembic_exporter.go(element, selection=selection)
-	print 'These are the alembic files that we got', alembics
+	alembics = alembic_exporter.go(element, selection=selection, startFrame=firstFrame, endFrame=lastFrame)
 
 	pm.saveFile()
 	pm.openFile(fileName, force=True)
