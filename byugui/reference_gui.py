@@ -98,6 +98,8 @@ class ReferenceWindow(QtWidgets.QWidget):
 				asset_filter_str = str(self.typeFilter.currentText())
 				asset_filter = (Asset.TYPE, operator.eq, asset_filter_str)
 			self.elements = self.project.list_assets(asset_filter)
+		elif department in Department.CROWD_DEPTS:
+			self.elements = self.project.list_crowd_cycles()
 		else:
 			self.elements = self.project.list_shots()
 
