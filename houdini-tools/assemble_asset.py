@@ -178,7 +178,10 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 
 		#finish the rest of the setup
 		label_text = asset_version.replace('_', ' ').title()
-		geo_label = hou.LabelParmTemplate(asset_version, label_text)
+		# Using the column label instead of the regular label lets us put longer names without them getting truncated. The problem is that its not left justified like I would want but its going to have to do for now. It is really quite a bit less than ideal but it will still comunicate the needed info so here we go.
+		columnLabel = (label_text,)
+		print columnLabel
+		geo_label = hou.LabelParmTemplate(asset_version, '', column_labels=columnLabel)
 		hide_toggle_name = 'hide_' + asset_version
 		hide_toggle = hou.ToggleParmTemplate(hide_toggle_name, 'Hide')
 		animate_toggle_name = 'animate_' + asset_version
