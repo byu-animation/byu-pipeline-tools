@@ -63,6 +63,8 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		else:
 			files = exportAll(abcFilePath)
 	elif body.is_crowd_cycle():
+		if selection is None:
+			selection = pm.ls(selection=True)
 		files = exportSelected(selection, abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
 
 	if not files:

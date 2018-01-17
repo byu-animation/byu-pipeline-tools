@@ -3,6 +3,7 @@ from byugui import message_gui
 # from byuam.environment import Environment, Department, Status
 from byuam import Project, Department
 import alembic_exporter
+import reference
 from byuam import byuutil
 import os
 
@@ -55,8 +56,12 @@ def go():
 	if not os.path.exists(crowdCache):
 		os.makedirs(crowdCache)
 
-	fileName = name + '.mb'
-	fileName = os.path.join(crowdCache, fileName)
+	cacheFileName = name + '.mb'
+	cacheFileName = os.path.join(crowdCache, cacheFileName)
+	backupFileName = fileName + '.backup.mb'
+
+	backupResult = pm.exportAll(backupFileName, preserveReferences=True, force=True)
+	print 'For your information there is a back up of your file before you did this operation. That file is located here:', backupResult
 
 	#now that we have gotten past all the things that could go wrong we will make a quick grouping to the selection that we don't want the user to know about.
 	try:
@@ -67,8 +72,9 @@ def go():
 		pm.group(name=name)
 
 	#get the file name for our new asset
-	cycleFile = pm.exportSelected(fileName, preserveReferences=1, force=1)
+	cycleFile = pm.exportSelected(cacheFileName, preserveReferences=True, force=True)
 	pm.saveFile() #Make sure we save it so that we will have that group again when we open it.
+	print 'opening', cycleFile
 	pm.openFile(cycleFile, force=True)
 
 	user = project.get_current_username()
@@ -83,48 +89,13 @@ def go():
 	alembics = alembic_exporter.go(element, selection=selection, startFrame=firstFrame, endFrame=lastFrame)
 
 	pm.saveFile()
+	print 'opening', fileName
 	pm.openFile(fileName, force=True)
 
 	group = pm.ls(name)[0]
 
 	delete(group)
-	referenceCrowdCycle(alembics)
-
-def referenceCrowdCycle(paths):
-	for cycle in paths:
-		fileName = os.path.basename(cycle)
-		#The file is going to be an alembic so we can drop the last four characters '.abc' to get the file name
-		cycleName = fileName[:len(fileName)-4]
-
-		cycleRefGroup = cycleName + 'RNgroup'
-		cycleControls = cycleName + '_controls'
-		offset = 'offset'
-		speed = 'speed'
-		cycleType = 'cycleType'
-		refAlembicNode = cycleName + '_' + cycleName + '_AlembicNode'
-		refAlembicOffset = refAlembicNode + '.' + offset
-		refAlembicSpeed = refAlembicNode + '.' + speed
-		refAlembicCycleType = refAlembicNode + '.' + cycleType
-		controlAlembicOffset = cycleControls + '.' + offset
-		controlAlembicSpeed = cycleControls + '.' + speed
-
-		pm.system.createReference(cycle, groupReference=True)
-
-		node = pm.ls(cycleRefGroup)[0]
-		circ = pm.circle(r=0.25,nr=(0, 1, 0), n=cycleControls)[0]
-		pm.parent(circ, node)
-
-		if circ.hasAttr(offset):
-			circ.deleteAttr(offset)
-		if circ.hasAttr(speed):
-			circ.deleteAttr(speed)
-		circ.addAttr(offset, at='double', hidden=False, dv=0.0, k=True)
-		circ.addAttr(speed, at='double', hidden=False, dv=1.0, k=True)
-
-		# When passing in arguments to connectAttr remember that attr 1 controls attr 2
-		pm.connectAttr(controlAlembicOffset, refAlembicOffset)
-		pm.connectAttr(controlAlembicSpeed, refAlembicSpeed)
-		pm.setAttr(refAlembicCycleType, 1)
+	reference.referenceCrowdCycle(alembics)
 
 def delete(node):
 	if pm.referenceQuery(node, inr = True):

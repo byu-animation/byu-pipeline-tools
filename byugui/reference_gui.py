@@ -72,14 +72,22 @@ class ReferenceWindow(QtWidgets.QWidget):
 		department = str(self.departmentMenu.currentText())
 		self.refreshList(department)
 
+	def getDepartment(self):
+		return str(self.departmentMenu.currentText())
+
 	def createReference(self):
 		selected = []
 		del self.filePaths[:]
 		for item in self.assetList.selectedItems():
 			body = self.project.get_body(str(item.text()))
 			element = body.get_element(str(self.departmentMenu.currentText()))
-			path = element.get_app_filepath()
-			self.filePaths.append(path)
+			if self.getDepartment() in Department.CROWD_DEPTS:
+				cacheDir = element.get_cache_dir()
+				for filePath in os.listdir(cacheDir):
+					self.filePaths.append(os.path.join(cacheDir, filePath))
+			else:
+				path = element.get_app_filepath()
+				self.filePaths.append(path)
 			selected.append(str(item.text()))
 		checkout = self.project.get_checkout(os.path.dirname(self.src))
 		if checkout is not None:

@@ -74,7 +74,7 @@ def yes_or_no(question, details=None, title='Question'):
 def input(label, title='Input', text=None):
 	'''Allows the user to respond with a text input'''
 	'''If the okay button is pressed it returns the inputed text, otherwise None'''
-	text = QtWidgets.QInputDialog.getText(None, title, 'label', text=text)
+	text = QtWidgets.QInputDialog.getText(None, title, label, text=text)
 
 	if text[1]:
 		return text[0]

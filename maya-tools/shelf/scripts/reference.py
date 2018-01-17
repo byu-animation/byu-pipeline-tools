@@ -22,7 +22,10 @@ def post_reference(dialog, useNamespace=False):
 
 	print "The filePaths are", file_paths
 	print "The reference is", isReferenced
-	reference(file_paths, isReferenced=isReferenced, useNamespace=True)
+	if dialog.getDepartment() in Department.CROWD_DEPTS:
+		referenceCrowdCycle(file_paths)
+	else:
+		reference(file_paths, isReferenced=isReferenced, useNamespace=useNamespace)
 
 def reference(filePaths, isReferenced=True, useNamespace=False):
 	if filePaths is not None and isReferenced:
@@ -53,6 +56,71 @@ def reference(filePaths, isReferenced=True, useNamespace=False):
 			error_dialog.showMessage("The following elements are empty. Nothing has been published to them, so they can't be referenced.\n"+empty_str)
 	# if not done:
 	#	 go()
+
+def referenceCrowdCycle(paths):
+	pm.loadPlugin('AbcImport')
+	for cycle in paths:
+		if not os.path.exists(cycle):
+			print 'this is the type', type(cycle)
+			print 'The cycle doesn\'t exist. That seems weird.', cycle
+			print os.path.exists(str(cycle)), 'this is another shot'
+			return
+		else:
+			print 'Well I guiess it is working'
+		fileName = os.path.basename(cycle)
+		#The file is going to be an alembic so we can drop the last four characters '.abc' to get the file name
+		cycleName = fileName[:len(fileName)-4]
+
+		millis = byuutil.timestampThisYear()
+		namespace = cycleName + str(millis)
+
+		cycleRefGroup = namespace + 'RNgroup'
+		cycleControls = cycleName + '_controls'
+		offset = 'offset'
+		speed = 'speed'
+		cycleType = 'cycleType'
+		translate = 'translate'
+		rotate = 'rotate'
+		scale = 'scale'
+		refAlembicNode = namespace + ':' + cycleName + '_AlembicNode'
+		refAlembicOffset = refAlembicNode + '.' + offset
+		refAlembicSpeed = refAlembicNode + '.' + speed
+		refAlembicCycleType = refAlembicNode + '.' + cycleType
+		controlAlembicOffset = cycleControls + '.' + offset
+		controlAlembicSpeed = cycleControls + '.' + speed
+
+		cycleRefTranslate = cycleRefGroup + '.' + translate
+		cycleRefScale = cycleRefGroup + '.' + scale
+		cycleRefRotate = cycleRefGroup + '.' + rotate
+
+		controlAlembicTranslate = cycleControls + '.' + translate
+		controlAlembicScale = cycleControls + '.' + scale
+		controlAlembicRotate = cycleControls + '.' + rotate
+
+		pm.system.createReference(cycle, groupReference=True, namespace=namespace)
+
+		node = pm.ls(cycleRefGroup)[0]
+		circ = pm.circle(r=0.25,nr=(0, 1, 0), n=cycleControls)[0]
+		group = pm.group(name=cycleName, em=True)
+
+		pm.parent(circ, group)
+		pm.parent(node, group)
+
+		if circ.hasAttr(offset):
+			circ.deleteAttr(offset)
+		if circ.hasAttr(speed):
+			circ.deleteAttr(speed)
+		circ.addAttr(offset, at='double', hidden=False, dv=0.0, k=True)
+		circ.addAttr(speed, at='double', hidden=False, dv=1.0, k=True)
+
+		# When passing in arguments to connectAttr remember that attr 1 controls attr 2
+		pm.connectAttr(controlAlembicOffset, refAlembicOffset)
+		pm.connectAttr(controlAlembicSpeed, refAlembicSpeed)
+		pm.setAttr(refAlembicCycleType, 1)
+		pm.connectAttr(controlAlembicTranslate, cycleRefTranslate)
+		pm.connectAttr(controlAlembicRotate, cycleRefRotate)
+		pm.connectAttr(controlAlembicScale, cycleRefScale)
+
 
 def go(useNamespace=False):
 	parent = maya_main_window()
