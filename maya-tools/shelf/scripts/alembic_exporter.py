@@ -54,7 +54,7 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		endFrame = pm.playbackOptions(q=True, animationEndTime=True)
 
 	if body.is_shot():
-		startFrame += 5
+		startFrame -= 5
 		endFrame += 5
 		files = exportReferences(abcFilePath, tag='BYU_Alembic_Export_Flag', selectionMode=True, startFrame=startFrame, endFrame=endFrame)
 	elif body.is_asset():
