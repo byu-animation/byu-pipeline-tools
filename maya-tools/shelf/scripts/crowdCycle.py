@@ -58,7 +58,10 @@ def go():
 
 	cacheFileName = name + '.mb'
 	cacheFileName = os.path.join(crowdCache, cacheFileName)
-	backupFileName = fileName + '.backup.mb'
+	backupFileDir = os.path.join(os.path.dirname(fileName), 'backup')
+	if not os.path.exists(backupFileDir):
+		os.mkedirs(backupFileDir)
+	backupFileName = os.path.join(backupFileDir, os.path.basename(fileName) + '.backup.mb')
 
 	backupResult = pm.exportAll(backupFileName, preserveReferences=True, force=True)
 	print 'For your information there is a back up of your file before you did this operation. That file is located here:', backupResult
@@ -76,6 +79,11 @@ def go():
 	pm.saveFile() #Make sure we save it so that we will have that group again when we open it.
 	print 'opening', cycleFile
 	pm.openFile(cycleFile, force=True)
+
+	#Set frameRange as specified by the user.
+	pm.playbackOptions(ast=firstFrame)
+	pm.playbackOptions(aet=lastFrame)
+	pm.saveFile()
 
 	user = project.get_current_username()
 	comment = 'First crowd cycle publish'

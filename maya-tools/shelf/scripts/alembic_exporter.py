@@ -63,9 +63,7 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		else:
 			files = exportAll(abcFilePath)
 	elif body.is_crowd_cycle():
-		if selection is None:
-			selection = pm.ls(selection=True)
-		files = exportSelected(selection, abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
+			files = exportAll(abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
 
 	if not files:
 		#Maybe this is a bad distinction but None is if it was canceled or something and empty is if it went but there weren't any alembics
@@ -82,7 +80,7 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 	return files
 
 
-def exportSelected(selection, destination, tag=None, startFrame=1, endFrame=1):
+def exportSelected(selection, destination, tag=None, startFrame=1, endFrame=1, disregardNoTags=False):
 	abcFiles = []
 	for node in selection:
 		abcFilePath = os.path.join(destination, str(node) + '.abc')
@@ -90,15 +88,21 @@ def exportSelected(selection, destination, tag=None, startFrame=1, endFrame=1):
 			command = buildTaggedAlembicCommand(node, abcFilePath, tag, startFrame, endFrame)
 			print 'Command:', command
 		except NoTaggedGeo, e:
+			if disregardNoTags:
+				continue
 			message_gui.error('Unable to locate Alembic Export tag for ' + str(node), title='No Alembic Tag Found')
-			return
+			continue
 		print 'Export Alembic command: ', command
 		pm.Mel.eval(command)
 		abcFiles.append(abcFilePath)
 	return abcFiles
 
-def exportAll(startFrame=1, endFrame=1):
-	alembic_static_exporter.go()
+def exportAll(destination, tag=None, startFrame=1, endFrame=1):
+	if tag is not None:
+		selection = pm.ls(assemblies=True)
+		return exportSelected(selection, destination, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame, disregardNoTags=True)
+	else:
+		return alembic_static_exporter.go()
 
 def exportReferences(destination, tag=None, selectionMode=False, startFrame=1, endFrame=1):
 	if selectionMode:
@@ -123,7 +127,7 @@ def exportReferences(destination, tag=None, selectionMode=False, startFrame=1, e
 		print refAbcFilePath
 		try:
 			if tag is None:
-				command = buildAlembicCommand([rootNode], refAbcFilePath, startFrame, endFrame)
+				command = buildAlembicCommand(refAbcFilePath, startFrame, endFrame, geoList=[rootNode])
 			else:
 				command = buildTaggedAlembicCommand(rootNode, refAbcFilePath, tag, startFrame, endFrame)
 			print 'Command:', command
@@ -159,9 +163,9 @@ def buildTaggedAlembicCommand(rootNode, filepath, tag, startFrame, endFrame, ste
 	print rootNode
 	print 'Tagged:', taggedNodes
 
-	return buildAlembicCommand(taggedNodes, filepath, startFrame, endFrame, step=step)
+	return buildAlembicCommand(filepath, startFrame, endFrame, step=step, geoList=taggedNodes)
 
-def buildAlembicCommand(geoList, outFilePath, startFrame, endFrame, step=0.25):
+def buildAlembicCommand(outFilePath, startFrame, endFrame, step=0.25, geoList=[]):
 	# This determines the pieces that are going to be exported via alembic.
 	roots_string = ''
 
