@@ -52,7 +52,7 @@ def go():
 	element = cycleAsset.get_element(Department.CYCLES)
 
 	projDir = project.get_project_dir()
-	crowdCache = os.path.join(projDir, 'crowdCache')
+	crowdCache = os.path.join(projDir, 'production', 'crowdCache')
 	if not os.path.exists(crowdCache):
 		os.makedirs(crowdCache)
 

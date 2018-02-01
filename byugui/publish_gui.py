@@ -95,6 +95,8 @@ class PublishWindow(QtWidgets.QWidget):
 			self.elementType = 'Shot'
 		elif department in Department.TOOL_DEPTS:
 			self.elementType = 'Tool'
+		elif department in Department.CROWD_DEPTS:
+			self.elementType = 'CrowdCycle'
 		else:
 			message_gui.error('There was an error loading the ' + str(department) + ' department')
 		self.eList.refreshList(self.elementType)
@@ -164,9 +166,11 @@ class ElementList(QtWidgets.QListWidget):
 			self.elements = self.project.list_shots()
 		elif element == 'Tool':
 			self.elements = self.project.list_tools()
+		elif element == 'CrowdCycle':
+			self.elements = self.project.list_crowd_cycles()
 		else:
 			self.elements = list()
-			message_gui.error('There was a problem loading in the elements from of ' + element  + ' type.')
+			message_gui.error('There was a problem loading in the elements from of ' + str(element)  + ' type.')
 		self.clear()
 		for e in self.elements:
 			self.addItem(e)
