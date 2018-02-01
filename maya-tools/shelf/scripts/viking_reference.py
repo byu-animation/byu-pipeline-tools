@@ -8,5 +8,3 @@ def go():
 		reference.go(useNamespace=True)
 	env = Environment()
 	user = env.get_current_username()
-	if user == 'carlilet':
-		message_gui.info('Hey Thad, I made this for you!')
