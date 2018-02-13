@@ -36,7 +36,7 @@ def go(element=None, dept=None, selection=None, startFrame=None, endFrame=None):
 	#Get the element from the right Department
 	if dept is not None and not element.get_department() == dept:
 		print 'We are overwriting the', element.get_department(), 'with', dept
-		body = element.get_parent()
+		body = proj.get_body(element.get_parent())
 		element = body.get_element(dept)
 
 	return export(element, selection=selection, startFrame=startFrame, endFrame=endFrame)
