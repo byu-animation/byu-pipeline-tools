@@ -75,7 +75,7 @@ def referenceCrowdCycle(paths):
 		namespace = cycleName + str(millis)
 
 		cycleRefGroup = namespace + 'RNgroup'
-		cycleControls = cycleName + '_controls'
+		cycleControls = namespace + '_controls'
 		offset = 'offset'
 		speed = 'speed'
 		cycleType = 'cycleType'
@@ -101,7 +101,8 @@ def referenceCrowdCycle(paths):
 
 		node = pm.ls(cycleRefGroup)[0]
 		circ = pm.circle(r=0.25,nr=(0, 1, 0), n=cycleControls)[0]
-		group = pm.group(name=cycleName, em=True)
+		parentGroupName = namespace + 'agent'
+		group = pm.group(name=parentGroupName, em=True)
 
 		pm.parent(circ, group)
 		pm.parent(node, group)
@@ -112,6 +113,13 @@ def referenceCrowdCycle(paths):
 			circ.deleteAttr(speed)
 		circ.addAttr(offset, at='double', hidden=False, dv=0.0, k=True)
 		circ.addAttr(speed, at='double', hidden=False, dv=1.0, k=True)
+
+		# Add agent tag so the exporter can easily find it
+		crowdAgentFlag = 'BYU_Crowd_Agent_Flag'
+		if group.hasAttr(crowdAgentFlag):
+			group.deleteAttr(crowdAgentFlag)
+		group.addAttr(crowdAgentFlag, at=bool, hidden=False, dv=True, k=True)
+
 
 		# When passing in arguments to connectAttr remember that attr 1 controls attr 2
 		pm.connectAttr(controlAlembicOffset, refAlembicOffset)
