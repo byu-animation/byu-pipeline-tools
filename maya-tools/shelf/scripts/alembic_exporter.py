@@ -57,6 +57,7 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		startFrame -= 5
 		endFrame += 5
 		files = exportReferences(abcFilePath, tag='BYU_Alembic_Export_Flag', selectionMode=True, startFrame=startFrame, endFrame=endFrame)
+		exportCrowd(abcFilePath, 'BYU_Crowd_Agent_Flag', tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
 	elif body.is_asset():
 		if body.get_type() == AssetType.SET:
 			files = exportReferences(abcFilePath)
@@ -103,6 +104,27 @@ def exportAll(destination, tag=None, startFrame=1, endFrame=1):
 		return exportSelected(selection, destination, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame, disregardNoTags=True)
 	else:
 		return alembic_static_exporter.go()
+
+def exportCrowd(destination, crowdTag, tag=None, startFrame=1, endFrame=1):
+	#Find all of the parent nodes with the crowdTag.
+	# For each element in the outliner
+	selection = pm.ls(assemblies=True)
+	# check if it has a crowdTag inside of it.
+	agents = []
+	destination = os.path.join(destination, 'crowdAlembics')
+	if not os.path.exists(destination):
+		print "we are making the destination dir"
+		os.makedirs(destination)
+	else:
+		print "The director was already created"
+	for node in selection:
+		if getTaggedNodes(node, crowdTag):
+			print 'the destination is', destination
+			print 'the node is', node
+			exportSelected([node], destination, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
+		else:
+			print 'We did not find a tag on', node
+	#For each of those parent nodes export the tagged geo within
 
 def exportReferences(destination, tag=None, selectionMode=False, startFrame=1, endFrame=1):
 	if selectionMode:
@@ -185,13 +207,11 @@ def getTaggedNodes(node, tag):
 	# If the parent has a tag all the children will be exported
 	print 'has attr?', node, tag
 	if node.hasAttr(tag):
-		print 'returning'
 		return [node]
 
 	print 'children'
 	#Otherwise search all the children for any nodes with the flag
 	tagged_children = []
-	print 'we made it here before crashing', node.listRelatives(c=True)
 	for child in node.listRelatives(c=True):
 		tagged_children.extend(getTaggedNodes(child, tag))
 
