@@ -60,7 +60,7 @@ def go():
 	cacheFileName = os.path.join(crowdCache, cacheFileName)
 	backupFileDir = os.path.join(os.path.dirname(fileName), 'backup')
 	if not os.path.exists(backupFileDir):
-		os.mkedirs(backupFileDir)
+		os.makedirs(backupFileDir)
 	backupFileName = os.path.join(backupFileDir, os.path.basename(fileName) + '.backup.mb')
 
 	backupResult = pm.exportAll(backupFileName, preserveReferences=True, force=True)
