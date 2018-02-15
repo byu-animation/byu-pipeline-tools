@@ -21,7 +21,7 @@ def prepRender(rib=False, openExr=False):
 	#Make sure that all of the layers have names
 	numLayers = nodes['renderCtrl'].parm('layers').evalAsInt()
 	if numLayers < 1:
-		message_gui.error('Make sure you have at least on layer.')
+		message_gui.error('Make sure you have at least one layer.')
 		return False
 	missingNames = []
 	for i in range(1, numLayers + 1):
@@ -204,6 +204,23 @@ def setParmExp(destNode, srcNode, parmName, layerNum='', channelType='ch', size=
 		parmNameWithSize = parmName + (str(index) if size > 1 else '')
 		destNode.parm(parmNameWithSize).setExpression(expressionString)
 
+def addExtraParms(risNode):
+	parmGroup = risNode.parmTemplateGroup()
+
+	#Parms for smooth curve rendering for fur
+	parmTemplate = hou.StringParmTemplate("ri_curveinterpolation", "Curve Interpolation", 1, default_value=(["linear"]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.Regular, menu_items=(["linear","cubic"]), menu_labels=(["Linear","Cubic"]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	parmTemplate.setHelp("RiCurves (type)")
+	parmTemplate.setTags({"spare_category": "Geometry"})
+	parmGroup.append(parmTemplate)
+	parmTemplate = hou.StringParmTemplate("ri_curvebasis", "Curve Basis", 1, default_value=(["bezier"]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.Regular, menu_items=(["bezier","b-spline","catmull-rom","hermite","power"]), menu_labels=(["Bezier","B-Spline","Catmull-Rom","Hermite","Power"]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	parmTemplate.setConditional( hou.parmCondType.DisableWhen, "{ ri_curveinterpolation == linear }")
+	parmTemplate.setHelp("RiBasis (basis)")
+	parmTemplate.setTags({"spare_category": "Geometry"})
+	parmGroup.append(parmTemplate)
+
+	risNode.setParmTemplateGroup(parmGroup)
+	return risNode
+
 def setGlobalCtrls(renderCtrl, risNode):
 	setParmExp(risNode, renderCtrl, 'trange')
 	setParmExp(risNode, renderCtrl, 'f1')
@@ -215,6 +232,8 @@ def setGlobalCtrls(renderCtrl, risNode):
 	setParmExp(risNode, renderCtrl, 'res_overridex')
 	setParmExp(risNode, renderCtrl, 'res_overridey')
 	setParmExp(risNode, renderCtrl, 'ri_device', channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_curveinterpolation', channelType='chs')
+	setParmExp(risNode, renderCtrl, 'ri_curvebasis', channelType='chs')
 
 def setLayers(renderCtrl, risNode, layerNum):
 	# Layer specific expressions
@@ -410,6 +429,7 @@ def adjustNodes():
 		for i in range(numLayers - numNodes):
 			pos = numNodes + i
 			risNode = merge.createInputNode(pos, 'ris')
+			addExtraParms(risNode)
 			layerNum = risNode.name()[3:]
 
 			# Create all of the exporessions
