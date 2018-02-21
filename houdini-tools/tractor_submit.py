@@ -1,5 +1,6 @@
 from PySide2 import QtGui, QtWidgets, QtCore
 import datetime
+import subprocess
 import os
 import re
 import shutil
@@ -116,7 +117,7 @@ class ExportDialog(QtWidgets.QWidget):
 		time_now = datetime.datetime.now()
 
 		#Make a temp folder for the rib files based on the user and the current time
-		ribDir = '/groups/'+projectName+'/ribs/'+user+'_'+time_now.strftime('%m%d%y_%H%M%S')
+		ribDir = self.project.get_project_dir()+'/ribs/'+user+'_'+time_now.strftime('%m%d%y_%H%M%S')
 		print 'ribDir', ribDir, ' renderNodes size: ', len(self.renderNodes)
 		os.makedirs(ribDir)
 
@@ -166,6 +167,10 @@ class ExportDialog(QtWidgets.QWidget):
 				node.parm('soho_diskfile').deleteAllKeyframes()
 				node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
 
+				print 'start rib making'
+				subprocess.call(['sh', '/users/animation/bdemann/Documents/grendel-dev/byu-pipeline-tools/houdini-tools/parallelRibs/taskDistribution.sh', str(start), str(end), str(node.path()), str(saveHipRenderCopy())])
+				print 'finish rib making'
+
 				# Loop through every frame in framerange
 				for frame in range(start, end+1, step):
 					subtask = author.Task()
@@ -191,10 +196,10 @@ class ExportDialog(QtWidgets.QWidget):
 					subtask.addCommand(command)
 					task.addChild(subtask)
 					# Render this frame to the ifd file
-					try:
-						node.render([frame, frame])
-					except Exception as err:
-						message_gui.error('There was an error generating the rib files.', details =str(err))
+					# try:
+					# 	# node.render([frame, frame])
+					# except Exception as err:
+					# 	message_gui.error('There was an error generating the rib files.', details =str(err))
 				job.addChild(task)
 
 				# Restore rib output
@@ -222,6 +227,19 @@ class ExportDialog(QtWidgets.QWidget):
 		#Cleanup ifd files, if they didn't want to retry
 		if not choice:
 			shutil.rmtree(ribDir)
+
+def saveHipRenderCopy():
+	import shutil
+	src = hou.hipFile.path()
+	proj = Project()
+	projDir = proj.get_project_dir()
+	renderCache = os.path.join(projDir, 'production', 'renderCache')
+	if not os.path.exists(renderCache):
+		os.makedirs(renderCache)
+	dstFile = 'preRender' + hou.hipFile.basename()
+	dst = os.path.join(renderCache, dstFile)
+	shutil.copyfile(src, dst)
+	return dst
 
 def go(renderNodes):
 	# Then show the dialog
