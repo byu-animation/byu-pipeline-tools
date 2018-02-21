@@ -10,7 +10,7 @@ leftoverFrames=$(($numFrames % $numCores))
 declare -a tasks
 
 echo "Start rib creation"
-cd /users/animation/bdemann/Documents/grendel-dev/byu-pipeline-tools/houdini-tools/parallelRibs
+cd /groups/grendel/byu-pipeline-tools/houdini-tools/parallelRibs
 ls
 pwd
 

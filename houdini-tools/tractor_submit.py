@@ -168,7 +168,7 @@ class ExportDialog(QtWidgets.QWidget):
 				node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
 
 				print 'start rib making'
-				subprocess.call(['sh', '/users/animation/bdemann/Documents/grendel-dev/byu-pipeline-tools/houdini-tools/parallelRibs/taskDistribution.sh', str(start), str(end), str(node.path()), str(saveHipRenderCopy())])
+				subprocess.call(['sh', '/groups/grendel/byu-pipeline-tools/houdini-tools/parallelRibs/taskDistribution.sh', str(start), str(end), str(node.path()), str(saveHipRenderCopy())])
 				print 'finish rib making'
 
 				# Loop through every frame in framerange
@@ -231,6 +231,7 @@ class ExportDialog(QtWidgets.QWidget):
 def saveHipRenderCopy():
 	import shutil
 	src = hou.hipFile.path()
+	hou.hipFile.save()
 	proj = Project()
 	projDir = proj.get_project_dir()
 	renderCache = os.path.join(projDir, 'production', 'renderCache')
