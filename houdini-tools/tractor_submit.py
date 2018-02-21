@@ -116,7 +116,7 @@ class ExportDialog(QtWidgets.QWidget):
 		time_now = datetime.datetime.now()
 
 		#Make a temp folder for the rib files based on the user and the current time
-		ribDir = '/groups/'+projectName+'/ribs/'+user+'_'+time_now.strftime('%m%d%y_%H%M%S')
+		ribDir = self.project.get_project_dir()+'/ribs/'+user+'_'+time_now.strftime('%m%d%y_%H%M%S')
 		print 'ribDir', ribDir, ' renderNodes size: ', len(self.renderNodes)
 		os.makedirs(ribDir)
 
@@ -140,62 +140,18 @@ class ExportDialog(QtWidgets.QWidget):
 			print node.name();
 			if self.select.item(index).isSelected():
 				name = node.name()
-				validFrameRange = node.parm('trange').eval()
-				if validFrameRange == 0:
-					start = int(hou.frame())
-					end = int(hou.frame())
-					step = 1
-				else:
-					start = int(node.parm('f1').eval())
-					end = int(node.parm('f2').eval())
-					step = int(node.parm('f3').eval())
-				task = author.Task()
-				task.title = '%s [%d-%d]' % (name, start, end)
+				frameRange = getFrameRange(node)
 
-				oldOutputMode = node.parm('rib_outputmode').eval()
-				try:
-					oldDiskFile = node.parm('soho_diskfile').expression()
-					useExpression = True
-					print 'We are getting rid of expressiion'
-				except:
-					oldDiskFile = node.parm('soho_diskfile').eval()
-					useExpression = False
-					print 'we didn\'t get rid of them'
-				# Activate rib output
-				node.parm('rib_outputmode').set(True)
-				node.parm('soho_diskfile').deleteAllKeyframes()
-				node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
+				#TODO it seems a little weird that we are returning the old mode so that we can set it back later. Maybe there is a better way to do this... at the very least I should make it consistant with the code that changes it back down bellow.
+				old = setUpRibOutput(name, node, ribDir)
+				oldOutputMode = old[0]
+				useExpression = old[1]
+				oldDiskFile = old[2]
 
-				# Loop through every frame in framerange
-				for frame in range(start, end+1, step):
-					subtask = author.Task()
-					subtask.title = 'Frame %04d' % (frame)
-					ribFile = '%s/%s_%04d.rib' % (ribDir, name, frame)
-					print 'Here is the rib file ', ribFile
-
-					# Commands for Debugging
-					cmdPATH = author.Command()
-					cmdPATH.argv = ['echo', '${PATH}']
-					cmdRMANTREE = author.Command()
-					cmdRMANTREE.argv = ['echo', '${RMANTREE}']
-					printenv = author.Command()
-					printenv.argv = ['printenv']
-					# subtask.addCommand(cmdPATH)
-					# subtask.addCommand(cmdRMANTREE)
-					# subtask.addCommand(printenv)
-
-					# Real Commands
-					command = author.Command()
-					command.argv = ['prman', '-progress', ribFile]
-					command.service = 'PixarRender'
-					subtask.addCommand(command)
-					task.addChild(subtask)
-					# Render this frame to the ifd file
-					try:
-						node.render([frame, frame])
-					except Exception as err:
-						message_gui.error('There was an error generating the rib files.', details =str(err))
-				job.addChild(task)
+				print "We are staring the prerender"
+				job.addChild(createPreRenderTask(name, node, frameRange))
+				print "We are starting the render"
+				job.addChild(createRenderTask(name, ribDir, frameRange))
 
 				# Restore rib output
 				node.parm('soho_outputmode').set(oldOutputMode)
@@ -222,6 +178,99 @@ class ExportDialog(QtWidgets.QWidget):
 		#Cleanup ifd files, if they didn't want to retry
 		if not choice:
 			shutil.rmtree(ribDir)
+
+def getFrameRange(node):
+	validFrameRange = node.parm('trange').eval()
+	if validFrameRange == 0:
+		start = int(hou.frame())
+		end = int(hou.frame())
+		step = 1
+	else:
+		start = int(node.parm('f1').eval())
+		end = int(node.parm('f2').eval())
+		step = int(node.parm('f3').eval())
+	return FrameRange(start, end, step)
+
+class FrameRange():
+	def __init__(self, start, end, step):
+		self.start = start
+		self.end = end
+		self.step = step
+
+def setUpRibOutput(name, node, ribDir):
+	oldOutputMode = node.parm('rib_outputmode').eval()
+	try:
+		oldDiskFile = node.parm('soho_diskfile').expression()
+		useExpression = True
+		print 'We are getting rid of expressiion'
+	except:
+		oldDiskFile = node.parm('soho_diskfile').eval()
+		useExpression = False
+		print 'we didn\'t get rid of them'
+	# Activate rib output
+	node.parm('rib_outputmode').set(True)
+	node.parm('soho_diskfile').deleteAllKeyframes()
+	node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
+	return [oldOutputMode, useExpression, oldDiskFile]
+
+def createPreRenderTask(name, renderNode, frameRange):
+	return createTask(saveHipRenderCopy(), name, renderNode, frameRange)
+
+def saveHipRenderCopy():
+	import shutil
+	src = hou.hipFile.path()
+	proj = Project()
+	projDir = proj.get_project_dir()
+	renderCache = os.path.join(projDir, 'renderCache')
+	if not os.path.exists(renderCache):
+		os.makedirs(renderCache)
+	dstFile = 'preRender' + hou.hipFile.basename()
+	dst = os.path.join(renderCache, dstFile)
+	shutil.copyfile(src, dst)
+	return dst
+
+def createRenderTask(name, ribDir, fRange):
+	task = author.Task()
+	task.title = '%s [%d-%d]' % (name, fRange.start, fRange.end)
+	# Loop through every frame in framerange
+	for frame in range(fRange.start, fRange.end+1, fRange.step):
+		subtask = author.Task()
+		subtask.title = 'Frame %04d' % (frame)
+		ribFile = '%s/%s_%04d.rib' % (ribDir, name, frame)
+		print 'Here is the rib file ', ribFile
+
+		# Commands for Debugging
+		cmdPATH = author.Command()
+		cmdPATH.argv = ['echo', '${PATH}']
+		cmdRMANTREE = author.Command()
+		cmdRMANTREE.argv = ['echo', '${RMANTREE}']
+		printenv = author.Command()
+		printenv.argv = ['printenv']
+		# subtask.addCommand(cmdPATH)
+		# subtask.addCommand(cmdRMANTREE)
+		# subtask.addCommand(printenv)
+
+		# Real Commands
+		command = author.Command()
+		command.argv = ['prman', '-progress', ribFile]
+		command.service = 'PixarRender'
+		subtask.addCommand(command)
+		task.addChild(subtask)
+	return task
+
+def createTask(preRenderFile, name, renderNode, fRange):
+	preRenderTask = author.Task()
+	preRenderTask.title = 'preRender-%s [%d-%d]' % (name, fRange.start, fRange.end)
+	for frame in range(fRange.start, fRange.end+1, fRange.step):
+		subtask = author.Task()
+		subtask.title = 'PreRender Frame %04d' % (frame)
+
+		command = author.Command()
+		command.argv = ['sh', 'houdiniInstructions.sh', fRange.start, fRange.end, renderNode, preRenderFile]
+		# command.argv = ['/opt/hfs.current/bin/hbatch', preRenderFile, scriptFile]
+		subtask.addCommand(command)
+		preRenderTask.addChild(subtask)
+	return preRenderTask
 
 def go(renderNodes):
 	# Then show the dialog
