@@ -5,7 +5,7 @@ hipFile=$4
 numCores=$5
 
 echo "--------BEGIN TASK DISTRIBUTION------------"
-cd /groups/grendel/byu-pipeline-tools/houdini-tools/parallelRibs
+cd $JOB/byu-pipeline-tools/houdini-tools/parallelRibs
 
 availableCores=$(grep -c ^processor /proc/cpuinfo)
 if [ $numCores -gt $availableCores ]

@@ -202,7 +202,11 @@ def setParmExp(destNode, srcNode, parmName, layerNum='', channelType='ch', size=
 		parmNamewithLayer = parmName + str(layerNum) + (str(index) if size > 1 else '')
 		expressionString = channelType + '("' + srcNode.path() + '/' + parmNamewithLayer + '")'
 		parmNameWithSize = parmName + (str(index) if size > 1 else '')
-		destNode.parm(parmNameWithSize).setExpression(expressionString)
+		parm = destNode.parm(parmNameWithSize)
+		if parm is None:
+			message_gui.warning('You might be using the wrong version of Houdini because the ris node is missing the paramter ' + str(parmNameWithSize))
+			return
+		parm.setExpression(expressionString)
 
 def addExtraParms(risNode):
 	parmGroup = risNode.parmTemplateGroup()
