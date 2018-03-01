@@ -38,6 +38,13 @@ class ExportDialog(QtWidgets.QWidget):
 		name_layout.addWidget(self.jobName)
 		main_layout.addLayout(name_layout)
 
+		# Number of Cores Input Widget
+		self.numCores = QtWidgets.QLineEdit('4')
+		coresLayout = QtWidgets.QHBoxLayout()
+		coresLayout.addWidget(QtWidgets.QLabel('Number of Cores:'))
+		coresLayout.addWidget(self.numCores)
+		main_layout.addLayout(coresLayout)
+
 		# Priority and Start Time
 		# Priority
 		self.priority = QtWidgets.QComboBox()
@@ -126,6 +133,10 @@ class ExportDialog(QtWidgets.QWidget):
 		if len(title) == 0:
 			title = self.empty_text
 
+		numCores = int(re.sub(r'[{}"\']', '', str(self.numCores.text())).strip(' \t\n\r'))
+		if numCores < 1:
+			numCores = 1
+
 		# This job we send to tractor
 		job = author.Job()
 		job.title = title + ' python job'
@@ -168,7 +179,8 @@ class ExportDialog(QtWidgets.QWidget):
 				node.parm('soho_diskfile').set(ribDir+('/%s_$F04.rib' % name))
 
 				print 'start rib making'
-				subprocess.call(['sh', '/groups/grendel/byu-pipeline-tools/houdini-tools/parallelRibs/taskDistribution.sh', str(start), str(end), str(node.path()), str(saveHipRenderCopy())])
+				script = os.path.join(self.project.get_project_dir(), 'byu-pipeline-tools', 'houdini-tools', 'parallelRibs', 'taskDistribution.sh')
+				subprocess.call(['sh', script , str(start), str(end), str(node.path()), str(saveHipRenderCopy()), str(numCores)])
 				print 'finish rib making'
 
 				# Loop through every frame in framerange
@@ -197,7 +209,7 @@ class ExportDialog(QtWidgets.QWidget):
 					task.addChild(subtask)
 					# Render this frame to the ifd file
 					# try:
-					# 	# node.render([frame, frame])
+					# 	node.render([frame, frame])
 					# except Exception as err:
 					# 	message_gui.error('There was an error generating the rib files.', details =str(err))
 				job.addChild(task)
