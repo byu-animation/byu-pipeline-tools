@@ -461,8 +461,8 @@ def adjustNodes():
 			ribFilePath = os.path.join(renderFilePath, 'rib')
 		else:
 			versionNum = getVersion()
-			renderFilePath = '$JOB/production/shots/' + shotName + '/render/main/' + str(versionNum) + '/'
-			ribFilePath = '$JOB/production/ribs/' + shotName + '/' + str(versionNum) + '/'
+			renderFilePath = os.path.join(os.environ['JOB'], 'production', 'shots', str(shotName), 'render', 'main', str(versionNum))
+			ribFilePath = os.path.join(os.environ['JOB'], 'production','ribs', shotName, str(versionNum))
 
 		renderCtrl.parm('filename' + str(i)).setExpression('strcat(chs("layername' + str(i) + '"),".$F4")')
 		renderCtrl.parm('ri_display' + str(i)).setExpression('strcat(strcat("' + renderFilePath + '/",chs("filename' + str(i) + '")),".exr")')
