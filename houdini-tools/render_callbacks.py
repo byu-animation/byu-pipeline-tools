@@ -361,7 +361,7 @@ def setScripts(renderCtrl, risNode, layerNum):
 
 def setStatistics(renderCtrl, risNode, layerNum):
 	setParmExp(risNode, renderCtrl, 'ri_statistics', layerNum=layerNum)
-	setParmExp(risNode, renderCtrl, 'ri_statxmlfilename', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'ri_statxmlfilename', layerNum=layerNum, channelType='chs')
 
 def setNotHookedUp(renderCtrl, risNode, layerNum):
 	setMotionBlur(renderCtrl, risNode, layerNum)
