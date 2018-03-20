@@ -48,7 +48,7 @@ class ExportDialog(QtWidgets.QWidget):
 		# Priority and Start Time
 		# Priority
 		self.priority = QtWidgets.QComboBox()
-		priority_opt = ['Very Low', 'Low', 'Medium', 'High', 'Very High']
+		priority_opt = ['Very Low', 'Low', 'Medium', 'High', 'Very High', 'Critical']
 		for opt in priority_opt:
 			self.priority.addItem(opt)
 		self.priority.setCurrentIndex(2)
@@ -139,7 +139,7 @@ class ExportDialog(QtWidgets.QWidget):
 
 		# This job we send to tractor
 		job = author.Job()
-		job.title = title + ' python job'
+		job.title = title
 		job.priority = self.priority.currentIndex()
 		path = '/opt/pixar/RenderManProServer-21.5/bin/'
 		job.envkey = ['setenv PATH=' + path + ' RMANTREE=/opt/pixar/RenderManProServer-21.5']
@@ -207,11 +207,6 @@ class ExportDialog(QtWidgets.QWidget):
 					command.service = 'PixarRender'
 					subtask.addCommand(command)
 					task.addChild(subtask)
-					# Render this frame to the ifd file
-					# try:
-					# 	node.render([frame, frame])
-					# except Exception as err:
-					# 	message_gui.error('There was an error generating the rib files.', details =str(err))
 				job.addChild(task)
 
 				# Restore rib output
