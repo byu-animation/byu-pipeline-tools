@@ -362,27 +362,8 @@ def ristnet_set_up(shop, name):
 	risnet.layoutChildren()
 	return {'risnet': risnet, 'surface': surface, 'diffuse': diffuse, 'displaceTex': displaceTex, 'pxrdisplace': pxrdisplace}
 
-def generate_groups_expression(group, model_name, rig_name):
-	expression = '''prefix = ""
-
-source = hou.ch("../../source")
-input = hou.ch("../set_switch/input")
-
-if source == 0:
-	input = hou.ch("../set_switch/input")
-elif source == 1:
-	input = hou.ch("../shot_switch/input")
-else:
-	return hou.ch("../''' + group + '''")
-
-if input == 0:
-	prefix = "''' + model_name + '''_"
-else:
-	prefix = "''' + rig_name + '''_"
-
-return prefix + str(hou.ch("../''' + group + '''"))
-	'''
-	return expression
+def generate_groups_expression(group):
+	return 'strcat("*", chs("../' + group + '"))'
 
 def create_hda(asset, assembly, project, environment, checkout_file):
 	# Set up the nodes
@@ -611,8 +592,8 @@ for node in switch.inputs():
 	for i, group in enumerate(groups):
 		group_num = str(i + 1)
 		geo.parm('group' + group_num).set(group.name())
-		groupExpression = generate_groups_expression('group' + group_num, model.get_long_name(), rig.get_long_name())
-		mat.parm('group' + group_num).setExpression(groupExpression, language=hou.exprLanguage.Python)
+		groupExpression = generate_groups_expression('group' + group_num)
+		mat.parm('group' + group_num).setExpression(groupExpression, language=hou.exprLanguage.Hscript)
 		mat.parm('shop_materialpath' + group_num).setExpression('chsop("../mat_path' + group_num + '")')
 
 	geo.setName(asset.get_name(), unique_name=True)
