@@ -3,11 +3,13 @@ from byugui import message_gui
 import maya.mel as mel
 
 def go():
-	selection = pm.ls(selection=True)
-	if len(selection) == 2:
-		mel.eval(attachBeard())
-	else:
-		message_gui.error('Please Select the beard and then the viking.')
+	result = message_gui.yes_or_no('Did you select the highest level of the Viking? (Should look something like \'viking_with_facial_..._Viking_GRP01\') Otherwise it won\'t work...')
+	if result:
+		selection = pm.ls(selection=True)
+		if len(selection) == 2:
+			mel.eval(attachBeard())
+		else:
+			message_gui.error('Please Select the beard and then the viking.')
 
 def attachBeard():
 	return '''
@@ -52,4 +54,6 @@ def attachBeard():
 	select -tgl ($beard+"stache_master");
 	doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
 	parentConstraint -mo -weight 1;
+	
+	select -clear;
 	'''
