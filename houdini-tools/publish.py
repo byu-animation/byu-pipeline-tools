@@ -56,10 +56,10 @@ def publish_hda(publishWindow, selectedHDA, src):
 						os.chmod(dst, 0660)
 					except:
 						pass
-					hou.hda.uninstallFile(src, change_oplibraries_file=False)
 					saveFile = hdaName + '_' + element_type + '_main.hdanc'
 					dst = os.path.join(environment.get_hda_dir(), saveFile)
 					hou.hda.installFile(dst)
+					hou.hda.uninstallFile(src, change_oplibraries_file=False)
 		else:
 			message_gui.error('File does not exist', details=src)
 

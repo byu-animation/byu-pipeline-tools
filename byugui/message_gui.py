@@ -20,7 +20,7 @@ def message(msg, details=None, title='Message'):
 	msgBox.addButton(QtWidgets.QMessageBox.Ok)
 
 	if details is not None:
-		msgBox.setDetailedText(details)
+		msgBox.setDetailedText(str(details))
 
 	msgBox.exec_()
 

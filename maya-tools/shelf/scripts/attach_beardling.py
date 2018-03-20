@@ -7,28 +7,32 @@ def go():
 
 def attachBeardling():
 	return '''
-	// Parent head to head
-    select -r "beowulf_rig_main_Beowulf_head_cc_01" ;
-    select -tgl "beardling_rig_main_Viking_head_cc_01" ;
-    doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
-    parentConstraint -mo -weight 1;
+	string $constraint = "beardling_rig_main_Viking_main_cc_01.ConstraintSpace";
+
+    // Parent head to head
+    string $head = "beowulf_rig_main_Beowulf_head_cc_01" ;
+    select -r $head;
+    select -tgl "beardling_rig_main_Viking_head_controls_GRP_01" ;
+    string $parented_head[] = `parentConstraint -mo -weight 1`;
+    connectAttr -f $constraint ($parented_head[0] + "." + $head + "W0");
 
     // Parent main body to chest
-    select -r "beowulf_rig_main_Beowulf_chest_cc_01" ;
-    select -tgl "beardling_rig_main_Viking_primary_global_cc_01" ;
-    doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
-    parentConstraint -mo -weight 1;
+    string $chest = "beowulf_rig_main_Beowulf_chest_cc_01" ;
+    select -r $chest;
+    select -tgl "beardling_rig_main_Viking_controls_GRP_01" ;
+    string $parented_chest[] = `parentConstraint -mo -weight 1`;
+    connectAttr -f $constraint ($parented_chest[0] + "." + $chest + "W0");
 
     // Parent hands to head
-    select -r beowulf_rig_main_Beowulf_head_cc_01 ;
-    select -tgl beardling_rig_main_Viking_LFT_IK_arm_cc_01 ;
-    doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
-    parentConstraint -mo -weight 1;
+    select -r $head;
+    select -tgl "beardling_rig_main_Viking_LFT_IK_arm_cc_os_grp_01" ;
+    string $parented_left[] = `parentConstraint -mo -weight 1`;
+    connectAttr -f $constraint ($parented_left[0] + "." + $head + "W0");
 
-    select -r beowulf_rig_main_Beowulf_head_cc_01 ;
-    select -tgl beardling_rig_main_Viking_RGT_IK_arm_cc_01 ;
-    doCreateParentConstraintArgList 1 { "1","0","0","0","0","0","0","0","1","","1" };
-    parentConstraint -mo -weight 1;
+    select -r $head;
+    select -tgl "beardling_rig_main_Viking_RGT_IK_arm_cc_os_grp_01" ;
+    string $parented_right[] = `parentConstraint -mo -weight 1`;
+    connectAttr -f $constraint ($parented_right[0] + "." + $head + "W0");
 
     select -clear;
 	'''
