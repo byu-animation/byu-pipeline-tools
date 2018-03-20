@@ -57,7 +57,9 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		startFrame -= 5
 		endFrame += 5
 		files = exportReferences(abcFilePath, tag='BYU_Alembic_Export_Flag', selectionMode=True, startFrame=startFrame, endFrame=endFrame)
-		exportCrowd(abcFilePath, 'BYU_Crowd_Agent_Flag', tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
+		result = message_gui.yes_or_no('Are there any crowds that need to be exported?')
+		if result:
+			exportCrowd(abcFilePath, 'BYU_Crowd_Agent_Flag', tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
 	elif body.is_asset():
 		if body.get_type() == AssetType.SET:
 			files = exportReferences(abcFilePath)
