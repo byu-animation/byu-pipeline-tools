@@ -216,10 +216,21 @@ def addExtraParms(risNode):
 	parmTemplate.setHelp("RiCurves (type)")
 	parmTemplate.setTags({"spare_category": "Geometry"})
 	parmGroup.append(parmTemplate)
+
 	parmTemplate = hou.StringParmTemplate("ri_curvebasis", "Curve Basis", 1, default_value=(["bezier"]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.Regular, menu_items=(["bezier","b-spline","catmull-rom","hermite","power"]), menu_labels=(["Bezier","B-Spline","Catmull-Rom","Hermite","Power"]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
 	parmTemplate.setConditional( hou.parmCondType.DisableWhen, "{ ri_curveinterpolation == linear }")
 	parmTemplate.setHelp("RiBasis (basis)")
 	parmTemplate.setTags({"spare_category": "Geometry"})
+	parmGroup.append(parmTemplate)
+
+	parmTemplate = hou.StringParmTemplate("shop_outputpath", "Display/Sample Filter", 1, default_value=([""]), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script="", item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+	parmTemplate.setHelp("RiDisplayFilter replaced RiImager. It performs post-processing on the shaded results returned by an integrator plugin before they are sent to any of the display plugins.")
+	parmTemplate.setTags({"opfilter": "!!SHOP/OUTPUT!!", "oprelative": ".", "spare_category": "Shaders"})
+	parmGroup.append(parmTemplate)
+
+	parmTemplate = hou.ToggleParmTemplate("ri_usesamplefilter", "Use Sample Filter", default_value=False)
+	parmTemplate.setHelp("RiSampleFilter replaced RiPixelSampleImager. If this toggle is on, the Display/Sample Filter path above uses RiSampleFilter instead of RiDisplayFilter.  RiSampleFilter operates on the raw camera samples before pixel filtering is applied to them.")
+	parmTemplate.setTags({"spare_category": "Shaders"})
 	parmGroup.append(parmTemplate)
 
 	risNode.setParmTemplateGroup(parmGroup)
@@ -279,6 +290,8 @@ def setRIS(renderCtrl, risNode, layerNum):
 	setParmExp(risNode, renderCtrl, 'shop_integratorpath', layerNum=layerNum, channelType='chsop')
 	setParmExp(risNode, renderCtrl, 'ri_pixelvariance', layerNum=layerNum)
 	setParmExp(risNode, renderCtrl, 'soho_denoisemode', layerNum=layerNum)
+	setParmExp(risNode, renderCtrl, 'shop_outputpath', layerNum=layerNum, channelType='chsop')
+	setParmExp(risNode, renderCtrl, 'ri_usesamplefilter', layerNum=layerNum)
 
 def setDisplay(renderCtrl, risNode, layerNum):
 	#Display
