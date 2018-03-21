@@ -6,8 +6,17 @@ import alembic_exporter
 import reference
 from byuam import byuutil
 import os
+import subprocess
 
 def go():
+
+	result = message_gui.binary_option("We are going to do crowds cycles a little differently now. This way is going to be more direct, less error prone and there is going to be a lot less stuff for maya to load so it should make the process a little faster. We are going to do it just like we would make any other asset with a couple of differences. I think it's going to work out a lot better.", "View Instuctions", "Done")
+
+	if result:
+		subprocess.call(['xdg-open', 'https://byu-animation.github.io/crowds.html'])
+
+	return
+
 	fileName = pm.sceneName()
 	listOfChanges = pm.dgmodified()
 
@@ -79,6 +88,8 @@ def go():
 	pm.saveFile() #Make sure we save it so that we will have that group again when we open it.
 	print 'opening', cycleFile
 	pm.openFile(cycleFile, force=True)
+
+	result = message_gui.info("Please take a look at the cycle. Make sure everything is in order. \nMake sure you have all the models that you selected. \nMake sure there aren't any extra references that you didn't select.\nIf everything looks okay then publish this cycle, open your file, (located here: " + fileName + "), and then use the red reference button to bring it into the scene.")
 
 	#Set frameRange as specified by the user.
 	pm.playbackOptions(ast=firstFrame)

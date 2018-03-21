@@ -22,6 +22,7 @@ class CreateWindow(QtWidgets.QTabWidget):
 	ASSET_INDEX = 0
 	SHOT_INDEX = 1
 	TOOL_INDEX = 2
+	CROWD_INDEX = 3
 
 	def __init__(self, parent):
 		super(CreateWindow, self).__init__()
@@ -37,10 +38,12 @@ class CreateWindow(QtWidgets.QTabWidget):
 		assetTab = NewBodyWindow('asset', self)
 		shotTab = NewBodyWindow('shot', self)
 		toolsTab = NewBodyWindow('tool', self)
+		crowdTab = NewBodyWindow('crowd cycle', self)
 
 		self.insertTab(self.ASSET_INDEX, assetTab, 'Asset')
 		self.insertTab(self.SHOT_INDEX, shotTab, 'Shot')
 		self.insertTab(self.TOOL_INDEX, toolsTab, 'Tool')
+		self.insertTab(self.CROWD_INDEX, crowdTab, 'Crowd Cycle')
 
 		self.show()
 
@@ -129,6 +132,8 @@ def createBody(bodyType, name):
 		shot = project.create_shot(name)
 	elif bodyType == 'tool':
 		tool = project.create_tool(name)
+	elif bodyType == 'crowd cycle':
+		cycle = project.create_crowd_cycle(name)
 	else:
 		message_gui.error(bodyType + " is not a valid type!\nThis should not have happend. Please contact a Pipline Management Team member for help!\nTake a screenshot of this error and tell him/her that it came from new_body_gui.py")
 
