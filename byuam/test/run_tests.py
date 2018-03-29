@@ -15,7 +15,7 @@ class TestAssetManager(unittest.TestCase):
 		project_dir = os.path.dirname(os.path.realpath(__file__))
 		self.assets_dir = os.path.join(project_dir, "assets")
 		self.shots_dir = os.path.join(project_dir, "shots")
-		self.tools_dir = os.path.join(project_dir, "hdas")
+		self.tools_dir = os.path.join(project_dir, "hda")
 		self.users_dir = os.path.join(project_dir, "users")
 		self.assmelby_dir = os.path.join(project_dir, "otls")
 		pipeline_io.mkdir(self.assets_dir)

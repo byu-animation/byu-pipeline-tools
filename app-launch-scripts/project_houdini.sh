@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # project_houdini.sh: opens houdini with the project environment
-# @author Brian Kingery
+# @author Brian Kingery & Ben DeMann
 
 if [ -z "${HFS}" ]
 then
@@ -32,7 +32,7 @@ export JOB=${BYU_PROJECT_DIR}
 HOUDINI_TOOLS=${BYU_TOOLS_DIR}/houdini-tools
 TRACTOR_AUTHOR=/opt/pixar/Tractor-2.2/lib/python2.7/site-packages
 export PYTHONPATH=${PYTHONPATH}:${HOUDINI_TOOLS}:${TRACTOR_AUTHOR}
-export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/production;&"
+export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/production;&":${BYU_PROJECT_DIR}"/production/hda;&"
 
 export HOUDINI_MENU_PATH=${HOUDINI_TOOLS}"/houdini-menus;&"
 export HOUDINI_UI_ICON_PATH=${BYU_TOOLS_DIR}"/assets/images/icons/tool-icons;&"
@@ -41,6 +41,6 @@ echo "Starting Houdini..."
 # so I tried to set the $HIP variable but that didn't work. I don't really want people accientally saving their files in the tools directory and I would imagine that they would want to have their home directory as the default $HIP location anyways so we are going to cd into the users home directory, start houdini and then cd back to where ever we were.
 currLocation="$( pwd )"
 cd ~/
-houdinifx "$@"
+gnome-terminal -e "houdinifx -foreground $@"
 # after playing around with this it looks like we might still end up in the same directory we started in. Maybe sh puts you back by itself. I'll just leave it here. It's not hurting anybody.
 cd $currLocation

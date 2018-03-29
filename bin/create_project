@@ -21,16 +21,20 @@ def create_project(path, name='test', email=None, password=None, nickname=None):
 	users = os.path.join(path, 'users')
 	if not os.path.exists(users):
 		pipeline_io.mkdir(users)
-	hdas = os.path.join(production, 'hdas')
-	if not os.path.exists(hdas):
-		pipeline_io.mkdir(hdas)
+	hda = os.path.join(production, 'hda')
+	if not os.path.exists(hda):
+		pipeline_io.mkdir(hda)
+	otls = os.path.join(production, 'otls') #This is for older versions of houdini. As soon as all houdinis are updated past 16.5, get rid of it
+	if not os.path.exists(otls):
+		import subprocess
+		subprocess.call(['ln','-s',hda,otls])
 	tools = os.path.join(production, 'tools')
 	if not os.path.exists(tools):
 		pipeline_io.mkdir(tools)
 	crowdCycles = os.path.join(production, 'crowdCycles')
 	if not os.path.exists(crowdCycles):
 		pipeline_io.mkdir(crowdCycles)
-	datadict = Environment.create_new_dict(name, assets, shots, tools, crowdCycles, users, hdas, email, password)
+	datadict = Environment.create_new_dict(name, assets, shots, tools, crowdCycles, users, hda, email, password)
 	pipeline_file = os.path.join(path, Environment.PIPELINE_FILENAME)
 	pipeline_io.writefile(pipeline_file, datadict)
 

@@ -451,6 +451,9 @@ def hda_parameter_setup(hda, geo, project):
 	projectFolder.addParmTemplate(recook)
 	version = hou.IntParmTemplate('abcversion', 'Alembic Version', 1)
 	projectFolder.addParmTemplate(version)
+	lightlink = hou.StringParmTemplate("lightmask", "Light Mask", 1, default_value=(["*"]), string_type=hou.stringParmType.NodeReferenceList) #, menu_items=([]), menu_labels=([]), icon_names=([]))
+	lightlink.setTags({"opfilter": "!!OBJ/LIGHT!!", "oprelative": "/"})
+	projectFolder.addParmTemplate(lightlink)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
 
@@ -574,6 +577,9 @@ for node in switch.inputs():
 
 	geo = create_cook_button(geo)
 
+	lightmask = 'chsop("../lightmask")'
+	geo.parm('lightmask').setExpression(lightmask)
+
 	out = hide_switch.createOutputNode('null')
 	out.setName('OUT')
 
@@ -619,8 +625,10 @@ for node in switch.inputs():
 		mat_path_expr = 'chsop("../../' + geo.name() + '/mat_path' + group_num + '")'
 		displacePathExpr = 'chsop("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
 		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
+		lightmask = 'chsop("../../lightmask")'
 		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr, add_displacement=True)
 		group_geo.parm('shop_materialpath').setExpression(mat_path_expr)
+		group_geo.parm('lightmask').setExpression(lightmask)
 
 		for child in group_geo.children():
 			child.destroy()
