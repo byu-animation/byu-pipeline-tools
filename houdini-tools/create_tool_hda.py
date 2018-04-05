@@ -39,7 +39,6 @@ def create_hda():
 			result = message_gui.yes_or_no('The selected node is already a digial asset. Would you like to copy the definition into the pipeline')
 			if not result:
 				return
-			#TODO handle premade hdas here
 			copyHDA = True
 		else:
 			message_gui.error('You can\'t make a digital asset from the selected node')
@@ -73,7 +72,6 @@ def create_hda():
 		hdaDef = hda.type().definition()
 
 		#Copy over sections
-		#TODO copy over sections
 		sects = hdaDef.sections()
 		for sectName in sects:
 			print 'Copying over section: ' + str(sectName)
