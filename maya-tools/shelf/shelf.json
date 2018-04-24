@@ -1,93 +1,109 @@
 {
-	"buttons":[
+	"shelfItems":[
 		{
+			"itemType":"button",
 			"icon":"new-body.svg",
 			"annotation":"Create a new body",
-			"python_file":"new_body.py"
-		},{
+			"pythonFile":"new_body.py",
+			"function":"new_body.go()"
+		}, {
+			"itemType":"button",
 			"icon":"checkout.svg",
 			"annotation":"Checkout a model, rig or animation",
-			"python_file":"checkout.py"
-		},  {
+			"python_file":"checkout.py",
+			"function":"checkout.go()"
+		}, {
+			"itemType":"button",
 			"icon":"publish.svg",
 			"annotation":"Publish a model, rig or animation",
-			"python_file":"publish.py"
+			"python_file":"publish.py",
+			"function":"publish.go()"
 		}, {
-			"icon":"frame-range.svg",
-			"annotation":"Set the correct frame range for the current shot",
-			"python_file":"frame_range.py"
-		}, {
-			"icon":"playblast.svg",
-			"annotation":"Playblast this shot",
-			"python_file":"playblast.py"
-		}, {
-			"icon":"alembic-export.svg",
-			"annotation":"Export as Alembic",
-			"python_file":"alembic_exporter.py"
-		}, {
-			"icon":"tag.svg",
-			"annotation":"Tag Selected Objects for Export",
-			"python_file":"alembic_tagger.py"
-		}, {
-			"icon":"untag.svg",
-			"annotation":"Untag Selected Objects for Export",
-			"python_file":"alembic_untagger.py"
-		}, {
-			"icon":"reference.svg",
-			"annotation":"Reference a model or rig",
-			"python_file":"reference.py"
-		}, {
-			"icon":"quote.svg",
-			"annotation":"Inspirational quote of the day!",
-			"python_file":"inspire_quote.py"
-		}, {
-			"icon":"gnome.svg",
-			"annotation":"Gnomic Test Geo",
-			"python_file":"import_test_geo.py"
-		}, {
-			"icon":"reload-scripts.svg",
-			"annotation":"Reload Scripts",
-			"python_file":"reload_scripts.py"
-		}, {
-			"icon":"ik-fk.svg",
-			"annotation":"FK IK Matching Tool",
-			"python_file":"fk_ik_snapping.py"
-		}, {
-			"icon":"interpolate.svg",
-			"annotation":"Cluster Interpolate",
-			"python_file":"cluster_interpolate.py"
-		}, {
-			"icon":"viking-beard.svg",
-			"annotation":"Attach Beard",
-			"python_file":"attach_beard.py"
-		}, {
-			"icon":"beardling.svg",
-			"annotation":"Attach Beardling",
-			"python_file":"attach_beardling.py"
-		}, {
-			"icon":"new-body.svg",
-			"annotation":"Clear some stuff",
-			"python_file":"playground.py"
-		}, {
-			"icon":"viking-reference.svg",
-			"annotation":"Do a viking-reference",
-			"python_file":"viking_reference.py"
-		}, {
-			"icon":"education.svg",
-			"annotation":"Change the licence to education",
-			"python_file":"education.py"
-		}, {
-			"icon":"agent.svg",
-			"annotation":"Bake Crowd Cycle",
-			"python_file":"crowdCycle.py"
-		}, {
-			"icon":"viking-beard.svg",
-			"annotation":"Crowd Beard",
-			"python_file":"crowdBeard.py"
-		}, {
+			"itemType":"button", 
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
-			"python_file":"rollback.py"
+			"python_file":"rollback.py",
+			"function":"rollback.go()"
+		}, {
+			"itemType":"button",
+			"icon":"playblast.svg",
+			"annotation":"Playblast this shot",
+			"python_file":"playblast.py",
+			"function":"playblast.go()"
+		}, {
+			"itemType":"button",
+			"icon":"alembic-export.svg",
+			"annotation":"Export as Alembic",
+			"python_file":"alembic_exporter.py",
+			"function":"alembic_exporter.go()"
+		}, {
+			"itemType":"button",
+			"icon":"tag.svg",
+			"annotation":"Tag Selected Objects for Export",
+			"python_file":"alembic_tagger.py",
+			"function":"alembic_tagger.go()"
+		}, {
+			"itemType":"button",
+			"icon":"untag.svg",
+			"annotation":"Untag Selected Objects for Export",
+			"python_file":"alembic_untagger.py",
+			"function":"alembic_untagger.go()"
+		}, {
+			"itemType":"button",
+			"icon":"reference.svg",
+			"annotation":"Reference a model or rig",
+			"python_file":"reference.py",
+			"function":"reference.go(useNamespace=True)"
+		}, {
+			"itemType":"separator"
+		}, {
+			"itemType":"button",
+			"icon":"quote.svg",
+			"annotation":"Inspirational quote of the day!",
+			"python_file":"inspire_quote.py",
+			"function":"inspire_quote.go()"
+		}, {
+			"itemType":"button",
+			"icon":"gnome.svg",
+			"annotation":"Gnomic Test Geo",
+			"python_file":"import_test_geo.py",
+			"function":"import_test_geo.go()"
+		}, {
+			"itemType":"button",
+			"icon":"reload-scripts.svg",
+			"annotation":"Reload Scripts",
+			"python_file":"reload_scripts.py",
+			"function":"reload_scripts.go()"
+		}, {
+			"itemType":"button",
+			"icon":"ik-fk.svg",
+			"annotation":"FK IK Matching Tool",
+			"python_file":"fk_ik_snapping.py",
+			"function":"fk_ik_snapping.go()"
+		}, {
+			"itemType":"button",
+			"icon":"interpolate.svg",
+			"annotation":"Cluster Interpolate",
+			"python_file":"cluster_interpolate.py",
+			"function":"cluster_interpolate.go()"
+		}, {
+			"itemType":"button",
+			"icon":"new-body.svg",
+			"annotation":"Clear some stuff",
+			"python_file":"playground.py",
+			"function":"playground.go()"
+		}, {
+			"itemType":"button",
+			"icon":"education.svg",
+			"annotation":"Change the licence to education",
+			"python_file":"education.py",
+			"function":"education.go()"
+		}, {
+			"itemType":"button",
+			"icon":"agent.svg",
+			"annotation":"Bake Crowd Cycle",
+			"python_file":"crowdCycle.py",
+			"function":"crowdCycle.go()"
 		}
 	]
 }
