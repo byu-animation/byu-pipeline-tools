@@ -65,6 +65,13 @@ def farmRender():
 		except hou.OperationFailed, e:
 			message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
 
+def farmCustomRender():
+	print 'Start Tractor Render'
+	try:
+		tractor.go(getEngineParts()['merge'].inputAncestors())
+	except hou.OperationFailed, e:
+		message_gui.error('There was an error completeing the render. Check the ris nodes in the render engine node for details.', details=str(e))
+
 def gridmarketsRender():
 	if prepRender(openExr=True):
 		print 'Start Gridmarkets Render'
@@ -96,10 +103,10 @@ def firstMiddleLast():
 
 def setRenderQuality(quality='default', minSamples=-1, maxSamples=64):
 	if quality == 'final':
-		minSamples = 600
+		minSamples = -1
 		maxSamples = 1000
 	elif quality == 'dailies':
-		minSamples = 300
+		minSamples = -1
 		maxSamples = 700
 
 	node = getEngineParts()['renderCtrl']
@@ -180,6 +187,33 @@ def getEngineParts():
 	if nodes['gridmarkets'] is None:
 		nodes['gridmarkets'] = nodes['merge'].createOutputNode('render_submit', 'GridMarketsSubmit')
 	return nodes
+
+def deleteParmExp(destNode, srcNode, parmName, layerNum='', channelType='ch', size=1, useXYZ=False, useRGB=False):
+	for i in range(1, size + 1):
+		if useXYZ:
+			if i is 1:
+				index = 'x'
+			elif i is 2:
+				index = 'y'
+			elif i is 3:
+				index = 'z'
+		elif useRGB:
+			if i is 1:
+				index = 'r'
+			elif i is 2:
+				index = 'g'
+			elif i is 3:
+				index = 'b'
+		else:
+			index = i
+		parmNamewithLayer = parmName + str(layerNum) + (str(index) if size > 1 else '')
+		expressionString = channelType + '("' + srcNode.path() + '/' + parmNamewithLayer + '")'
+		parmNameWithSize = parmName + (str(index) if size > 1 else '')
+		parm = destNode.parm(parmNameWithSize)
+		if parm is None:
+			message_gui.warning('You might be using the wrong version of Houdini because the ris node is missing the paramter ' + str(parmNameWithSize))
+			return
+		parm.deleteAllKeyframes()
 
 def setParmExp(destNode, srcNode, parmName, layerNum='', channelType='ch', size=1, useXYZ=False, useRGB=False):
 	for i in range(1, size + 1):
@@ -309,8 +343,8 @@ def setRiAOV(renderCtrl, risNode, layerNum):
 def setHider(renderCtrl, risNode, layerNum):
 	#Hider
 	setParmExp(risNode, renderCtrl, 'ri_hider', layerNum=layerNum, channelType='chs')
-	setParmExp(risNode, renderCtrl, 'ri_minsamples', layerNum=layerNum)
-	setParmExp(risNode, renderCtrl, 'ri_maxsamples', layerNum=layerNum)
+	deleteParmExp(risNode, renderCtrl, 'ri_minsamples', layerNum=layerNum)
+	deleteParmExp(risNode, renderCtrl, 'ri_maxsamples', layerNum=layerNum)
 	setParmExp(risNode, renderCtrl, 'ri_darkfalloff', layerNum=layerNum)
 	setParmExp(risNode, renderCtrl, 'ri_incremental', layerNum=layerNum)
 	setParmExp(risNode, renderCtrl, 'ri_pixelfiltermode', layerNum=layerNum, channelType='chs')
