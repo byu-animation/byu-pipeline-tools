@@ -21,6 +21,7 @@ import education
 import attach_beardling
 import viking_reference
 import crowdCycle
+import crowdBeard
 
 def go():
 	reload(alembic_static_exporter)
@@ -45,5 +46,6 @@ def go():
 	reload(attach_beardling)
 	reload(viking_reference)
 	reload(crowdCycle)
+	reload(crowdBeard)
 	# reload(byuam)
 	# reload(byugui)

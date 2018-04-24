@@ -81,6 +81,10 @@
 			"annotation":"Bake Crowd Cycle",
 			"python_file":"crowdCycle.py"
 		}, {
+			"icon":"viking-beard.svg",
+			"annotation":"Crowd Beard",
+			"python_file":"crowdBeard.py"
+		}, {
 			"icon":"rollback.svg",
 			"annotation":"Rollback body to previous version",
 			"python_file":"rollback.py"
