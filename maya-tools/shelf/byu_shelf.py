@@ -16,11 +16,11 @@
 ####
 #### If you'd like to add a shelf button, you can add it to
 #### shelf.json. Follow the example of the other buttons in there.
-#### Remember, the icon must be a 33X33 .xpm, and the python_file key
+#### Remember, the icon must be a 33X33 .xpm, and the pythonFile key
 #### must be the name of the file where your python script is
 #### stored. (Careful, it's not an absolute path!)
 ####
-from pymel.core import *
+import pymel.core as pm
 import os
 import sys
 import json
@@ -44,8 +44,8 @@ sys.path.append(SCRIPT_DIR)
 def BYU_load_shelf():
 	BYU_delete_shelf()
 
-	gShelfTopLevel = mel.eval('global string $gShelfTopLevel; string $temp=$gShelfTopLevel')
-	shelfLayout(PROJ, cellWidth=33, cellHeight=33, p=gShelfTopLevel)
+	gShelfTopLevel = pm.mel.eval('global string $gShelfTopLevel; string $temp=$gShelfTopLevel')
+	pm.shelfLayout(PROJ, cellWidth=33, cellHeight=33, p=gShelfTopLevel)
 
 	#### Okay, for some reason, deleting the shelf from a shelf button crashes Maya.
 	#### I'm saving this for another day, or for someone more adventurous.
@@ -60,36 +60,17 @@ def BYU_load_shelf():
 		if shelfItem['itemType'] == 'button':
 			icon = os.path.join(ICON_DIR, shelfItem['icon'])
 			annotation = shelfItem['annotation']
-			python_file = shelfItem['python_file'][:-3]
-			shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
+			pythonFile = shelfItem['pythonFile'][:-3]
+			pm.shelfButton(command="import %s; %s"%(pythonFile, shelfItem['function']),annotation=annotation, image=icon, label=annotation)
 		else:
-			addShelfSeparator()
-	remove_unwanted_shelfs()
-	setUpSoup(gShelfTopLevel)
+			pm.separator(horizontal=False, style='none', enable=True, width=7)
+			pm.separator(horizontal=False, style='none', enable=True, width=2, backgroundColor=(0.5,0.5,0.5))
+			pm.separator(horizontal=False, style='none', enable=True, width=7)
+
+
+	#setUpSoup(gShelfTopLevel)
 	# Set default preferences
-	env.optionVars['generateUVTilePreviewsOnSceneLoad'] = 1
-
-	import maya.cmds as cmds
-
-	saveLayouts = 0
-	restoreLayouts = 0
-
-	env.optionVars['useSaveScenePanelConfig'] = saveLayouts
-	cmds.file(uc=saveLayouts)
-	mel.eval('$gUseSaveScenePanelConfig=' + str(saveLayouts))
-
-	env.optionVars['useScenePanelConfig'] = restoreLayouts
-	cmds.file(uc=restoreLayouts)
-	mel.eval('$gUseScenePanelConfig=' + str(restoreLayouts))
-
-def remove_unwanted_shelfs():
-	#There was a little bit of murmuring about the TURTLE shelf tab and how it not removeable. So I just removed at startup.
-	import maya.cmds as cmds
-	if cmds.shelfLayout("TURTLE", exists=True):
-		cmds.deleteUI("TURTLE", lay=True)
-		print "You are now free from TURTLE. You're welcome!"
-	else:
-		print "There was no TURTLE to be removed."
+	pm.env.optionVars['generateUVTilePreviewsOnSceneLoad'] = 1
 
 def setUpSoup(shelf):
 	if cmds.shelfLayout("soup", exists=True):
@@ -113,7 +94,7 @@ def setUpSoup(shelf):
 	mel.eval('shelf_soup()')
 
 def BYU_delete_shelf():
-	if shelfLayout(PROJ, exists=True):
-		deleteUI(PROJ)
+	if pm.shelfLayout(PROJ, exists=True):
+		pm.deleteUI(PROJ)
 
 BYU_load_shelf()
