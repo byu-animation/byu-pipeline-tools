@@ -56,11 +56,14 @@ def BYU_load_shelf():
 	#### Load in the buttons
 	json_file = file(os.path.join(SHELF_DIR, "shelf.json"))
 	data = json.loads(json_file.read())
-	for button in data['buttons']:
-		icon = os.path.join(ICON_DIR, button['icon'])
-		annotation = button['annotation']
-		python_file = button['python_file'][:-3]
-		shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
+	for shelfItem in data['shelfItems']:
+		if shelfItem['itemType'] == 'button':
+			icon = os.path.join(ICON_DIR, shelfItem['icon'])
+			annotation = shelfItem['annotation']
+			python_file = shelfItem['python_file'][:-3]
+			shelfButton(command="import %s; %s.go()"%(python_file, python_file),annotation=annotation, image=icon)
+		else:
+			addShelfSeparator()
 	remove_unwanted_shelfs()
 	setUpSoup(gShelfTopLevel)
 	# Set default preferences
