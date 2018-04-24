@@ -8,7 +8,7 @@ To setup a production project:
 	```bash
 	source app-launch-scripts/project_env.sh
 	```
-1. Run this script to create an new set of project directory in which the project assets and user info will be stored:
+1. Run this script to create a new set of project directories in which the project assets and user info will be stored:
 	```bash
 	create_project $BYU_PROJECT_DIR YourProjectName --email projectSupport@email.com --password projectSupportEmailPassword --nickname name
 	```
@@ -23,13 +23,13 @@ To setup a production project:
 	* Update the icon for the the Houdini Digital Assets
 		* in byu-pipeline-tools/assets/images/icons/
 		* It should be square and simple enough that when it is really small the resampling doesn't make it ugly.
-1. Make sure all the software versions numbers are up to date in the various app launch scripts
+1. Make sure all the software version numbers are up to date in the various app launch scripts
 	* One of the tricks the pipeline uses is having a short cut to the current Houdini Installation: /opt/hfs.current. Make sure this shortcut is on the current image.
 1. Pray that everything holds together
-1. Let the artist have at it. They will let you know if anything is broken.
+1. Let the artists have at it. They will let you know if anything is broken.
 
 ## Notes
-* For more information be sure to checkout [the wiki](https://github.com/byu-animation/byu-pipeline-tools/wiki)
-* Also checkout https://byu-animation.github.io/ for a tutorial of the front-end
-* For the gui elements use PySide2 and a little PyQt
-* These tools are designed for Linux. They are not guaranteed to work on any other operation system. In fact they are not really guaranteed to work out side of the BYU animation lab.
+* For more information be sure to check out [the wiki](https://github.com/byu-animation/byu-pipeline-tools/wiki)
+* Also check out https://byu-animation.github.io/ for a tutorial of the front-end
+* For the GUI elements use PySide2 and a little PyQt
+* These tools are designed for Linux. They are not guaranteed to work on any other operation system. In fact they are not really guaranteed to work outside of the BYU animation lab.
