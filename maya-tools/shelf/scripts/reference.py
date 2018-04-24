@@ -141,7 +141,7 @@ def referenceCrowdCycle(paths):
 			pm.connectAttr(controlAlembicScale, cycleRefScale)
 
 
-def go(useNamespace=False):
+def go(useNamespace=True):
 	parent = maya_main_window()
 	# filePath = pm.file(q=True, sceneName=True)
 	filePath = pm.system.sceneName()
