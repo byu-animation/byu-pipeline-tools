@@ -11,7 +11,6 @@ import tractor_submit
 import reload_scripts
 import render_callbacks
 import matchDefinition
-import renderControls
 
 def go():
 	reload(assemble_asset)
@@ -27,4 +26,3 @@ def go():
 	reload(test_geo)
 	reload(tractor_submit)
 	reload(matchDefinition)
-	reload(renderControls)

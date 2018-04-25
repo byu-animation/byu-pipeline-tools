@@ -504,44 +504,27 @@ def geo_setup(parentNode, asset, project):
 	rig_model_set_switch = geo.createNode('switch')
 	rig_model_set_switch.setName('set_switch')
 
-	abc_set_model = rig_model_set_switch.createInputNode(0, 'alembic')
-	abc_set_model.setName('set_model_alembic')
-	abc_set_model.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_set_model.parm("groupnames").set(4)
+	abc_set_model = createAlembicNode(geo, 'set_model_alembic', '"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
+	rig_model_set_switch.setInput(0, abc_set_model)
 
-	abc_set_rig = rig_model_set_switch.createInputNode(1, 'alembic')
-	abc_set_rig.setName('set_rig_alembic')
-	abc_set_rig.parm('fileName').setExpression('"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_set_rig.parm('groupnames').set(4)
-
-	null_set = rig_model_set_switch.createInputNode(2, 'null')
-	null_set.setName('no_set_model_found')
+	abc_set_rig = createAlembicNode(geo, 'set_rig_alembic', '"$JOB/production/assets/" + chs("../../set") + "/model/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
+	rig_model_set_switch.setInput(1, abc_set_rig)
 
 	# Object Space Alembic
-	abc_object_space = geo.createNode('alembic')
-	abc_object_space.setName('object_space_alembic')
-	abc_object_space.parm('fileName').set(geo_file_path)
-	abc_object_space.parm('groupnames').set(4)
+	abc_object_space = createAlembicNode(geo, 'object_space_alembic', '"' + geo_file_path + '"')
 
 	# Animated Alembics
 	# Get all of the animated geo
 	rig_model_switch = geo.createNode('switch')
 	rig_model_switch.setName('shot_switch')
 
-	abc_anim_model = rig_model_switch.createInputNode(0, 'alembic')
-	abc_anim_model.setName('animated_model')
-	abc_anim_model.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_anim_model.parm('groupnames').set(4)
+	abc_anim_model = createAlembicNode(geo, 'animated_model', '"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + model.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
+	rig_model_switch.setInput(0, abc_anim_model)
 	# abc_anim_model.parm('objectPath').set(model_reference)
 
-	abc_anim_rig = rig_model_switch.createInputNode(1, 'alembic')
-	abc_anim_rig.setName('animated_rig')
-	abc_anim_rig.parm('fileName').setExpression('"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
-	abc_anim_rig.parm('groupnames').set(4)
+	abc_anim_rig = createAlembicNode(geo, 'animated_rig', '"$JOB/production/shots/" + chs("../../shot") + "/anim/main/cache/' + rig.get_long_name() + '" + ifs(ch("../../abcversion"), ch("../../abcversion"), "") + ".abc"')
+	rig_model_switch.setInput(1, abc_anim_rig)
 	# abc_anim_rig.parm('objectPath').set(rig_reference)
-
-	null_shot = rig_model_switch.createInputNode(2, 'null')
-	null_shot.setName('no_shot_model_found')
 
 	# Go through each input of each switch and if there is an error on the first node go to the next one and so on until you get to the last one which is just a null that won't have any errors
 	rig_model_switch_expression = '''
@@ -567,9 +550,7 @@ for node in switch.inputs():
 	switch.setInput(1, rig_model_switch)
 	switch.setInput(2, abc_object_space)
 
-	convert = switch.createOutputNode('convert')
-
-	hide_switch = convert.createOutputNode('switch')
+	hide_switch = switch.createOutputNode('switch')
 	hide_switch.setName('hide_geo')
 	null_geo = geo.createNode('null')
 	hide_switch.setInput(1, null_geo)
@@ -584,11 +565,14 @@ for node in switch.inputs():
 	out.setName('OUT')
 
 	static_geo = abc_object_space.geometry()
+
+	groups = []
 	try:
 		groups = static_geo.primGroups()
 	except:
 		message_gui.error('The static_geo has no groups.', details='str(geometry) =  ' + str(static_geo))
 		print 'This is what static_geo is and it\'s not working: ' + str(static_geo)
+
 	geo = addMaterialOptions(geo, groups)
 
 	mat = out.createOutputNode('material')
@@ -649,6 +633,14 @@ for node in switch.inputs():
 	# End temp solution
 
 	return geo
+
+def createAlembicNode(parentNode, name, filePath):
+	alembicNode = parentNode.createNode('alembic')
+	alembicNode.setName(name)
+	alembicNode.parm('fileName').setExpression(filePath)
+	alembicNode.parm('loadmode').set(1)
+	alembicNode.parm("groupnames").set(4)
+	return alembicNode
 
 def generate_groups_expression_renameMe(group, model_name, rig_name, asset_name):
 	expression = '''
