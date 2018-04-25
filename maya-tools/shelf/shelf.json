@@ -64,12 +64,6 @@
 			"function":"inspire_quote.go()"
 		}, {
 			"itemType":"button",
-			"icon":"gnome.svg",
-			"annotation":"Gnomic Test Geo",
-			"pythonFile":"import_test_geo.py",
-			"function":"import_test_geo.go()"
-		}, {
-			"itemType":"button",
 			"icon":"reload-scripts.svg",
 			"annotation":"Reload Scripts",
 			"pythonFile":"reload_scripts.py",
