@@ -189,8 +189,7 @@ class AssetType:
 	CHARACTER = 'character'
 	SET = 'set'
 	PROP = 'prop'
-	ACCESSORY = 'accessory'
-	ALL = [CHARACTER, SET, PROP, ACCESSORY]
+	ALL = [CHARACTER, SET, PROP]
 
 class Asset(Body):
 	'''
@@ -203,7 +202,7 @@ class Asset(Body):
 	def create_new_dict(name):
 
 		datadict = Body.create_new_dict(name)
-		datadict[Asset.TYPE] = AssetType.ACCESSORY
+		datadict[Asset.TYPE] = AssetType.PROP
 		return datadict
 
 	@staticmethod

@@ -110,10 +110,9 @@ def createBody(bodyType, name):
 		# noButton = msgBox.addButton(QtWidgets.QMessageBox.No)
 		# yesButton = msgBox.addButton(QtWidgets.QMessageBox.Yes)
 		cancelButton = msgBox.addButton(QtWidgets.QMessageBox.Cancel)
-		setButton = msgBox.addButton(msgBox.tr("Set"), QtWidgets.QMessageBox.YesRole)
 		propButton = msgBox.addButton(msgBox.tr("Prop"), QtWidgets.QMessageBox.YesRole)
 		characterButton = msgBox.addButton(msgBox.tr("Character"), QtWidgets.QMessageBox.YesRole)
-		accessoryButton = msgBox.addButton(msgBox.tr("Accessory"), QtWidgets.QMessageBox.YesRole)
+		setButton = msgBox.addButton(msgBox.tr("Set"), QtWidgets.QMessageBox.YesRole)
 
 		msgBox.exec_()
 
@@ -123,8 +122,6 @@ def createBody(bodyType, name):
 			asset_type = AssetType.CHARACTER
 		elif msgBox.clickedButton() == setButton:
 			asset_type = AssetType.SET
-		elif msgBox.clickedButton() == accessoryButton:
-			asset_type = AssetType.ACCESSORY
 
 		print asset_type + " is the asset type"
 		asset = project.create_asset(name, asset_type)
