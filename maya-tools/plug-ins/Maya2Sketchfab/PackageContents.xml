@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage SchemaVersion="1.0"
+	ProductType="Application"
+
+	AutodeskProduct="Maya"
+	Name="Maya2Sketchfab"
+	Description="Maya to SketchFab exporter"
+	AppVersion="5.0.0"
+	Author="ticket01.com"
+	AppNameSpace="com.sketchfab.exchange.maya.sketchfab"
+	HelpFile="./Contents/docs/index.html"
+	OnlineDocumentation="http://blog.sketchfab.com/maya-exporter"
+
+	ProductCode="*"
+	UpgradeCode="{E4528FDC-1683-4F8C-B166-F98DF0C33238}" >
+	
+	<CompanyDetails Name="Sketchfab.com"
+		Phone=" "
+		Url="http://www.sketchfab.com"
+		Email="support@sketchfab.com" />
+
+	<!-- Prevent to load in other version than Maya 2012 -->
+	<RuntimeRequirements SupportPath="./Contents/docs" OS="win64|macOS|linux" Platform="Maya" SeriesMin="2012" />
+
+	<Components>
+		<RuntimeRequirements SupportPath="./Contents/docs" OS="win64|macOS|linux" Platform="Maya" SeriesMin="2012" />
+		<MayaEnv expr="MAYA_SCRIPT_PATH+:=shelves" />
+		<ComponentEntry ModuleName="./Contents/scripts/Maya2Sketchfab.py" />
+		<ComponentEntry ModuleName="./Contents/scripts/Sketchfab_Settings.ui" />
+		<ComponentEntry ModuleName="./Contents/scripts/Sketchfab_Uploader.ui" />
+		<ComponentEntry ModuleName="./Contents/scripts/Maya2Sketchfab_load.mel" />
+		<ComponentEntry ModuleName="./Contents/shelves/Maya2Sketchfab_shelf.mel" />
+	</Components>
+</ApplicationPackage>

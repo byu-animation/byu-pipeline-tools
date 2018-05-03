@@ -1,0 +1,18 @@
+// Maya to SketchFab exporter
+// v2012_08_10
+// www.ticket01.com | Matthias F. Richter
+
+// If the module uses a Python script and if are loaded at runtime, Maya does not update the Python path
+// so we need to update it ourself - as Maya may call Maya2Sketchfab_load.py right after us
+{
+	string $me =`moduleInfo -p -mn "Maya2Sketchfab"` ;
+	$me +="/scripts" ;
+	python ("import sys") ;
+	string $py[] =python ("sys.path") ;
+	if ( stringArrayCount ($me, $py) == 0 )
+		python ("sys.path.insert(0, '" + $me + "')") ;
+}
+
+// We could eventually copy the Maya2Sketchfab_shelf.mel code here, but 
+// future version of Maya may load this for us automatically
+Maya2Sketchfab_shelf;

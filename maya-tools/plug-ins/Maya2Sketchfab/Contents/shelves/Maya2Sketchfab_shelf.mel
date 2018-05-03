@@ -1,0 +1,21 @@
+// Maya to SketchFab exporter
+// v2012_08_10
+// www.ticket01.com | Matthias F. Richter
+
+global proc Maya2Sketchfab_shelf () {
+	global string $gShelfTopLevel ;
+	if (      !`shelfButton -query -exists "Maya2Sketchfab"`
+		&& !`optionVar -exists "Maya2SketchfabToolbar"`
+	) {
+		shelfButton
+			-parent "Custom"
+			-enable 1 -visible 1 -preventOverride 0
+			-label "" -annotation "Maya to Sketchfab exporter" 
+			-image "Sketchfab.png" -style "iconOnly" -noBackground 1
+			-align "center" -marginWidth 1 -marginHeight 1
+			-command "import Sketchfab_Uploader\nsfu = Sketchfab_Uploader.Sketchfab_Uploader()\n" -sourceType "python" -commandRepeatable 1
+			"Maya2Sketchfab";
+		optionVar -stringValue "Maya2SketchfabToolbar" "Maya2Sketchfab_v2" ;
+		shelfTabLayout -edit -selectTab "Custom" $gShelfTopLevel ;
+	}
+} 

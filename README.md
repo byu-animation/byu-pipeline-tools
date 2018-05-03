@@ -25,6 +25,7 @@ To setup a production project:
 		* It should be square and simple enough that when it is really small the resampling doesn't make it ugly.
 1. Make sure all the software version numbers are up to date in the various app launch scripts
 	* One of the tricks the pipeline uses is having a short cut to the current Houdini Installation: /opt/hfs.current. Make sure this shortcut is on the current image.
+1. If you are using sketchFab, make sure that you change the api key. Simply run the sketchFab Uploader script from the Maya shelf, click Settings in the dialog box, and insert the API key for the new sketchFab account.
 1. Pray that everything holds together
 1. Let the artists have at it. They will let you know if anything is broken.
 
