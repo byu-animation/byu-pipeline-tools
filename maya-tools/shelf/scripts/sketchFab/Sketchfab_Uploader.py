@@ -118,7 +118,7 @@ class Sketchfab_Uploader:
 		maya_version = cmds.about(version=True).replace(" ", "_")
 
 		data = {
-			'token': cmds.optionVar(query="sfApiToken"),
+			'token':'2ec3de9f1bb54facb7832d44f492300f',
 			'name': self.ui_main.leModelName.text(),
 			'description': self.ui_main.pteDescription.toPlainText(),
 			'tags': tags + ' maya',
