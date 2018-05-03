@@ -147,7 +147,7 @@ class Project:
 			new_body.create_element(dept, Element.DEFAULT_NAME)
 		return new_body
 
-	def create_asset(self, name, asset_type=AssetType.ACCESSORY):
+	def create_asset(self, name, asset_type=AssetType.PROP):
 		'''
 		creates a new asset with the given name, and returns the resulting asset object.
 		name -- the name of the new asset to create
