@@ -1,0 +1,36 @@
+{
+  "": "default",
+  "Cat": "cat",
+  "Death": "death",
+  "Delilah": "delilah",
+  "House": {
+    "": "",
+    "Exterior": "exterior",
+    "Interior": {
+      "":"",
+      "Level1": "level1",
+      "Level2": "level2"
+    }
+  },
+  "Street": {
+    "": "",
+    "Apartment" : "apartment",
+    "Facade" : "facade"
+  },
+  "Previs": {
+    "": "",
+    "Cat": "cat",
+    "Death": "death",
+    "Delilah": "delilah",
+    "House": {
+      "": "",
+      "Exterior": "exterior",
+      "Interior": "interior"
+    },
+    "Street": {
+      "": "",
+       "Apartment": "apartment",
+       "Facade": "facade"
+    }
+  }
+}
