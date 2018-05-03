@@ -241,36 +241,6 @@ def addMaterialOptions(geo, groups):
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
-def create_cook_button(geo):
-	script='''
-try:
-	hou.node("./set_rig_alembic").cook(force=True)
-except:
-	print "Error while cooking set_rig_alembic"
-try:
-	hou.node("./set_model_alembic").cook(force=True)
-except:
-	print "Error while cooking set_model_alembic"
-try:
-	hou.node("./animated_rig").cook(force=True)
-except:
-	print "Error while cooking animated_rig"
-try:
-	hou.node("./animated_model").cook(force=True)
-except:
-	print "Error while cooking animated_model"
-
-hou.node("./set_switch").cook(force=True)
-hou.node("./shot_switch").cook(force=True)
-	'''
-	hou_parm_template_group = geo.parmTemplateGroup()
-	cook = hou.ButtonParmTemplate('cook', 'Refresh', script_callback=script, script_callback_language=hou.scriptLanguage.Python)
-	trouble_shoot_folder = hou.FolderParmTemplate('trouble_shoot', 'Trouble Shooting', folder_type=hou.folderType.Tabs)
-	trouble_shoot_folder.addParmTemplate(cook)
-	hou_parm_template_group.append(trouble_shoot_folder)
-	geo.setParmTemplateGroup(hou_parm_template_group)
-	return geo
-
 def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None, add_displacement=False):
 	# Get the paramter template group from the current geo node
 	hou_parm_template_group = geo.parmTemplateGroup()
@@ -442,13 +412,12 @@ def hda_parameter_setup(hda, geo, project):
 
 	projectFolder.addParmTemplate(source_menu)
 	projectFolder.addParmTemplate(source_menu_index)
-	cook_script='hou.node("./' + geo.name() + '").parm("cook").pressButton()\nprint "Asset Refreshed"'
-	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1', callback_script=cook_script))
-	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0', callback_script=cook_script))
+	projectFolder.addParmTemplate(create_shot_menu(hideWhen='source_index != 1'))
+	projectFolder.addParmTemplate(create_set_menu(hideWhen='source_index != 0'))
+	rig_toggle = hou.ToggleParmTemplate('hasRig', 'Rig')
+	projectFolder.addParmTemplate(rig_toggle)
 	hide_toggle = hou.ToggleParmTemplate('hide', 'Hide')
 	projectFolder.addParmTemplate(hide_toggle)
-	recook = hou.ButtonParmTemplate('re_cook_hda', 'Reload', script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
-	projectFolder.addParmTemplate(recook)
 	version = hou.IntParmTemplate('abcversion', 'Alembic Version', 1)
 	projectFolder.addParmTemplate(version)
 	lightlink = hou.StringParmTemplate("lightmask", "Light Mask", 1, default_value=(["*"]), string_type=hou.stringParmType.NodeReferenceList) #, menu_items=([]), menu_labels=([]), icon_names=([]))
@@ -544,21 +513,9 @@ def geo_setup(parentNode, asset, project):
 	null_shot.setName('no_shot_model_found')
 
 	# Go through each input of each switch and if there is an error on the first node go to the next one and so on until you get to the last one which is just a null that won't have any errors
-	rig_model_switch_expression = '''
-import os
-
-switch = hou.pwd()
-
-i = 0
-
-for node in switch.inputs():
-    if len(node.errors()) > 0:
-        i += 1
-    else:
-        return i
-	'''
-	rig_model_switch.parm('input').setExpression(rig_model_switch_expression, language=hou.exprLanguage.Python)
-	rig_model_set_switch.parm('input').setExpression(rig_model_switch_expression, language=hou.exprLanguage.Python)
+	rig_model_switch_expression ='ch("../../hasRig")'
+	rig_model_switch.parm('input').setExpression(rig_model_switch_expression)
+	rig_model_set_switch.parm('input').setExpression(rig_model_switch_expression)
 
 
 	switch = geo.createNode('switch')
@@ -574,8 +531,6 @@ for node in switch.inputs():
 	null_geo = geo.createNode('null')
 	hide_switch.setInput(1, null_geo)
 	hide_switch.parm('input').setExpression('ch("../../hide")')
-
-	geo = create_cook_button(geo)
 
 	lightmask = 'chsop("../lightmask")'
 	geo.parm('lightmask').setExpression(lightmask)
