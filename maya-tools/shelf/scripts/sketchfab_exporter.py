@@ -34,11 +34,8 @@ def go(element=None, dept=None):
 		checkout = proj.get_checkout(fileDir)
 		# Make sure we have access to element data for this asset
 		if checkout is None:
-			parent = QtWidgets.QApplication.activeWindow()
-			element = selection_gui.getSelectedElement(parent)
-			if element is None:
-				print 'There is nothing checked out.'
-				return None
+			message_gui.error("Nothing is checked out.", "You must check out a model in order to publish it to SketchFab.")
+			return None
 		else:
 			body_name = checkout.get_body_name()
 			dept_name = checkout.get_department_name()
@@ -57,7 +54,7 @@ def go(element=None, dept=None):
 		return
 
 	if not element.get_department() == Department.MODEL:
-		print "We can only publish models to sketchFab (no rigs)."
+		message_gui.error("We can only publish models to sketchFab (no rigs).", "Please check out a model (sets included) if you wish to publish to SketchFab.")
 	else:
 		export(element)
 
@@ -184,7 +181,7 @@ def upload_to_sketchfab(data, files, republish=False, uid=None):
 		else:
 			r = requests.post(SKETCHFAB_API_URL, data=data, files=files, verify=False)
 	except requests.exceptions.RequestException as e:
-		print 'An error occured: {}'.format(e)
+		message_gui.error('An error occured: {}'.format(e))
 		return
 
 	result = None
@@ -192,10 +189,10 @@ def upload_to_sketchfab(data, files, republish=False, uid=None):
 	try:
 		result = r.json()
 		if r.status_code != requests.codes.created:
-			print 'Upload failed with error: {}'.format(result)
+			message_gui.error('Upload failed with error: {}'.format(result))
 			return
 	except ValueError:
-		print "There was an error reading the result from the server"
+		print 'There was an error reading the result from the server.'
 
 	global SKETCHFAB_MODEL_URL
 	model_uid = uid
@@ -204,8 +201,7 @@ def upload_to_sketchfab(data, files, republish=False, uid=None):
 		model_uid = result['uid']
 	if not model_uid is None:
 		model_url = SKETCHFAB_MODEL_URL + model_uid
-	print 'Upload successful. Your model is being processed.'
-	print 'Once the processing is done, the model will be available at: {}'.format(model_url)
+	message_gui.input('Upload successful. Your model is being processed.\nOnce the processing is done, the model will be available at:','Success!', '{}'.format(model_url))
 
 	if model_uid == None:
 		return uid
@@ -297,3 +293,54 @@ def _get_request_payload(data={}, files={}, json_payload=False):
         data = json.dumps(data)
 
     return {'data': data, 'files': files, 'headers': headers}
+
+def get_link(element=None, dept=None):
+
+	if element is None:
+		filePath = pm.sceneName()
+		fileDir = os.path.dirname(filePath)
+		proj = Project()
+		checkout = proj.get_checkout(fileDir)
+		# Make sure we have access to element data for this asset
+		if checkout is None:
+			message_gui.error("Nothing is checked out.", "You must check out a model in order to see it's SketchFab link.")
+			return None
+		else:
+			body_name = checkout.get_body_name()
+			dept_name = checkout.get_department_name()
+			elem_name = checkout.get_element_name()
+			body = proj.get_body(body_name)
+			element = body.get_element(dept_name, name=elem_name)
+
+	#Get the element from the right Department
+	if dept is not None and not element.get_department() == dept:
+		print 'We are overwriting the', element.get_department(), 'with', dept
+		body = proj.get_body(element.get_parent())
+		element = body.get_element(dept)
+
+	if element is None:
+		message_gui.error("Nothing is checked out.", "There is no element associated with this asset.")
+		return
+
+	proj = Project()
+	body_name = element.get_parent()
+	body = proj.get_body(body_name)
+	asset_file_path = element.get_dir()
+	uid_file_path = '{0}/{1}.json'.format(asset_file_path, body_name)
+	if not os.path.exists(uid_file_path):
+		message_gui.error("No SketchFab link was found.", "Either nothing was exported to SketchFab, or something went wrong during export.")
+		return
+
+	model_uid = ''
+
+	try:
+		with open(uid_file_path) as uid_file:
+			uid_file_data = json.load(uid_file)
+		model_uid = uid_file_data['uid']
+	except ValueError:
+		message_gui.error("The SketchFab link is broken :(", "You'll need to talk to pipeline about this.")
+		return
+
+	global SKETCHFAB_MODEL_URL
+	model_url = SKETCHFAB_MODEL_URL + model_uid
+	message_gui.input('Link:', 'SketchFab Link', model_url)
