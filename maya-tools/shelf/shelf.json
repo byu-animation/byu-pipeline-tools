@@ -101,9 +101,9 @@
 		}, {
 			"itemType":"button",
 			"icon":"Sketchfab.png",
-			"annotation":"Up-Load to Sketch Fab",
-			"pythonFile":"sketchFab.Sketchfab_Uploader.py",
-			"function":"sfu = sketchFab.Sketchfab_Uploader.Sketchfab_Uploader()"
+			"annotation":"Upload to Sketch Fab",
+			"pythonFile":"sketchfab_exporter.py",
+			"function":"sketchfab_exporter.go(element=None,dept=None)"
 		}
 
 	]
