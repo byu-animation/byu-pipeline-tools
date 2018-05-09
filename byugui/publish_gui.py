@@ -3,6 +3,7 @@
 import sys
 import os
 import traceback
+import pymel.core as pm
 try:
 	from PySide import QtGui as QtWidgets
 	from PySide import QtCore
@@ -72,10 +73,13 @@ class PublishWindow(QtWidgets.QWidget):
 		self.setElementType()
 		self.eList.setElement(checkout_body_name)
 
+		self.clearHistoryCheckbox = QtWidgets.QCheckBox('Freeze all transformations and clear all construction history')
+
 		#set gui layout
 		self.grid = QtWidgets.QGridLayout(self)
 		self.setLayout(self.grid)
 		self.grid.addWidget(self.departmentMenu, 0, 0)
+		self.grid.addWidget(self.clearHistoryCheckbox, 0, 1)
 
 		self.grid.addWidget(self.lastPublish, 1, 1)
 		self.grid.addWidget(self.label, 2, 1)
@@ -125,10 +129,18 @@ class PublishWindow(QtWidgets.QWidget):
 			message_gui.error('Please add a publish comment.\nComments help to track the progress.')
 			return
 
+
 		self.elementType = str(self.menu.currentText())
 		try:
 			body = self.project.get_body(str(self.filePath.text()))
 			element = body.get_element(str(self.departmentMenu.currentText()))
+
+			if self.clearHistoryCheckbox.isChecked():
+				pm.delete(constructionHistory=True, all=True) #delete all constructionHistory
+				#freeze all transformations
+				objects = pm.ls(transforms=True)
+				for sceneObj in objects:
+				    pm.makeIdentity(sceneObj, apply=True)
 
 			self.user = self.environment.get_current_username()
 			self.comment = str(self.comment.toPlainText())
@@ -142,6 +154,8 @@ class PublishWindow(QtWidgets.QWidget):
 			error.setText(str(e))
 			self.grid.addWidget(error, 4, 1, 2, 1)
 			traceback.print_stack()
+
+
 
 	def closeEvent(self, event):
 		self.finished.emit()
