@@ -73,7 +73,7 @@ class PublishWindow(QtWidgets.QWidget):
 		self.setElementType()
 		self.eList.setElement(checkout_body_name)
 
-		self.clearHistoryCheckbox = QtWidgets.QCheckBox('Freeze transformations and clear object history')
+		self.clearHistoryCheckbox = QtWidgets.QCheckBox('Freeze all transformations and clear all construction history')
 
 		#set gui layout
 		self.grid = QtWidgets.QGridLayout(self)
@@ -136,11 +136,11 @@ class PublishWindow(QtWidgets.QWidget):
 			element = body.get_element(str(self.departmentMenu.currentText()))
 
 			if self.clearHistoryCheckbox.isChecked():
-				print 'we are going to clear history'
-				objects = pm.ls(tr=True)
+				pm.delete(constructionHistory=True, all=True) #delete all constructionHistory
+				#freeze all transformations
+				objects = pm.ls(transforms=True)
 				for sceneObj in objects:
 				    pm.makeIdentity(sceneObj, apply=True)
-				    pm.delete(sceneObj, ch=True)
 
 			self.user = self.environment.get_current_username()
 			self.comment = str(self.comment.toPlainText())
