@@ -105,11 +105,19 @@
 			"pythonFile":"crowdCycle.py",
 			"function":"crowdCycle.go()"
 		}, {
+			"itemType":"separator"
+		}, {
 			"itemType":"button",
 			"icon":"Sketchfab.png",
-			"annotation":"Up-Load to Sketch Fab",
-			"pythonFile":"sketchFab.Sketchfab_Uploader.py",
-			"function":"sfu = sketchFab.Sketchfab_Uploader.Sketchfab_Uploader()"
+			"annotation":"Upload to Sketch Fab",
+			"pythonFile":"sketchfab_exporter.py",
+			"function":"sketchfab_exporter.go(element=None,dept=None)"
+		}, {
+			"itemType":"button",
+			"icon":"link.png",
+			"annotation":"Get sketchFab link",
+			"pythonFile":"sketchfab_exporter.py",
+			"function":"sketchfab_exporter.get_link()"
 		}
 
 	]

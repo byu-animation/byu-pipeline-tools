@@ -132,6 +132,7 @@ class PublishWindow(QtWidgets.QWidget):
 
 			self.user = self.environment.get_current_username()
 			self.comment = str(self.comment.toPlainText())
+			self.elementName = str(self.departmentMenu.currentText())
 			self.result = element
 			self.published = True
 			self.close()
