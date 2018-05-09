@@ -64,6 +64,12 @@
 			"function":"inspire_quote.go()"
 		}, {
 			"itemType":"button",
+			"icon":"death.svg",
+			"annotation":"Scale Reference",
+		  "pythonFile":"import_death_ref.py",
+			"function":"import_death_ref.go()"
+		}, {
+			"itemType":"button",
 			"icon":"reload-scripts.svg",
 			"annotation":"Reload Scripts",
 			"pythonFile":"reload_scripts.py",
