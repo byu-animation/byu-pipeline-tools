@@ -8,6 +8,9 @@ import maya.OpenMayaUI as omu
 import os
 import alembic_exporter
 from byugui import message_gui
+import pymel.core as pm
+import sketchfab_exporter
+import education
 
 maya_publish_dialog = None
 
@@ -46,6 +49,15 @@ def publishElement(element, user, src, comment):
 	#Export Alembics
 	print 'Publish Complete. Begin Exporting Alembic'
 	alembic_exporter.go(element=element)
+	noEducationalLicence()
+	sketchfab_exporter.go(element=None, dept=None)
+
+def noEducationalLicence():
+	pm.FileInfo()['license'] = 'education'
+	fileName = pm.sceneName()
+	pm.saveFile()
+	message_gui.info('This Maya file has been converted to an education licence')
+
 
 def go():
 	parent = maya_main_window()
