@@ -7,15 +7,21 @@
     "": "",
     "Exterior": "exterior",
     "Interior": {
-      "":"",
-      "Level1": "level1",
-      "Level2": "level2"
+      "":""
     }
   },
   "Street": {
     "": "",
     "Apartment" : "apartment",
     "Facade" : "facade"
+  },
+  "Test": {
+    "": "",
+    "Level1": {
+      "Level2": {
+
+      }
+    }
   },
   "Previs": {
     "": "",
