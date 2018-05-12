@@ -88,8 +88,8 @@
 			"function":"cluster_interpolate.go()"
 		}, {
 			"itemType":"button",
-			"icon":"new-body.svg",
-			"annotation":"Clear some stuff",
+			"icon":"turtle.png",
+			"annotation":"Remove TURTLE",
 			"pythonFile":"playground.py",
 			"function":"playground.go()"
 		}, {
