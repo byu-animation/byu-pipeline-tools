@@ -64,9 +64,9 @@ def export(element, selection=None, startFrame=None, endFrame=None):
 		if body.get_type() == AssetType.SET:
 			files = exportReferences(abcFilePath)
 		else:
-			files = exportAll(abcFilePath)
+			files = exportAll(abcFilePath, element=element)
 	elif body.is_crowd_cycle():
-			files = exportAll(abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame)
+			files = exportAll(abcFilePath, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame, element=element)
 
 	if not files:
 		#Maybe this is a bad distinction but None is if it was canceled or something and empty is if it went but there weren't any alembics
@@ -100,12 +100,12 @@ def exportSelected(selection, destination, tag=None, startFrame=1, endFrame=1, d
 		abcFiles.append(abcFilePath)
 	return abcFiles
 
-def exportAll(destination, tag=None, startFrame=1, endFrame=1):
+def exportAll(destination, tag=None, startFrame=1, endFrame=1, element=None):
 	if tag is not None:
 		selection = pm.ls(assemblies=True)
 		return exportSelected(selection, destination, tag='BYU_Alembic_Export_Flag', startFrame=startFrame, endFrame=endFrame, disregardNoTags=True)
 	else:
-		return alembic_static_exporter.go()
+		return alembic_static_exporter.go(element=element)
 
 def exportCrowd(destination, crowdTag, tag=None, startFrame=1, endFrame=1):
 	#Find all of the parent nodes with the crowdTag.

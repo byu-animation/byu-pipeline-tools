@@ -50,7 +50,7 @@ def publishElement(element, user, src, comment):
 	print 'Publish Complete. Begin Exporting Alembic'
 	alembic_exporter.go(element=element)
 	noEducationalLicence()
-	sketchfab_exporter.go(element=None, dept=None)
+	sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 
 def noEducationalLicence():
 	pm.FileInfo()['license'] = 'education'

@@ -92,17 +92,17 @@ class PublishWindow(QtWidgets.QWidget):
 		self.show()
 
 	def setElementType(self):
-		department = str(self.departmentMenu.currentText())
-		if department in Department.ASSET_DEPTS:
+		self.department = str(self.departmentMenu.currentText())
+		if self.department in Department.ASSET_DEPTS:
 			self.elementType = 'Asset'
-		elif department in Department.SHOT_DEPTS:
+		elif self.department in Department.SHOT_DEPTS:
 			self.elementType = 'Shot'
-		elif department in Department.TOOL_DEPTS:
+		elif self.department in Department.TOOL_DEPTS:
 			self.elementType = 'Tool'
-		elif department in Department.CROWD_DEPTS:
+		elif self.department in Department.CROWD_DEPTS:
 			self.elementType = 'CrowdCycle'
 		else:
-			message_gui.error('There was an error loading the ' + str(department) + ' department')
+			message_gui.error('There was an error loading the ' + str(self.department) + ' department')
 		self.eList.refreshList(self.elementType)
 
 	def selectElement(self):

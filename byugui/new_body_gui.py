@@ -66,7 +66,6 @@ class NewBodyWindow(QtWidgets.QWidget):
 		#this is a test
 		list_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'Asset_Category_List.json')
 		self.body_categories = NameList().loadList(list_path)
-		print(self.body_categories)
 
 		self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 		self.categories = QtWidgets.QComboBox() #Main category
@@ -78,7 +77,6 @@ class NewBodyWindow(QtWidgets.QWidget):
 
 		for bc in self.body_categories:
 			self.categories.addItem(bc.strip('_'))
-			print(bc)
 
 		self.categories.activated[str].connect(self.setCategory1)
 		self.categories_2.activated[str].connect(self.setCategory2)
@@ -116,7 +114,7 @@ class NewBodyWindow(QtWidgets.QWidget):
 		try:
 			name = ""
 			has_prefix = False
-			if not self.categories_2.currentText() == '':
+			if not self.categories.currentText() == '':
 				has_prefix = True
 				name = str(self.categories.currentText())
 			if not self.categories_2.currentText() == '':
@@ -132,7 +130,7 @@ class NewBodyWindow(QtWidgets.QWidget):
 			createBody(self.element, name)
 			self.parent.accept()
 		except EnvironmentError, e:
-			message_gui.error('There is already an crowd cycle with that name.', details=e)
+			message_gui.error('There was a pipeline error.', details=e)
 			print e
 			self.parent.accept()
 
@@ -193,7 +191,6 @@ def createBody(bodyType, name):
 		elif msgBox.clickedButton() == setButton:
 			asset_type = AssetType.SET
 
-		print asset_type + " is the asset type"
 		asset = project.create_asset(name, asset_type)
 	elif bodyType == 'shot':
 		shot = project.create_shot(name)

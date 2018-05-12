@@ -117,27 +117,21 @@ def checkFiles(files):
 
 	return missingFiles
 
-def decodeFileName():
-	'''
-		Decodes the base name of the folder to get the asset name, assetType, and asset directory.
+def getElementCacheDirectory(path, element=None):
 
-		@return: Array = [assetName, assetType, version]
-	'''
-	encodedFolderName = os.path.basename(os.path.dirname(mc.file(q=True, sceneName=True)))
-	namesAry = encodedFolderName.split('_')
-	version   = namesAry.pop()
-	assetType = namesAry.pop()
-	assetName = '_'.join(namesAry)
-	return [assetName, assetType, version]
+	if element is None:
+		proj = Project()
+		checkout = proj.get_checkout(path)
+		if checkout is None:
+			message_gui.error('There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.')
+			return None
+		body = proj.get_body(checkout.get_body_name())
+		element = body.get_element(checkout.get_department_name(), checkout.get_element_name())
 
-def getElementCacheDirectory(path):
-	proj = Project()
-	checkout = proj.get_checkout(path)
-	body = proj.get_body(checkout.get_body_name())
-	elem = body.get_element(checkout.get_department_name(), checkout.get_element_name())
-	return elem.get_cache_dir()
+	return element.get_cache_dir()
 
-def installGeometry(path=''):
+def installGeometry(path='',element=None):
+
 	'''
 		Function to install the geometry into the PRODUCTION asset directory
 
@@ -147,14 +141,15 @@ def installGeometry(path=''):
 
 	print 'install newly created geo in files'
 	path=os.path.dirname(mc.file(q=True, sceneName=True))
-	assetName, assetType, version = decodeFileName()
 
 	#srcOBJ = os.path.join(path, 'cache', 'objFiles')
 	#destOBJ = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache', 'objFiles')
 	#destABC = os.path.join(os.environ['ASSETS_DIR'], assetName, 'cache', 'abcFiles')
 
 	srcABC = os.path.join(path, 'cache', 'abcFiles')
-	destABC = getElementCacheDirectory(path)
+	destABC = getElementCacheDirectory(path, element)
+	if destABC is None:
+		return False
 
 	#if os.path.exists(destOBJ):
 	#	shutil.rmtree(destOBJ)
@@ -194,8 +189,9 @@ def installGeometry(path=''):
 
 	return True
 
-def generateGeometry(path=''):
+def generateGeometry(path='',element=None):
 	'''
+
 		Function for generating geometry for Maya files.
 
 		Creates the following output formats:
@@ -224,16 +220,10 @@ def generateGeometry(path=''):
 	filePath = cmds.file(q=True, sceneName=True)
 	fileDir = os.path.dirname(filePath)
 	print 'This is the fileDir in question: ', fileDir
-	proj = Project()
-	checkout = proj.get_checkout(fileDir)
-	if checkout is None:
-		# TODO we need a better way out of this. This gets called when the asset is published. and it might confuse people if they get this message on the very first publish of an asset
-		message_gui.error('There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.')
-		return False
-	body = proj.get_body(checkout.get_body_name())
-	elem = body.get_element(checkout.get_department_name(), checkout.get_element_name())
-	abcFilePath = elem.get_cache_dir()
 
+	abcFilePath = getElementCacheDirectory(fileDir, element)
+	if abcFilePath is None:
+		return False
 
 	selection = mc.ls(geometry=True, visible=True)
 	selection_long = mc.ls(geometry=True, visible=True, long=True)
@@ -244,6 +234,16 @@ def generateGeometry(path=''):
 	# Check to see if all .obj files were created
 	#if not len(checkFiles(objs)) == 0:
 	#	return False
+	proj = Project()
+	if element is None:
+		checkout = proj.get_checkout(path)
+		if checkout is None:
+			message_gui.error('There was a problem exporting the alembic to the correct location. Checkout the asset again and try one more time.')
+			return None
+		body = proj.get_body(checkout.get_body_name())
+		element = body.get_element(checkout.get_department_name(), checkout.get_element_name())
+	else:
+		body = proj.get_body(element.get_parent())
 
 	# We decided to try exporting all the geo into one alembic file instead of many. This is the line that does many
 	# abcs = abcExport(selection_long, ABCPATH)
@@ -251,9 +251,9 @@ def generateGeometry(path=''):
 		if body.get_type() == AssetType.SET:
 			abcs = abcExportLoadedReferences(ABCPATH)
 		else:
-			abcs = abcExportAll(elem.get_long_name(), ABCPATH)
+			abcs = abcExportAll(element.get_long_name(), ABCPATH)
 	else:
-		abcs = abcExportAll(elem.get_long_name(), ABCPATH)
+		abcs = abcExportAll(element.get_long_name(), ABCPATH)
 	print str(body.is_asset()) + ' it is an asset'
 	print 'The type is ' + body.get_type()
 	if not len(checkFiles(abcs)) == 0:
@@ -261,9 +261,9 @@ def generateGeometry(path=''):
 
 	return True
 
-def go():
-	if generateGeometry():
-		installGeometry()
+def go(element=None):
+	if generateGeometry(element=element):
+		installGeometry(element=element)
 
 if __name__ == '__main__':
 	# Uncomment this line if you want to read in a new destination from
