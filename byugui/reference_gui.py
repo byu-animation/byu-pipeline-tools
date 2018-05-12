@@ -38,9 +38,9 @@ class ReferenceWindow(QtWidgets.QWidget):
 			self.departmentMenu.addItem(i)
 		self.departmentMenu.activated[str].connect(self.setElementType)
 
-		self.assetList = AssetListWindow(self)
+		self.assetList = AssetListWindowTree(self)
 		for asset in self.project.list_assets():
-			item = QtWidgets.QListWidgetItem(asset)
+			item = QtWidgets.QTreeViewItem(asset)
 			self.assetList.addItem(item)
 
 		self.typeFilterLabel = QtWidgets.QLabel("Type Filter")
@@ -117,7 +117,20 @@ class ReferenceWindow(QtWidgets.QWidget):
 
 	def closeEvent(self, event):
 		self.finished.emit()
+		self.parent = parent
 		event.accept()
+
+class AssestListWindowTree(QtWidgets.QTreeView):
+	def __init__(self, parent):
+		super(AssetListWindowTree, self).__init__()
+		self.parent = parent
+		self.current_selection = None
+		self.project = Project()
+		self.initUI()
+
+	def initUI(self):
+		self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
 
 class AssetListWindow(QtWidgets.QListWidget):
 	def __init__(self, parent):
