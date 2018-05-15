@@ -8,8 +8,8 @@ try:
 	from PySide import QtCore
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
-from byuam.project import Project
-from byuam.environment import Department, Environment
+	from byuam.project import Project
+	from byuam.environment import Department, Environment
 
 
 WINDOW_WIDTH = 650
@@ -70,6 +70,9 @@ class CheckoutWindow(QtWidgets.QWidget):
 		main_layout.addLayout(button_layout)
 
 		self.show()
+
+
+
 
 	def createTabs(self):
 		#remember the current index so that we can restore it when we create the tabs

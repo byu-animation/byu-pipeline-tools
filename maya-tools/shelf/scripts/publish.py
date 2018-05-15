@@ -53,21 +53,27 @@ def publishElement(element, user, src, comment):
 	sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 
 def noEducationalLicence():
+	print pm
 	pm.FileInfo()['license'] = 'education'
 	fileName = pm.sceneName()
 	pm.saveFile()
-	message_gui.info('This Maya file has been converted to an education licence')
+
 
 
 def go():
+
 	parent = maya_main_window()
 	filePath = cmds.file(q=True, sceneName=True)
+
 	if not filePath:
+
 		filePath = Environment().get_user_workspace()
-		filePath = os.path.join(filePath, 'untitled.mb')
+		filePath = os.path.join(filePath, 'untitled.ma')
 		filePath = pipeline_io.version_file(filePath)
 		cmds.file(rename=filePath)
-		cmds.file(save=True)
+	cmds.file(type='mayaAscii')
+	cmds.file(save=True)
+
 	global maya_publish_dialog
 	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX, Department.CYCLES])
 	maya_publish_dialog.finished.connect(post_publish)

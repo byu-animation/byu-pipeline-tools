@@ -158,6 +158,7 @@ class Element:
 
 	def _update_pipeline_file(self):
 
+		print(self._pipeline_file)
 		pipeline_io.writefile(self._pipeline_file, self._datadict)
 
 	def get_name(self):
