@@ -72,21 +72,30 @@ class PublishWindow(QtWidgets.QWidget):
 		self.setElementType()
 		self.eList.setElement(checkout_body_name)
 
-		self.clearHistoryCheckbox = QtWidgets.QCheckBox('Freeze all transformations and clear all construction history')
+		self.freeze_transformations_box = QtWidgets.QCheckBox('Freeze Transformations')
+		self.clear_construction_history_box = QtWidgets.QCheckBox('Clear Construction History')
+		self.upload_sketchfab_box = QtWidgets.QCheckBox('Upload to Sketchfab')
+		self.export_alembic_box = QtWidgets.QCheckBox('Export as Alembic')
 
 		#set gui layout
 		self.grid = QtWidgets.QGridLayout(self)
 		self.setLayout(self.grid)
 		self.grid.addWidget(self.departmentMenu, 0, 0)
-		self.grid.addWidget(self.clearHistoryCheckbox, 0, 1)
 
-		self.grid.addWidget(self.lastPublish, 1, 1)
-		self.grid.addWidget(self.label, 2, 1)
-		self.grid.addWidget(self.comment, 3, 1)
+		#these pieces technically span two columns
+		self.grid.addWidget(self.lastPublish, 1, 1, 1, 2)
+		self.grid.addWidget(self.label, 2, 1, 1, 2)
+		self.grid.addWidget(self.comment, 3, 1, 1, 2)
 
-		self.grid.addWidget(self.eList, 1, 0, 3, 1)
-		self.grid.addWidget(self.filePath, 4, 0)
-		self.grid.addWidget(self.publishBtn, 4, 1)
+		self.grid.addWidget(self.freeze_transformations_box, 4, 1)
+		self.grid.addWidget(self.clear_construction_history_box, 5, 1)
+		self.grid.addWidget(self.upload_sketchfab_box, 4, 2)
+		self.grid.addWidget(self.export_alembic_box, 5, 2)
+
+		#starts in row 1 and column 0, spans 5 rows and 1 column
+		self.grid.addWidget(self.eList, 1, 0, 5, 1)
+		self.grid.addWidget(self.filePath, 6, 0)
+		self.grid.addWidget(self.publishBtn, 6, 1)
 
 		self.show()
 

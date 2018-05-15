@@ -51,11 +51,10 @@ def publishElement(element, user, src, comment):
 	except:
 		pass
 
-	#freeze transformations
-
-	#clear history
-	if maya_publish_dialog.clearHistoryCheckbox.isChecked():
+	if maya_publish_dialog.freeze_transformations_box.isChecked():
 		freeze_transformations()
+
+	if maya_publish_dialog.clear_construction_history_box.isChecked():
 		clear_construction_history()
 
 	#Export a playblast
