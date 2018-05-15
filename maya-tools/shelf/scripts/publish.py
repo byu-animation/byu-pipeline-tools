@@ -21,6 +21,15 @@ def maya_main_window():
 			return obj
 	raise RuntimeError('Could not find MayaWindow instance')
 
+def clear_construction_history():
+	pm.delete(constructionHistory=True, all=True)
+
+def freeze_transformations():
+	objects = pm.ls(transforms=True)
+	for sceneObj in objects:
+	    pm.makeIdentity(sceneObj, apply=True)
+
+
 def post_publish():
 	element = maya_publish_dialog.result
 
@@ -41,6 +50,13 @@ def publishElement(element, user, src, comment):
 		os.chmod(dst, 0660)
 	except:
 		pass
+
+	#freeze transformations
+
+	#clear history
+	if maya_publish_dialog.clearHistoryCheckbox.isChecked():
+		freeze_transformations()
+		clear_construction_history()
 
 	#Export a playblast
 	print 'TODO: export playblast'

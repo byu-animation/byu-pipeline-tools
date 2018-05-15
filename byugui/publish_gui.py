@@ -3,7 +3,6 @@
 import sys
 import os
 import traceback
-import pymel.core as pm
 try:
 	from PySide import QtGui as QtWidgets
 	from PySide import QtCore
@@ -134,13 +133,6 @@ class PublishWindow(QtWidgets.QWidget):
 		try:
 			body = self.project.get_body(str(self.filePath.text()))
 			element = body.get_element(str(self.departmentMenu.currentText()))
-
-			if self.clearHistoryCheckbox.isChecked():
-				pm.delete(constructionHistory=True, all=True) #delete all constructionHistory
-				#freeze all transformations
-				objects = pm.ls(transforms=True)
-				for sceneObj in objects:
-				    pm.makeIdentity(sceneObj, apply=True)
 
 			self.user = self.environment.get_current_username()
 			self.comment = str(self.comment.toPlainText())
