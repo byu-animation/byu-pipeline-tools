@@ -88,7 +88,10 @@ def export_all_to_tex(texture = None):
 
 def makeTex(tif, tex):
 	subprocess.call(['txmake', tif, tex])
-	subprocess.call(['rm', tif])
+
+	#script originally removed tiffs once completed to reduce clutter, we need to keep them for unreal workflow
+	#for previs
+	#subprocess.call(['rm', tif])
 
 def export_geo_to_tex(geo, texture):
 	channels = geo.channelList()
