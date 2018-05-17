@@ -5,7 +5,7 @@ import os
 import traceback
 import json
 import random
-import requests # added by Alex as a test
+import requests
 from requests.api import get
 try:
 	from PySide import QtGui as QtWidgets
@@ -26,9 +26,8 @@ class QuoteWindow(QtWidgets.QWidget):
 		self.parent = parent
 		quotes_path = os.path.join(os.environ['BYU_TOOLS_DIR'], 'byugui', 'assets', 'inspire-quotes.json')
 		quote_json = file(quotes_path)
-		#self.addQuotesFromSlack(quote_json) # under construction
 		self.quoteData = json.loads(quote_json.read())['quotes']
-		self.addQuotesFromSlack() # still under construction
+		self.addQuotesFromSlack()
 		self.initUI()
 
 	def initUI(self):
