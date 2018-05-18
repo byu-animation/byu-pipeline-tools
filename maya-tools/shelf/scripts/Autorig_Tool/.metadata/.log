@@ -1,0 +1,40 @@
+!SESSION Tue Aug 22 14:27:39 MDT 2017 ------------------------------------------
+!ENTRY org.eclipse.equinox.launcher 4 0 2017-08-22 14:27:39.553
+!MESSAGE Could not find extension: org.eclipse.wst.jsdt.nashorn.extension
+!SESSION 2017-08-22 14:27:39.513 -----------------------------------------------
+eclipse.buildId=4.6.3.v20170306-1705
+java.version=1.8.0_131
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -data /groups/grendel/byu-pipeline-tools/maya-tools/shelf/scripts/Autorig_Tool -os linux -ws gtk -arch x86_64
+
+!ENTRY org.eclipse.osgi 4 0 2017-08-22 14:27:39.926
+!MESSAGE Bundle org.eclipse.wst.jsdt.nashorn.extension not found.
+
+!ENTRY org.eclipse.ui.ide 4 4 2017-08-22 14:27:47.615
+!MESSAGE Could not obtain lock for workspace location
+
+!ENTRY org.eclipse.ui.ide 4 4 2017-08-22 14:27:47.630
+!MESSAGE Could not obtain lock for workspace location
+!STACK 0
+java.io.IOException: An error occurred while locking file "/groups/grendel/byu-pipeline-tools/maya-tools/shelf/scripts/Autorig_Tool/.metadata/.lock": "No locks available". A common reason is that the file system or Runtime Environment does not support file locking for that location. Please choose a different location, or disable file locking by passing "-Dosgi.locking=none" as a VM argument.
+	at org.eclipse.osgi.internal.location.Locker_JavaNio.isLocked(Locker_JavaNio.java:99)
+	at org.eclipse.osgi.internal.location.BasicLocation.isLocked(BasicLocation.java:202)
+	at org.eclipse.osgi.internal.location.BasicLocation.isLocked(BasicLocation.java:158)
+	at org.eclipse.osgi.internal.location.BasicLocation.lock(BasicLocation.java:172)
+	at org.eclipse.osgi.internal.location.BasicLocation.lock(BasicLocation.java:152)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.checkInstanceLocation(IDEApplication.java:209)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:128)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:134)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:104)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:388)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:243)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:673)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:610)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1519)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1492)
