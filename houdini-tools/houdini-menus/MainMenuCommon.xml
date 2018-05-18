@@ -176,6 +176,16 @@ renderman_setup.go()
 				</scriptCode>
 			</scriptItem>
 
+			<scriptItem id="h.makeCompatible">
+				<label>Make Gridmarkets Compatible</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import make-compatible
+make-compatible.go()
+					]]>
+				</scriptCode>
+			</scriptItem>
+
 			<scriptItem id="h.reload">
 				<label>Reload Scripts</label>
 				<scriptCode scriptType="python">
