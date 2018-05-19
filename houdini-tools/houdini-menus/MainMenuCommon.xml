@@ -180,8 +180,7 @@ renderman_setup.go()
 				<label>Make Gridmarkets Compatible</label>
 				<scriptCode scriptType="python">
 					<![CDATA[
-import make-compatible
-make-compatible.go()
+import make_compatible; make_compatible.go()
 					]]>
 				</scriptCode>
 			</scriptItem>
