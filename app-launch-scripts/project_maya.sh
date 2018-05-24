@@ -21,4 +21,3 @@ cd ${USER_DIR}
 
 echo "Starting Maya..."
 maya -script ${MAYA_SHELF_DIR}/byu_shelf.mel &
-

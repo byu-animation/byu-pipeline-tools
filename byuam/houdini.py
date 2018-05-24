@@ -24,8 +24,8 @@ class HDAElement(Element):
 		assembly_path = os.path.join(self._env.get_hda_dir(), self.get_app_filename())
 		if not os.path.exists(assembly_path):
 			# create sym link
-			os.symlink(self.get_app_filepath(), assembly_path)
 			print self.get_app_filepath() + " -> " + assembly_path
+			os.symlink(self.get_app_filepath(), assembly_path)
 
 	# def get_checkout_dir(self, username):
 	#	 """

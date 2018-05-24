@@ -34,7 +34,7 @@ def create_project(path, name='test', email=None, password=None, nickname=None):
 	crowdCycles = os.path.join(production, 'crowdCycles')
 	if not os.path.exists(crowdCycles):
 		pipeline_io.mkdir(crowdCycles)
-	datadict = Environment.create_new_dict(name, assets, shots, tools, crowdCycles, users, hda, email, password)
+	datadict = Environment.create_new_dict(name, assets, shots, tools, crowdCycles, users, otls, email, password)
 	pipeline_file = os.path.join(path, Environment.PIPELINE_FILENAME)
 	pipeline_io.writefile(pipeline_file, datadict)
 
