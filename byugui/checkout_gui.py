@@ -71,6 +71,38 @@ class CheckoutWindow(QtWidgets.QWidget):
 
 		self.show()
 
+	#Recursivly goes through the asset's file name
+	def recurseTree(self, treeItem, array, asset):
+		#This is for setting bottom level text attributes
+		if len(array) == 0:
+			treeItem.setText(1,asset)
+			treeItem.setTextColor(0,"#3c83f9")
+			font = QtGui.QFont()
+			font.setPointSize(12)
+			font.setBold(False)
+			treeItem.setFont(0,font)
+			return
+		else: #This is for setting parent level text attributes and settin up the structure
+			item = QtWidgets.QTreeWidgetItem(array[0])
+			item.setText(0,array[0])
+			item.setText(1,"This is not a file")
+			item.setTextColor(0,"#d0d0d0")
+			font = QtGui.QFont()
+			font.setPointSize(11)
+			font.setBold(True)
+			item.setFont(0,font)
+			skip = False
+			# this is to check if the child already exists
+			for i in range(0,treeItem.childCount()):
+				if treeItem.child(i).text(0) == item.text(0):
+					item = treeItem.child(i)
+					skip = True
+			if skip == False: # Executes if the child doesnt already exist
+				treeItem.addChild(item)
+			newArray = array[1:]
+			self.recurseTree(item, newArray,asset)
+		return
+
 	def createTabs(self):
 		#remember the current index so that we can restore it when we create the tabs
 		currIndex = self.dept_tabs.currentIndex()
@@ -81,28 +113,69 @@ class CheckoutWindow(QtWidgets.QWidget):
 			tab = DepartmentTab(self)
 			self.dept_tabs.addTab(tab, dept)
 			tab_layout = QtWidgets.QHBoxLayout()
-			element_list = QtWidgets.QListWidget()
+			element_list = QtWidgets.QTreeWidget()
+			element_list.setColumnCount(1)
 			commentBox = QtWidgets.QTextEdit()
-			commentBox.setReadOnly(True)
+			commentBox.setReadOnly(False)
 			tab.commentBox = commentBox
 
 			if dept in Department.ASSET_DEPTS:
 				for asset in self.project.list_assets():
 					if not self.show_published.isChecked() or self.hasPreviousPublish(asset, dept):
-						item = QtWidgets.QListWidgetItem(asset)
-						element_list.addItem(item)
+						asset_array = asset.split("_")
+						firstelement = element_list.findItems(asset_array[0], 0, 0)
+						if not firstelement:
+							item = QtWidgets.QTreeWidgetItem(asset_array[0])
+							item.setText(0,asset_array[0])
+							item.setTextColor(0,"#d0d0d0")
+							font = QtGui.QFont()
+							font.setPointSize(11)
+							font.setBold(True)
+							item.setFont(0,font)
+							self.recurseTree(item, asset_array[1:],asset)
+							element_list.insertTopLevelItem(0,item)
+						else:
+							self.recurseTree(firstelement[0], asset_array[1:],asset)
 						element_list.currentItemChanged.connect(self.set_current_item)
 			elif dept in Department.SHOT_DEPTS:
 				for shot in self.project.list_shots():
 					if not self.show_published.isChecked() or self.hasPreviousPublish(shot, dept):
-						item = QtWidgets.QListWidgetItem(shot)
-						element_list.addItem(item)
+						asset_array = asset.split("_")
+						firstelement = element_list.findItems(asset_array[0], 0, 0)
+						if not firstelement:
+							item = QtWidgets.QTreeWidgetItem(asset_array[0])
+							item.setText(0,asset_array[0])
+							item.setTextColor(0,"#d0d0d0")
+							font = QtGui.QFont()
+							font.setPointSize(11)
+							font.setBold(True)
+							item.setFont(0,font)
+							self.recurseTree(item, asset_array[1:],asset)
+							element_list.insertTopLevelItem(0,item)
+						else:
+							self.recurseTree(firstelement[0], asset_array[1:],asset)
+						#item = QtWidgets.QListWidgetItem(asset)
+						#element_list.addItem(item)
 						element_list.currentItemChanged.connect(self.set_current_item)
 			elif dept in Department.CROWD_DEPTS:
 				for crowdCycle in self.project.list_crowd_cycles():
 					if not self.show_published.isChecked() or self.hasPreviousPublish(crowdCycle, dept):
-						item = QtWidgets.QListWidgetItem(crowdCycle)
-						element_list.addItem(item)
+						asset_array = asset.split("_")
+						firstelement = element_list.findItems(asset_array[0], 0, 0)
+						if not firstelement:
+							item = QtWidgets.QTreeWidgetItem(asset_array[0])
+							item.setText(0,asset_array[0])
+							item.setTextColor(0,"#d0d0d0")
+							font = QtGui.QFont()
+							font.setPointSize(11)
+							font.setBold(True)
+							item.setFont(0,font)
+							self.recurseTree(item, asset_array[1:],asset)
+							element_list.insertTopLevelItem(0,item)
+						else:
+							self.recurseTree(firstelement[0], asset_array[1:],asset)
+						#item = QtWidgets.QListWidgetItem(asset)
+						#element_list.addItem(item)
 						element_list.currentItemChanged.connect(self.set_current_item)
 			tab_layout.addWidget(element_list)
 			tab_layout.addWidget(commentBox)
@@ -110,6 +183,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 
 		#restore the previous index
 		self.dept_tabs.setCurrentIndex(currIndex)
+
 
 	def hasPreviousPublish(self, body, department):
 		asset_obj = self.project.get_body(body)
@@ -126,11 +200,11 @@ class CheckoutWindow(QtWidgets.QWidget):
 	def set_current_item(self, index):
 		current_dept = self.dept_list[self.dept_tabs.currentIndex()]
 		if current_dept in Department.ASSET_DEPTS:
-			self.current_item = str(index.text())
+			self.current_item = str(index.text(1))
 		elif current_dept in Department.SHOT_DEPTS:
-			self.current_item = str(index.text())
+			self.current_item = str(index.text(1))
 		elif current_dept in Department.CROWD_DEPTS:
-			self.current_item = str(index.text())
+			self.current_item = str(index.text(1))
 			#TODO what the heck? Why do we have three identical results from three different conditions? What are we trying to accomplish here? Admitadly the last one I added just following the crowd.
 
 		asset_obj = self.project.get_body(self.current_item)
