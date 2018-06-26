@@ -550,9 +550,7 @@ for node in switch.inputs():
 	switch.setInput(1, rig_model_switch)
 	switch.setInput(2, abc_object_space)
 
-	convert = switch.createOutputNode('convert')
-
-	hide_switch = convert.createOutputNode('switch')
+	hide_switch = switch.createOutputNode('switch')
 	hide_switch.setName('hide_geo')
 	null_geo = geo.createNode('null')
 	hide_switch.setInput(1, null_geo)
