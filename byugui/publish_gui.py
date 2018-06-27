@@ -5,9 +5,10 @@ import os
 import traceback
 try:
 	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
 	from PySide import QtCore
 except ImportError:
-	from PySide2 import QtWidgets, QtCore
+	from PySide2 import QtWidgets, QtGui, QtCore
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 import message_gui
@@ -106,13 +107,17 @@ class PublishWindow(QtWidgets.QWidget):
 
 	def selectElement(self):
 		currentItem = self.eList.currentItem()
+		print(currentItem)
 		if currentItem is not None:
-		   self.filePath.setText(self.eList.currentItem().text())
+		   self.filePath.setText(self.eList.currentItem().text(1))
+		   print("Current Item 0: " + self.eList.currentItem().text(0))
+		   print("Current Item 1: " + self.eList.currentItem().text(1))
 		   self.publishBtn.setEnabled(True)
 
 		   current_dept = str(self.departmentMenu.currentText())
+		   print("Current Department " + current_dept)
 
-		   asset_obj = self.project.get_body(str(currentItem.text()))
+		   asset_obj = self.project.get_body(str(currentItem.text(1)))
 		   element_obj = asset_obj.get_element(current_dept)
 		   last_publish = element_obj.get_last_publish()
 		   last_publish_comment = None
@@ -153,7 +158,7 @@ class PublishWindow(QtWidgets.QWidget):
 		self.finished.emit()
 		event.accept()
 
-class ElementList(QtWidgets.QListWidget):
+class ElementList(QtWidgets.QTreeWidget):
 	def __init__(self, parent):
 		super(ElementList, self).__init__()
 		self.parent = parent
@@ -164,6 +169,37 @@ class ElementList(QtWidgets.QListWidget):
 	def initUI(self):
 		#define gui elements
 		self.refreshList('Asset')
+
+	def recurseTree(self, treeItem, array, asset):
+		#This is for setting bottom level text attributes
+		if len(array) == 0:
+			treeItem.setText(1,asset)
+			treeItem.setTextColor(0,"#3c83f9")
+			font = QtGui.QFont()
+			font.setPointSize(12)
+			font.setBold(False)
+			treeItem.setFont(0,font)
+			return
+		else: #This is for setting parent level text attributes and settin up the structure
+			item = QtWidgets.QTreeWidgetItem(array[0])
+			item.setText(0,array[0])
+			item.setText(1,"This is not a file")
+			item.setTextColor(0,"#d0d0d0")
+			font = QtGui.QFont()
+			font.setPointSize(11)
+			font.setBold(True)
+			item.setFont(0,font)
+			skip = False
+			# this is to check if the child already exists
+			for i in range(0,treeItem.childCount()):
+				if treeItem.child(i).text(0) == item.text(0):
+					item = treeItem.child(i)
+					skip = True
+			if skip == False: # Executes if the child doesnt already exist
+				treeItem.addChild(item)
+			newArray = array[1:]
+			self.recurseTree(item, newArray,asset)
+		return
 
 	#Update the list based on the input element type
 	def refreshList(self, element):
@@ -180,14 +216,29 @@ class ElementList(QtWidgets.QListWidget):
 			message_gui.error('There was a problem loading in the elements from of ' + str(element)  + ' type.')
 		self.clear()
 		for e in self.elements:
-			self.addItem(e)
+			asset_array = e.split("_")
+			firstelement = self.findItems(asset_array[0], 0, 0)
+			if not firstelement:
+				item = QtWidgets.QTreeWidgetItem(asset_array[0])
+				item.setText(0,asset_array[0])
+				item.setTextColor(0,"#d0d0d0")
+				font = QtGui.QFont()
+				font.setPointSize(11)
+				font.setBold(True)
+				item.setFont(0,font)
+				self.recurseTree(item, asset_array[1:],e)
+				self.insertTopLevelItem(0,item)
+			else:
+				self.recurseTree(firstelement[0], asset_array[1:],e)
+			#self.addItem(e)
 
 	def setElement(self, element):
-		for idx in xrange(self.count()):
-			eItem = self.item(idx)
-			if str(eItem.text())==element:
-				self.setCurrentRow(idx)
-				break
+		print(element)
+		#for idx in xrange(self.count()):
+			#eItem = self.item(idx)
+			#if str(eItem.text())==element:
+				#self.setCurrentRow(idx)
+				#break
 
 
 if __name__ == '__main__':
