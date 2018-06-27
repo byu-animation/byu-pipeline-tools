@@ -121,6 +121,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 
 			if dept in Department.ASSET_DEPTS:
 				for asset in self.project.list_assets():
+					print(asset)
 					if not self.show_published.isChecked() or self.hasPreviousPublish(asset, dept):
 						asset_array = asset.split("_")
 						firstelement = element_list.findItems(asset_array[0], 0, 0)
@@ -139,43 +140,40 @@ class CheckoutWindow(QtWidgets.QWidget):
 						element_list.currentItemChanged.connect(self.set_current_item)
 			elif dept in Department.SHOT_DEPTS:
 				for shot in self.project.list_shots():
+					print(shot)
 					if not self.show_published.isChecked() or self.hasPreviousPublish(shot, dept):
-						asset_array = asset.split("_")
-						firstelement = element_list.findItems(asset_array[0], 0, 0)
+						shot_array = shot.split("_")
+						firstelement = element_list.findItems(shot_array[0], 0, 0)
 						if not firstelement:
-							item = QtWidgets.QTreeWidgetItem(asset_array[0])
-							item.setText(0,asset_array[0])
+							item = QtWidgets.QTreeWidgetItem(shot_array[0])
+							item.setText(0,shot_array[0])
 							item.setTextColor(0,"#d0d0d0")
 							font = QtGui.QFont()
 							font.setPointSize(11)
 							font.setBold(True)
 							item.setFont(0,font)
-							self.recurseTree(item, asset_array[1:],asset)
+							self.recurseTree(item, shot_array[1:],shot)
 							element_list.insertTopLevelItem(0,item)
 						else:
-							self.recurseTree(firstelement[0], asset_array[1:],asset)
-						#item = QtWidgets.QListWidgetItem(asset)
-						#element_list.addItem(item)
+							self.recurseTree(firstelement[0], shot_array[1:],shot)
 						element_list.currentItemChanged.connect(self.set_current_item)
 			elif dept in Department.CROWD_DEPTS:
 				for crowdCycle in self.project.list_crowd_cycles():
 					if not self.show_published.isChecked() or self.hasPreviousPublish(crowdCycle, dept):
-						asset_array = asset.split("_")
-						firstelement = element_list.findItems(asset_array[0], 0, 0)
+						crowdCycle_array = crowdCycle.split("_")
+						firstelement = element_list.findItems(crowdCycle_array[0], 0, 0)
 						if not firstelement:
-							item = QtWidgets.QTreeWidgetItem(asset_array[0])
-							item.setText(0,asset_array[0])
+							item = QtWidgets.QTreeWidgetItem(crowdCycle_array[0])
+							item.setText(0,crowdCycle_array[0])
 							item.setTextColor(0,"#d0d0d0")
 							font = QtGui.QFont()
 							font.setPointSize(11)
 							font.setBold(True)
 							item.setFont(0,font)
-							self.recurseTree(item, asset_array[1:],asset)
+							self.recurseTree(item, crowdCycle_array[1:],crowdCycle)
 							element_list.insertTopLevelItem(0,item)
 						else:
-							self.recurseTree(firstelement[0], asset_array[1:],asset)
-						#item = QtWidgets.QListWidgetItem(asset)
-						#element_list.addItem(item)
+							self.recurseTree(firstelement[0], crowdCycle_array[1:],crowdCycle)
 						element_list.currentItemChanged.connect(self.set_current_item)
 			tab_layout.addWidget(element_list)
 			tab_layout.addWidget(commentBox)
