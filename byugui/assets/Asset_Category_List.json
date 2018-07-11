@@ -7,8 +7,7 @@
     "": "",
     "Exterior": "exterior",
     "Interior": {
-      "Hallway":"Hallway",
-      "Pile":"Pile"
+      "":""
     }
   },
   "Street": {
@@ -26,6 +25,7 @@
   },
   "Previs": {
     "": "",
+    "Cat": "cat",
     "Death": "death",
     "Delilah": "delilah",
     "House": {

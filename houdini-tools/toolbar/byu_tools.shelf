@@ -9,13 +9,13 @@
     <memberTool name="new_body"/>
     <memberTool name="publish_shot"/>
     <memberTool name="rollback_shot"/>
-    <memberTool name="assemble"/>
     <memberTool name="checkout_shot"/>
+    <memberTool name="checkout_asset"/>
     <memberTool name="inspire"/>
     <memberTool name="test_geo"/>
     <memberTool name="renderman_setup"/>
+    <memberTool name="assemble"/>
     <memberTool name="reload_scripts"/>
-    <memberTool name="checkout_asset"/>
     <memberTool name="publish_asset"/>
     <memberTool name="rollback_asset"/>
     <memberTool name="reassemble"/>

@@ -211,22 +211,13 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 
 def addMaterialOptions(geo, groups):
 	hou_parm_template_group = geo.parmTemplateGroup()
-
-	version_layout= hou.FolderParmTemplate('version_layout','Version_layout',folder_type=hou.folderType.Tabs)
-	version_folder=hou.FolderParmTemplate('version_folder','version_folder',folder_type=hou.folderType.TabbedMultiparmBlock)
-
-
 	material_folder = hou.FolderParmTemplate('materials', 'Material', folder_type=hou.folderType.Tabs)
 	num_materials_folder = hou.FolderParmTemplate('num_materials', 'Number of Materials', folder_type=hou.folderType.MultiparmBlock)
 	num_materials_folder.setDefaultValue(len(groups))
 
-
-
-	print 'here I am'
 	group_names = list()
 	for group in groups:
 		group_names.append(group.name())
-		print group
 
 	groups = hou.StringParmTemplate('group#', 'Group', 1, menu_items=group_names, menu_type=hou.menuType.StringToggle)
 	materials = hou.StringParmTemplate('mat_path#', 'Material', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
@@ -245,14 +236,8 @@ def addMaterialOptions(geo, groups):
 	num_materials_folder.addParmTemplate(displacement_bound)
 
 	material_folder.addParmTemplate(num_materials_folder)
-	version_folder.addParmTemplate(material_folder)
-	version_folder.setDefaultValue(1)
-	version_layout.addParmTemplate(version_folder)
 
-
-	hou_parm_template_group.append(version_layout)
-
-
+	hou_parm_template_group.append(material_folder)
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
@@ -597,7 +582,6 @@ for node in switch.inputs():
 	mat.setRenderFlag(True)
 	mat.parm('num_materials').setExpression('ch("../num_materials")')
 	for i, group in enumerate(groups):
-		print group 
 		group_num = str(i + 1)
 		geo.parm('group' + group_num).set(group.name())
 		groupExpression = generate_groups_expression('group' + group_num)
