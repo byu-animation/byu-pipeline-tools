@@ -527,7 +527,7 @@ def geo_setup(parentNode, asset, project):
 	# abc_anim_rig.parm('objectPath').set(rig_reference)
 
 	# Go through each input of each switch and if there is an error on the first node go to the next one and so on until you get to the last one which is just a null that won't have any errors
-	rig_model_switch_expression = '''
+	rig_switch_expression = '''
 import os
 
 switch = hou.pwd()
@@ -540,8 +540,8 @@ for node in switch.inputs():
     else:
         return i
 	'''
-	rig_model_switch.parm('input').setExpression(rig_model_switch_expression, language=hou.exprLanguage.Python)
-	rig_model_set_switch.parm('input').setExpression(rig_model_switch_expression, language=hou.exprLanguage.Python)
+	rig_model_switch.parm('input').setExpression(rig_switch_expression, language=hou.exprLanguage.Python)
+	rig_model_set_switch.parm('input').setExpression(rig_switch_expression, language=hou.exprLanguage.Python)
 
 
 	switch = geo.createNode('switch')
@@ -549,6 +549,7 @@ for node in switch.inputs():
 	switch.setInput(0, rig_model_set_switch)
 	switch.setInput(1, rig_model_switch)
 	switch.setInput(2, abc_object_space)
+	switch.parm('input').setExpression(rig_switch_expression, language=hou.exprLanguage.Python)
 
 	convert = switch.createOutputNode('convert')
 
