@@ -209,36 +209,45 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 
 	set_hda.layoutChildren()
 
-def addMaterialOptions(geo, groups):
+def addMaterialOptions(geo, groups,parentNode):
+
+	materialScript= '''
+switchInput=hou.node("./hide_geo")
+selectSwitch=hou.node("./material_selection")
+mat = switchInput.createOutputNode('material')
+index = len(selectSwitch.inputs())
+selectSwitch.setInput(index, mat)
+'''
 	hou_parm_template_group = geo.parmTemplateGroup()
 	material_folder = hou.FolderParmTemplate('materials', 'Material', folder_type=hou.folderType.Tabs)
-	num_materials_folder = hou.FolderParmTemplate('num_materials', 'Number of Materials', folder_type=hou.folderType.MultiparmBlock)
-	num_materials_folder.setDefaultValue(len(groups))
-
+	materialFolder = hou.FolderParmTemplate('group','Material',folder_type=hou.folderType.Tabs)
 	group_names = list()
+
 	for group in groups:
 		group_names.append(group.name())
+		num_materials_folder = hou.FolderParmTemplate('num_materials', 'Number of Materials', folder_type=hou.folderType.MultiparmBlock)
+		num_materials_folder.setDefaultValue(1)
+		folder = hou.FolderParmTemplate(group.name()+'_Material', group.name(),folder_type=hou.folderType.Tabs)
+		versionSlider = hou.IntParmTemplate(group.name()+'_materialSelect','Material Select',1,default_value=([1]),min=1)
+		folder.addParmTemplate(versionSlider)
+		materials = hou.StringParmTemplate(group.name()+'_mat_path#', 'Material', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
+		groups = hou.StringParmTemplate(group.name(), 'Group', 1, default_value=[group.name()], menu_items=[group.name()], menu_type=hou.menuType.StringToggle)
+		currentMaterial = hou.StringParmTemplate('applied_material_'+group.name(), 'Applied Material',1,default_value=['`chs(\"'+group.name()+'_mat_path\"+ch(\"'+group.name()+'_materialSelect\"))`'],naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference)
+		num_materials_folder.addParmTemplate(materials)
+		folder.addParmTemplate(groups)
+		folder.addParmTemplate(currentMaterial)
+		folder.addParmTemplate(num_materials_folder)
+		materialFolder.addParmTemplate(folder)
 
-	groups = hou.StringParmTemplate('group#', 'Group', 1, menu_items=group_names, menu_type=hou.menuType.StringToggle)
-	materials = hou.StringParmTemplate('mat_path#', 'Material', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
-	# Create a new parameter for RenderMan 'Displacement Shader'
-	displacement_shader = hou.StringParmTemplate('shop_displacepath#', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
-	displacement_shader.setHelp('RiDisplace')
-	displacement_shader.setTags({'oprelative': '.'})
-	# Create a new parameter for RenderMan 'Displacement Bound'
-	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
-	displacement_bound.setHelp('Attribute: displacementbound/sphere')
-	displacement_bound.setTags({'spare_category': 'Shading'})
 
-	num_materials_folder.addParmTemplate(groups)
-	num_materials_folder.addParmTemplate(materials)
-	num_materials_folder.addParmTemplate(displacement_shader)
-	num_materials_folder.addParmTemplate(displacement_bound)
 
-	material_folder.addParmTemplate(num_materials_folder)
-
-	hou_parm_template_group.append(material_folder)
+	hou_parm_template_group.append(materialFolder)
 	geo.setParmTemplateGroup(hou_parm_template_group)
+
+	for name in group_names:
+		geo.parm('applied_material_'+name).lock(True)
+
+
 	return geo
 
 def create_cook_button(geo):
@@ -290,19 +299,12 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	rendersubd.setTags({'spare_category': 'Geometry'})
 	renderman_folder.addParmTemplate(rendersubd)
 
-	# TODO: If we can get the displacement to work by group then we don't need to have this here anymore. We will need to finish hooking it up in addMaterialOptions()
-	if(add_displacement):
-		# Create a new parameter for RenderMan 'Displacement Shader'
-		displacement_shader = hou.StringParmTemplate('shop_displacepath', 'Displacement Shader', 1, default_value=(['']), naming_scheme=hou.parmNamingScheme.Base1, string_type=hou.stringParmType.NodeReference, menu_items=([]), menu_labels=([]), icon_names=([]), item_generator_script='', item_generator_script_language=hou.scriptLanguage.Python, menu_type=hou.menuType.Normal)
-		displacement_shader.setHelp('RiDisplace')
-		displacement_shader.setTags({'oprelative': '.','spare_category': 'Shading'})
-		renderman_folder.addParmTemplate(displacement_shader)
 
-		# Create a new parameter for RenderMan 'Displacement Bound'
-		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
-		displacement_bound.setHelp('Attribute: displacementbound/sphere')
-		displacement_bound.setTags({'spare_category': 'Shading'})
-		renderman_folder.addParmTemplate(displacement_bound)
+	#Create a new parameter for RenderMan 'displacement_bound'
+	displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+	displacement_bound.setHelp('Attribute: displacementbound/sphere')
+	displacement_bound.setTags({'spare_category': 'Shading'})
+	renderman_folder.addParmTemplate(displacement_bound)
 
 	hou_parm_template_group.append(renderman_folder)
 
@@ -348,19 +350,29 @@ def clean_file_list(file_paths, ext):
 			file_paths.remove(file_path)
 	return file_paths
 
-def ristnet_set_up(shop, name):
-	risnet = shop.createNode('risnet')
-	risnet.setName('risnet_' + name, unique_name=True)
-	surface = risnet.createNode('pxrsurface')
-	diffuse = surface.createInputNode(2, 'pxrtexture')
+def risnet_set_up(shop, name, groups):
 
-	displaceTex = risnet.createNode('pxrtexture')
-	pxrtofloat = displaceTex.createOutputNode('pxrtofloat')
-	pxrdisplace = risnet.createNode('pxrdisplace')
 
-	pxrdisplace.setInput(1, pxrtofloat, 0)
-	risnet.layoutChildren()
-	return {'risnet': risnet, 'surface': surface, 'diffuse': diffuse, 'displaceTex': displaceTex, 'pxrdisplace': pxrdisplace}
+	nodes=[]
+	for group in groups:
+		risnet = shop.createNode('risnet')
+		risnet.setName(group.name()+'_risnet', unique_name=True)
+
+		surface = risnet.createNode('pxrsurface','pxrsurface_'+group.name())
+		diffuse = surface.createInputNode(2, 'pxrtexture','diffuseMap_'+group.name())
+		displaceTex = risnet.createNode('pxrtexture','displaceMap_'+group.name())
+		pxrtofloat = displaceTex.createOutputNode('pxrtofloat')
+		pxrdisplace = risnet.createNode('pxrdisplace','pxrdisplace_'+group.name())
+		pxrdisplace.setInput(1, pxrtofloat, 0)
+
+		collect = risnet.createNode('collect','collect_'+group.name())
+		collect.setInput(0,surface)
+		collect.setInput(1,pxrdisplace)
+		nodes.append({'risnet': risnet, 'surface': surface, 'diffuse': diffuse, 'displaceTex': displaceTex, 'pxrdisplace': pxrdisplace,collect:"collect"})
+		risnet.layoutChildren()
+
+	shop.layoutChildren()
+	return nodes
 
 def generate_groups_expression(group):
 	return 'strcat("*", chs("../' + group + '"))'
@@ -398,11 +410,17 @@ def assemble(project, environment, assembly, asset, checkout_file):
 
 	shop = hda.createNode('shopnet', asset.get_name() + '_shopnet')
 
-	risnet_nodes = ristnet_set_up(shop, asset.get_name())
-	shop.layoutChildren()
+	#risnet_nodes = risnet_set_up(shop, asset.get_name())
+
 
 	# Set up geo node
-	geo = geo_setup(hda, asset, project)
+	result = geo_setup(hda, asset, project)
+
+	geo = result[0]
+	groups=result[1]
+
+	shop.layoutChildren()
+	risnet_nodes=risnet_set_up(shop,asset.get_name(),groups)
 
 	# Finish setting up the hda
 	hda.layoutChildren()
@@ -419,7 +437,7 @@ def reassemble(hda, project, environment, assembly, asset, checkout_file):
 	for touch in touching:
 		touch.destroy()
 
-	geo = geo_setup(hda, asset, project)
+	geo = geo_setup(hda, asset, project)[0]
 
 	hda.layoutChildren()
 	hda = reset_parameters(hda)
@@ -449,6 +467,9 @@ def hda_parameter_setup(hda, geo, project):
 	projectFolder.addParmTemplate(hide_toggle)
 	recook = hou.ButtonParmTemplate('re_cook_hda', 'Reload', script_callback=cook_script, script_callback_language=hou.scriptLanguage.Python)
 	projectFolder.addParmTemplate(recook)
+
+
+
 	version = hou.IntParmTemplate('abcversion', 'Alembic Version', 1)
 	projectFolder.addParmTemplate(version)
 	lightlink = hou.StringParmTemplate("lightmask", "Light Mask", 1, default_value=(["*"]), string_type=hou.stringParmType.NodeReferenceList) #, menu_items=([]), menu_labels=([]), icon_names=([]))
@@ -564,30 +585,45 @@ for node in switch.inputs():
 	lightmask = 'chsop("../lightmask")'
 	geo.parm('lightmask').setExpression(lightmask)
 
-	out = hide_switch.createOutputNode('null')
-	out.setName('OUT')
+
 
 	static_geo = abc_object_space.geometry()
 
 	groups = []
 	try:
 		groups = static_geo.primGroups()
+
 	except:
 		message_gui.error('The static_geo has no groups.', details='str(geometry) =  ' + str(static_geo))
 		print 'This is what static_geo is and it\'s not working: ' + str(static_geo)
 
-	geo = addMaterialOptions(geo, groups)
+	geo = addMaterialOptions(geo, groups,parentNode)
 
-	mat = out.createOutputNode('material')
-	mat.setDisplayFlag(True)
-	mat.setRenderFlag(True)
-	mat.parm('num_materials').setExpression('ch("../num_materials")')
+
+	#switch mat to being child of hide geo switch
+	mat = hide_switch.createOutputNode('material')
+	mat.parm('num_materials').set(len(groups))
+	mat.parm('mergeoverride1').set(True)
+	mat.parm('localvar1').set(True)
 	for i, group in enumerate(groups):
+
 		group_num = str(i + 1)
-		geo.parm('group' + group_num).set(group.name())
-		groupExpression = generate_groups_expression('group' + group_num)
-		mat.parm('group' + group_num).setExpression(groupExpression, language=hou.exprLanguage.Hscript)
-		mat.parm('shop_materialpath' + group_num).setExpression('chsop("../mat_path' + group_num + '")')
+
+		#geo.parm('group'+group_num).set(group.name())
+		groupExpression = generate_groups_expression('group' + '_' + group_num)
+
+		mat.parm('group' + group_num).set(group.name())
+
+		#need to set this to appropriate expression
+		mat.parm('shop_materialpath' + group_num).set('`chsop("../applied_material_'+group.name()+'")`')
+		mat.parm('shop_materialpath' + group_num).lock(True)
+
+
+
+	out = mat.createOutputNode('null','OUT')
+
+	out.setDisplayFlag(True)
+	out.setRenderFlag(True)
 
 	geo.setName(asset.get_name(), unique_name=True)
 	geo.layoutChildren()
@@ -600,42 +636,8 @@ for node in switch.inputs():
 			print 'There was a problem with one of the things but I think that is okay'
 	geo.cook()
 
-
-	# Here is the temporary solution to the can't-assign-renderman-displacement-by-group-problem
-	# In addition to getting rid of this code you will also need to implement the new way to do displacement by group if Renderman in Houdini ever gets that capability.
-	# For example, in the future the displacement shader and bound would only need to be applied in the material parameter tab and not in the Renderman tab. But since we are using the same code for the geo nodes in the dont_touch_this_subnet subnet it doesn't make senese to remove it just yet.
-	subnet = geo.parent().createNode('subnet')
-	for i, group in enumerate(groups):
-		group_num = str(i + 1)
-		group_geo = subnet.createNode('geo')
-		group_geo.setName(group.name())
-		mat_path_expr = 'chsop("../../' + geo.name() + '/mat_path' + group_num + '")'
-		displacePathExpr = 'chsop("../../' + geo.name() + '/shop_displacepath' + group_num + '")'
-		riBoundExpr = 'ch("../../' + geo.name() + '/ri_dbound' + group_num + '")'
-		lightmask = 'chsop("../../lightmask")'
-		group_geo = add_renderman_settings(group_geo, pxrdisplaceexpr=displacePathExpr, riboundExpr=riBoundExpr, add_displacement=True)
-		group_geo.parm('shop_materialpath').setExpression(mat_path_expr)
-		group_geo.parm('lightmask').setExpression(lightmask)
-
-		for child in group_geo.children():
-			child.destroy()
-		obj_merge = group_geo.createNode('object_merge')
-		obj_merge.parm('objpath1').set('../../../' + geo.name() + '/' + out.name())
-		blast = obj_merge.createOutputNode('blast')
-		blast.parm('group').set('*' + group.name())
-		# blast.parm('group').setExpression(generate_groups_expression_renameMe(group.name(), model.get_long_name(), rig.get_long_name(), geo.name()), language=hou.exprLanguage.Python)
-		blast.parm('negate').set(True)
-		blast.setRenderFlag(True)
-		blast.setDisplayFlag(True)
-
-	subnet.layoutChildren()
-	subnet.setName('dont_touch_this_subnet')
-	tempHideDisplay = geo.createNode('null')
-	tempHideDisplay.setRenderFlag(True)
-	tempHideDisplay.setDisplayFlag(True)
-	# End temp solution
-
-	return geo
+	result = [geo,groups]
+	return result
 
 def createAlembicNode(parentNode, name, filePath):
 	alembicNode = parentNode.createNode('alembic')
