@@ -259,9 +259,14 @@ try:
 	hou.node("./animated_model").cook(force=True)
 except:
 	print "Error while cooking animated_model"
-
-hou.node("./set_switch").cook(force=True)
-hou.node("./shot_switch").cook(force=True)
+try:
+	hou.node("./set_switch").cook(force=True)
+except:
+	print "Error while cooking set_switch"
+try:
+	hou.node("./shot_switch").cook(force=True)
+except:
+	print "Error while cooking shot_switch"
 	'''
 	hou_parm_template_group = geo.parmTemplateGroup()
 	cook = hou.ButtonParmTemplate('cook', 'Refresh', script_callback=script, script_callback_language=hou.scriptLanguage.Python)
