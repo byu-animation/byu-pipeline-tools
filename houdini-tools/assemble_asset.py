@@ -554,7 +554,7 @@ for node in switch.inputs():
 	switch.setInput(0, rig_model_set_switch)
 	switch.setInput(1, rig_model_switch)
 	switch.setInput(2, abc_object_space)
-	switch.parm('input').setExpression(rig_switch_expression, language=hou.exprLanguage.Python)
+	#switch.parm('input').setExpression(rig_switch_expression, language=hou.exprLanguage.Python)
 
 	convert = switch.createOutputNode('convert')
 
