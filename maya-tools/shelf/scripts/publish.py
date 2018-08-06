@@ -51,12 +51,17 @@ def publishElement(element, user, src, comment):
 	except:
 		pass
 
-	#freeze transformations
-
-	#clear history
+	#freeze transformations and clear history
 	if maya_publish_dialog.clearHistoryCheckbox.isChecked():
-		freeze_transformations()
 		clear_construction_history()
+		try:
+			freeze_transformations()
+		except:
+			freeze_error_msg = ("Failed to freeze transformations, probably because "
+			"there are one or more keyframed values in your object. Remove all "
+			"keyframed values and expressions from your object and try again.")
+			cmds.confirmDialog(title="Freeze Transformations Error", message=freeze_error_msg)
+			print(freeze_error_msg)
 
 	#Export a playblast
 	print 'TODO: export playblast'
