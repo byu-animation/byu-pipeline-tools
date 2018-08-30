@@ -707,6 +707,7 @@ def createAlembicNode(parentNode, name, filePath):
 	alembicNode.parm('fileName').setExpression(filePath)
 	alembicNode.parm('loadmode').set(1)
 	alembicNode.parm("groupnames").set(4)
+	alembicNode.parm("polysoup").set(0)
 	return alembicNode
 
 def generate_groups_expression_renameMe(group, model_name, rig_name, asset_name):
