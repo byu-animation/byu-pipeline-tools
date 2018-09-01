@@ -226,6 +226,8 @@ def addMaterialOptions(geo, groups):
 
 
 	for group in groups:
+		print group.name()
+		print '-------------'
 		num_materials_folder = hou.FolderParmTemplate('num_materials', group.name()+' Materials', folder_type=hou.folderType.Simple)
 		num_materials_folder.setDefaultValue(1)
 
@@ -243,7 +245,8 @@ def addMaterialOptions(geo, groups):
 
 		materials=hou.FolderParmTemplate(group.name()+'_materials', 'Available Materials', folder_type=hou.folderType.MultiparmBlock)
 
-		material=hou.StringParmTemplate(group.name()+'_material','Material',1,default_value=(['']),string_type=hou.stringParmType.NodeReference)
+		material=hou.StringParmTemplate(group.name()+'_material#','Material',1,default_value=(['']),string_type=hou.stringParmType.NodeReference)
+		print material
 		material.setTags({'oprelative': '.','opfilter':'!!CUSTOM/MATERIAL!!'})
 
 		materials.addParmTemplate(material)
