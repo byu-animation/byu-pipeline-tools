@@ -244,7 +244,7 @@ def addMaterialOptions(geo, groups):
 		materials=hou.FolderParmTemplate(group.name()+'_materials', 'Available Materials', folder_type=hou.folderType.MultiparmBlock)
 
 		material=hou.StringParmTemplate(group.name()+'_material','Material',1,default_value=(['']),string_type=hou.stringParmType.NodeReference)
-		material.setTags({'oprelative': '.','opfilter': '!!SHOP!!'})
+		material.setTags({'oprelative': '.','opfilter':'!!CUSTOM/MATERIAL!!'})
 
 		materials.addParmTemplate(material)
 
