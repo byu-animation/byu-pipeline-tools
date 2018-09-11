@@ -3,7 +3,16 @@
 from byuam import Department, Environment, Project
 from byugui.publish_gui import PublishWindow
 from byugui import message_gui
-from PySide import QtGui
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+	print 'trying'
+except ImportError:
+	try:
+		from PySide2 import QtWidgets, QtGui, QtCore
+	except:
+		print 'failed second import'
 import os
 import mari
 import export_images
