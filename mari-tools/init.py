@@ -9,7 +9,7 @@ def init():
 	if toolbar is not None:
 		label = PySide.QtGui.QLabel("BYU Tools")
 		toolbar.addWidget(label)
-
+	
 init()
 
 project = Project()
