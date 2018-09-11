@@ -3,7 +3,18 @@
 from byuam import Department, Project, Environment
 from byugui.assemble_gui import AssembleWindow
 from byugui import message_gui
-from PySide import QtGui
+
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+	print 'trying'
+except ImportError:
+	try:
+		from PySide2 import QtWidgets, QtGui, QtCore
+	except:
+		print 'failed second import'
+
 import os
 import mari
 
@@ -17,7 +28,7 @@ def go():
 
 def post_assemble():
 	mari.projects.close()
-	asset_name = mari_assemble_dialog.result
+	asset_name = mari_assemble_dialog.resultclear
 	print asset_name
 
 	if asset_name is None:
