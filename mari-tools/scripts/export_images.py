@@ -1,6 +1,15 @@
 from byuam import Department, Project
 from byugui import SelectionWindow, message_gui
-from PySide import QtGui
+try:
+	from PySide import QtGui as QtWidgets
+	from PySide import QtGui as QtGui
+	from PySide import QtCore
+	print 'trying'
+except ImportError:
+	try:
+		from PySide2 import QtWidgets, QtGui, QtCore
+	except:
+		print 'failed second import'
 import os
 import subprocess
 import mari
