@@ -14,5 +14,5 @@ mari_inpire_dialog = None
 
 def go():
 	global mari_inpire_dialog
-	parent = QtGui.QApplication.activeWindow()
+	parent = QtWidgets.QApplication.activeWindow()
 	mari_inpire_dialog = QuoteWindow(parent)

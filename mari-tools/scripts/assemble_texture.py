@@ -12,8 +12,8 @@ try:
 except ImportError:
 	try:
 		from PySide2 import QtWidgets, QtGui, QtCore
-	except:
-		print 'failed second import'
+	except Exception as e:
+		print e
 
 import os
 import mari
@@ -22,13 +22,17 @@ mari_assemble_dialog = None
 
 def go():
 	global mari_assemble_dialog
-	parent = QtGui.QApplication.activeWindow()
+	try:
+		parent = QtWidgets.QApplication.activeWindow()
+	except Exception as e:
+		print e
+
 	mari_assemble_dialog = AssembleWindow(parent, [Department.TEXTURE])
 	mari_assemble_dialog.finished.connect(post_assemble)
 
 def post_assemble():
 	mari.projects.close()
-	asset_name = mari_assemble_dialog.resultclear
+	asset_name = mari_assemble_dialog.result
 	print asset_name
 
 	if asset_name is None:

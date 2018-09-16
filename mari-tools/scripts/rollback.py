@@ -49,6 +49,6 @@ def go():
 	element = body.get_element(Department.TEXTURE)
 
 	global rollback_window
-	parent = QtGui.QApplication.activeWindow()
+	parent = QtWidgets.QApplication.activeWindow()
 	rollback_window = RollbackWindow(element, parent)
 	rollback_window.finished.connect(post_rollback)

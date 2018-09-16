@@ -20,7 +20,7 @@ import export_images
 mari_publish_dialog = None
 
 def go():
-	parent = QtGui.QApplication.activeWindow()
+	parent = QtWidgets.QApplication.activeWindow()
 	if mari.projects.current() is None:
 		message_gui.error('You need to have a project open in order to publish it.')
 		return

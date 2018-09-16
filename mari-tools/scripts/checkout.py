@@ -21,7 +21,7 @@ mari_checkout_dialog = None
 
 def go():
 	global mari_checkout_dialog
-	parent = QtGui.QApplication.activeWindow()
+	parent = QtWidgets.QApplication.activeWindow()
 	mari_checkout_dialog = CheckoutWindow(parent, [Department.TEXTURE])
 	mari_checkout_dialog.finished.connect(post_checkout)
 
