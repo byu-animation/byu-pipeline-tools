@@ -27,7 +27,7 @@ def go(scope = ALL):
 	global mari_selection_dialog
 	texture = get_texture()
 	if texture is None:
-		parent = QtGui.QApplication.activeWindow()
+		parent = QtWidgets.QApplication.activeWindow()
 		mari_selection_dialog = SelectionWindow(parent, [Department.TEXTURE])
 		if scope is SELECTED_GEO:
 			mari_selection_dialog.finished.connect(export_selected_geo_to_tex)
