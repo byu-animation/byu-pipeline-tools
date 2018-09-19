@@ -83,7 +83,7 @@ wacomTabSetUp()
 
 	echo "Pen Tablet Settings Calibrated";
 }
-wacomTabSetUp
+#wacomTabSetUp
 
 # Starting Mari
 echo "Starting Mari...";
