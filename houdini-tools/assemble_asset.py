@@ -226,8 +226,6 @@ def addMaterialOptions(geo, groups):
 
 
 	for group in groups:
-		print group.name()
-		print '-------------'
 		num_materials_folder = hou.FolderParmTemplate('num_materials', group.name()+' Materials', folder_type=hou.folderType.Simple)
 		num_materials_folder.setDefaultValue(1)
 
@@ -346,7 +344,7 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	renderman_folder.addParmTemplate(rendersubd)
 
 	#create displacement bound
-	render_displacement_bound = hou.FloatParmTemplate('ri_dbound','Displacement Bound',1,default_value=(),min=0.0, max=10.0)
+	render_displacement_bound = hou.FloatParmTemplate('ri_dbound','Displacement Bound',1,default_value=([1]),min=0.0, max=10.0)
 	render_displacement_bound.setTags({'spare_category':'Shading'})
 	render_displacement_bound.setHelp('Attribute: displacementbound/sphere')
 	renderman_folder.addParmTemplate(render_displacement_bound)
@@ -421,24 +419,24 @@ def risnet_set_up(shop, name):
 
 	nodes = []
 
-	#make a risnet and first shader for each group in the geo
-	for group in groups:
-		risnet = shop.createNode('risnet')
-		risnet.setName(group.name()+'_risnet', unique_name=True)
-		surface = risnet.createNode('pxrsurface')
-		diffuse = surface.createInputNode(2, 'pxrtexture')
+	#make a single risnet and first shader for each group in the geo
 
-		displaceTex = risnet.createNode('pxrtexture')
-		pxrtofloat = displaceTex.createOutputNode('pxrtofloat')
-		pxrdisplace = risnet.createNode('pxrdisplace')
+	risnet = shop.createNode('risnet')
+	risnet.setName('Label_Me', unique_name=True)
+	surface = risnet.createNode('pxrsurface')
+	diffuse = surface.createInputNode(2, 'pxrtexture')
 
-		pxrdisplace.setInput(1, pxrtofloat, 0)
+	displaceTex = risnet.createNode('pxrtexture')
+	pxrtofloat = displaceTex.createOutputNode('pxrtofloat')
+	pxrdisplace = risnet.createNode('pxrdisplace')
 
-		collect=risnet.createNode('collect',group.name()+'_collect')
-		collect.setInput(0, surface)
-		collect.setInput(1,pxrdisplace)
-	   	risnet.layoutChildren()
-		nodes.append({group.name():{'risnet': risnet, 'surface': surface, 'diffuse': diffuse, 'displaceTex': displaceTex, 'pxrdisplace': pxrdisplace}})
+	pxrdisplace.setInput(1, pxrtofloat, 0)
+
+	collect=risnet.createNode('collect','Output')
+	collect.setInput(0, surface)
+	collect.setInput(1,pxrdisplace)
+	risnet.layoutChildren()
+	nodes.append({'risnet': risnet, 'surface': surface, 'diffuse': diffuse, 'displaceTex': displaceTex, 'pxrdisplace': pxrdisplace})
 
 	return nodes
 
@@ -648,12 +646,16 @@ for node in switch.inputs():
 	hide_switch.setInput(1, null_geo)
 	hide_switch.parm('input').setExpression('ch("../../hide")')
 
+	#add normals to geo
+	facet=hide_switch.createOutputNode('facet','Normals')
+	facet.parm('prenml').set(1)
+
 	geo = create_cook_button(geo)
 
 	lightmask = 'chsop("../lightmask")'
 	geo.parm('lightmask').setExpression(lightmask)
 
-	matNode= hide_switch.createOutputNode('material')
+	matNode=facet.createOutputNode('material')
 	static_geo = abc_object_space.geometry()
 
 	groups = []
@@ -689,7 +691,7 @@ for node in switch.inputs():
 	geo.setName(asset.get_name(), unique_name=True)
 	geo.layoutChildren()
 
-	out = matNode.createOutputNode('null','OUT')
+	out = matNode.createOutputNode('output','OUT')
 	out.setDisplayFlag(True)
 	out.setRenderFlag(True)
 
