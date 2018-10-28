@@ -44,3 +44,7 @@ cd ~/
 gnome-terminal -e "houdinifx -foreground $@"
 # after playing around with this it looks like we might still end up in the same directory we started in. Maybe sh puts you back by itself. I'll just leave it here. It's not hurting anybody.
 cd $currLocation
+
+
+#TODO: Figure out how to render preview to it program
+#export RMANFB="it"
