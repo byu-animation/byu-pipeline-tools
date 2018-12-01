@@ -216,9 +216,6 @@ if node:
 
 	</menu>
 
-    <removeItem id="opmenu.create_hda"/>
-	<removeItem id="opmenu.synchronize"/>
-	<removeItem id="opmenu.unsynchronize"/>
-	<removeItem id="opmenu.saveoptype"/>
+  
 	<!--<removeItem id="opmenu.synchronize"/>-->
 </menuDocument>

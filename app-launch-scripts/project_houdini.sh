@@ -10,7 +10,7 @@ then
 	# If working on the new image, update the houdini directory
 	if [ ! -d "${HFS}" ]
 	then
-		export HFS=/opt/hfs16.0
+		export HFS=/opt/hfs17.0
 	fi
 fi
 
@@ -33,6 +33,7 @@ HOUDINI_TOOLS=${BYU_TOOLS_DIR}/houdini-tools
 TRACTOR_AUTHOR=/opt/pixar/Tractor-2.2/lib/python2.7/site-packages
 export PYTHONPATH=${PYTHONPATH}:${HOUDINI_TOOLS}:${TRACTOR_AUTHOR}
 export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/production;&":${BYU_PROJECT_DIR}"/production/hda;&"
+export HOUDINI_DSO_PATH=${HOUDINI_DSO_PATH}:${BYU_PROJECT_DIR}"/production/dso;&"
 
 export HOUDINI_MENU_PATH=${HOUDINI_TOOLS}"/houdini-menus;&"
 export HOUDINI_UI_ICON_PATH=${BYU_TOOLS_DIR}"/assets/images/icons/tool-icons;&"
