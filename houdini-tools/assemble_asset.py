@@ -265,7 +265,7 @@ def addMaterialOptions(geo, groups):
 
 
 	#add displacement_bound to render man folder
-	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 0, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
 	displacement_bound.setTags({'spare_category': 'Shading'})
 
 
@@ -344,7 +344,7 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	renderman_folder.addParmTemplate(rendersubd)
 
 	#create displacement bound
-	render_displacement_bound = hou.FloatParmTemplate('ri_dbound','Displacement Bound',1,default_value=([1]),min=0.0, max=10.0)
+	render_displacement_bound = hou.FloatParmTemplate('ri_dbound','Displacement Bound',0,default_value=([0]),min=0.0, max=10.0)
 	render_displacement_bound.setTags({'spare_category':'Shading'})
 	render_displacement_bound.setHelp('Attribute: displacementbound/sphere')
 	renderman_folder.addParmTemplate(render_displacement_bound)
@@ -364,7 +364,7 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 		renderman_folder.addParmTemplate(displacement_shader)
 
 		# Create a new parameter for RenderMan 'Displacement Bound'
-		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 1, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
+		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 0, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
 
 		displacement_bound.setTags({'spare_category': 'Shading'})
 		renderman_folder.addParmTemplate(displacement_bound)
