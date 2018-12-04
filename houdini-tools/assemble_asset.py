@@ -361,7 +361,7 @@ def add_renderman_settings(geo, archiveName, ribArchDir, pxrdisplace=None, pxrdi
 	ribArchExpr = 'ifs(ch("../source_index") == 0,'
 	ribArchExpr += '"$JOB/production/assets/" + chs("../set") + "/rib_archive/main/cache/' + archiveName + '" + ifs(ch("../abcversion"), ch("../abcversion"), "") + ".rib",'
 	ribArchExpr += 'ifs(ch("../source_index") == 1,'
-	ribArchExpr += '"$JOB/production/shots/" + chs("../shot") + "/rib_archive/main/cache/' + archiveName + '" + ifs(ch("../abcversion"), ch("../abcversion"), "") + ".rib",'
+	ribArchExpr += '"$JOB/production/shots/" + chs("../shot") + "/rib_archive/main/cache/' + archiveName + '" + ifs(ch("../abcversion"), ch("../abcversion"), "") + "_$F4.rib",'
 	ribArchExpr += '"' + ribArchDir + '/' + archiveName + '.rib"))'
 	archive.setDefaultExpression((ribArchExpr,))
 	renderman_folder.addParmTemplate(archive)
