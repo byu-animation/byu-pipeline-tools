@@ -1,5 +1,5 @@
 import hou
-import os
+import os, sys, traceback
 from PySide2 import QtGui, QtWidgets, QtCore
 
 from byuam import Department, Project, Environment
@@ -265,8 +265,7 @@ def addMaterialOptions(geo, groups):
 
 
 	#add displacement_bound to render man folder
-	displacement_bound = hou.FloatParmTemplate('ri_dbound#', 'Displacement Bound', 0, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
-	displacement_bound.setTags({'spare_category': 'Shading'})
+	displacement_bound = hou.properties.parmTemplate(get_latest_prman(),"ri_dbound")
 
 
 	try:
@@ -324,7 +323,17 @@ except:
 	geo.setParmTemplateGroup(hou_parm_template_group)
 	return geo
 
-def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None, add_displacement=False):
+def get_latest_prman():
+	renderclasses = hou.properties.classes()
+	prmen = []
+	for renderclass in renderclasses:
+		if renderclass.startswith("prman"):
+			prmen.append(renderclass)
+	prmen.sort(reverse=True)
+	return prmen[0]
+
+def add_renderman_settings(geo, archiveName, ribArchDir, pxrdisplace=None, pxrdisplaceexpr=None, riboundExpr=None, add_displacement=False):
+
 	# Get the paramter template group from the current geo node
 	hou_parm_template_group = geo.parmTemplateGroup()
 
@@ -344,16 +353,23 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 	renderman_folder.addParmTemplate(rendersubd)
 
 	#create displacement bound
-	render_displacement_bound = hou.FloatParmTemplate('ri_dbound','Displacement Bound',0,default_value=([0]),min=0.0, max=10.0)
-	render_displacement_bound.setTags({'spare_category':'Shading'})
-	render_displacement_bound.setHelp('Attribute: displacementbound/sphere')
+	render_displacement_bound = hou.properties.parmTemplate(get_latest_prman(),"ri_dbound")
 	renderman_folder.addParmTemplate(render_displacement_bound)
 
 	#add archive file
-	archive = hou.StringParmTemplate('ri_archive','RIB Archive', 1,string_type=hou.stringParmType.FileReference)
-	archive.setTags({'spare_category':'Geometry','filechooser_mode':'write'})
-	archive.setHelp('RiReadArchive')
+	archive = hou.properties.parmTemplate(get_latest_prman(),"ri_archive")
+	ribArchExpr = 'ifs(ch("../source_index") == 0,'
+	ribArchExpr += '"$JOB/production/assets/" + chs("../set") + "/rib_archive/main/cache/' + archiveName + '" + ifs(ch("../abcversion"), ch("../abcversion"), "") + ".rib",'
+	ribArchExpr += 'ifs(ch("../source_index") == 1,'
+	ribArchExpr += '"$JOB/production/shots/" + chs("../shot") + "/rib_archive/main/cache/' + archiveName + '" + ifs(ch("../abcversion"), ch("../abcversion"), "") + ".rib",'
+	ribArchExpr += '"' + ribArchDir + '/' + archiveName + '.rib"))'
+	archive.setDefaultExpression((ribArchExpr,))
 	renderman_folder.addParmTemplate(archive)
+
+	#add auto-archive config
+	auto_archive = hou.properties.parmTemplate(get_latest_prman(),"ri_auto_archive")
+	auto_archive.setDefaultExpression(('chs("../ri_auto_archive")',))
+	renderman_folder.addParmTemplate(auto_archive)
 
 	# TODO: If we can get the displacement to work by group then we don't need to have this here anymore. We will need to finish hooking it up in addMaterialOptions()
 	if(add_displacement):
@@ -364,9 +380,7 @@ def add_renderman_settings(geo, pxrdisplace=None, pxrdisplaceexpr=None, riboundE
 		renderman_folder.addParmTemplate(displacement_shader)
 
 		# Create a new parameter for RenderMan 'Displacement Bound'
-		displacement_bound = hou.FloatParmTemplate('ri_dbound', 'Displacement Bound', 0, default_value=([0]), min=0, max=10, min_is_strict=False, max_is_strict=False, look=hou.parmLook.Regular, naming_scheme=hou.parmNamingScheme.Base1)
-
-		displacement_bound.setTags({'spare_category': 'Shading'})
+		displacement_bound = hou.properties.parmTemplate(get_latest_prman(),"ri_dbound")
 		renderman_folder.addParmTemplate(displacement_bound)
 
 	hou_parm_template_group.append(renderman_folder)
@@ -478,7 +492,7 @@ def assemble(project, environment, assembly, asset, checkout_file):
 	try:
 		geo = geo_setup(hda, asset, project)
 	except:
-		message_gui.error('There was a problem importing your geometry, check for duplicate groups')
+		message_gui.error('There was a problem importing your geometry, check for duplicate groups', traceback.format_exc())
 
 	shop = hda.createNode('shopnet', asset.get_name() + '_shopnet')
 
@@ -541,6 +555,9 @@ def hda_parameter_setup(hda, geo, project):
 	lightlink = hou.StringParmTemplate("lightmask", "Light Mask", 1, default_value=(["*"]), string_type=hou.stringParmType.NodeReferenceList) #, menu_items=([]), menu_labels=([]), icon_names=([]))
 	lightlink.setTags({"opfilter": "!!OBJ/LIGHT!!", "oprelative": "/"})
 	projectFolder.addParmTemplate(lightlink)
+	auto_archive = hou.properties.parmTemplate(get_latest_prman(),"ri_auto_archive")
+	auto_archive.setDefaultValue(("exist",))
+	projectFolder.addParmTemplate(auto_archive)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
 
@@ -568,6 +585,8 @@ def geo_setup(parentNode, asset, project):
 	# Get assembly, model, and rig elements
 	rig = asset.get_element(Department.RIG)
 	model = asset.get_element(Department.MODEL)
+	rib_archive = asset.get_element(Department.RIB_ARCHIVE)
+	print("rib_archive")
 
 	geo_file = get_model_alembic_cache(model, project)
 	geo_file_path = os.path.join(model.get_cache_dir(), geo_file)
@@ -575,7 +594,7 @@ def geo_setup(parentNode, asset, project):
 
 	geo = parentNode.createNode('geo')
 
-	geo = add_renderman_settings(geo)
+	geo = add_renderman_settings(geo, rib_archive.get_long_name(), rib_archive.get_cache_dir())
 
 	for child in geo.children():
 		child.destroy()
@@ -647,15 +666,14 @@ for node in switch.inputs():
 	hide_switch.parm('input').setExpression('ch("../../hide")')
 
 	#add normals to geo
-	facet=hide_switch.createOutputNode('facet','Normals')
-	facet.parm('prenml').set(1)
+	normal=hide_switch.createOutputNode('normal','Normals')
 
 	geo = create_cook_button(geo)
 
 	lightmask = 'chsop("../lightmask")'
 	geo.parm('lightmask').setExpression(lightmask)
 
-	matNode=facet.createOutputNode('material')
+	matNode=normal.createOutputNode('material')
 	static_geo = abc_object_space.geometry()
 
 	groups = []
@@ -669,7 +687,7 @@ for node in switch.inputs():
 	try:
 		geo = addMaterialOptions(geo, groups)
 	except:
-		message_gui.error('Error adding material options for geo')
+		message_gui.error('Error adding material options for geo', traceback.format_exc())
 
 
 
