@@ -130,6 +130,9 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 	# Set up the set parameters
 	# Create a folder for the set parameters
 	set_folder = hou.FolderParmTemplate('set_options', 'Set Options', folder_type=hou.folderType.Tabs, default_value=0, ends_tab_group=False)
+	auto_archive = hou.properties.parmTemplate(get_latest_prman(),"ri_auto_archive")
+	auto_archive.setDefaultValue(("exist",))
+	set_folder.addParmTemplate(auto_archive)
 	set_folder.addParmTemplate(create_set_menu(hidden=True, value=asset.get_name()))
 	set_folder.addParmTemplate(create_shot_menu())
 
@@ -201,6 +204,11 @@ def assemble_set(project, environment, assembly, asset, checkout_file):
 			message_gui.error("There was an error adding " + str(asset_name) + " to the set. Please make sure that the node exists and has all of the necessary parameters (hide, shot, set, source) and try again. Contact the pipeline team if you need help. We will continue assembling so you can see the output, but you will need to assemble this set again.", details=str(e))
 		except Exception, e:
 			message_gui.error('There was a problem with this node: ' + str(asset_name), details=str(e))
+
+		#Link the auto archiving
+		auto_archive = hda.parm("ri_auto_archive")
+		if auto_archive:
+			auto_archive.setExpression('chs("../ri_auto_archive")')
 
 	assetTypeDef = set_hda.type().definition()
 	hda_parm_group = assetTypeDef.parmTemplateGroup()
