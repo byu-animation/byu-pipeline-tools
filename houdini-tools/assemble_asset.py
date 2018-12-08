@@ -674,8 +674,13 @@ for node in switch.inputs():
 	hide_switch.setInput(1, null_geo)
 	hide_switch.parm('input').setExpression('ch("../../hide")')
 
+	#add subdivision to geo
+	subd=hide_switch.createOutputNode('subdivide','subdivide')
+	subd.parm('iterations').set(0)
+
 	#add normals to geo
-	normal=hide_switch.createOutputNode('normal','Normals')
+	normal=subd.createOutputNode('normal','Normals')
+	normal.parm('type').set('typepoint')
 
 	geo = create_cook_button(geo)
 
