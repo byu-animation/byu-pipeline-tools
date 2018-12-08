@@ -568,6 +568,7 @@ def hda_parameter_setup(hda, geo, project):
 	projectFolder.addParmTemplate(auto_archive)
 	parmGroup.addParmTemplate(projectFolder)
 	hda.type().definition().setParmTemplateGroup(parmGroup)
+	hda.parm("ri_auto_archive").set("force")
 
 	return hda
 
