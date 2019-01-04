@@ -22,7 +22,7 @@ def init():
 	if toolbar is not None:
 		label = QtGui.QLabel("BYU Tools")
 		toolbar.addWidget(label)
-
+	
 init()
 
 project = Project()

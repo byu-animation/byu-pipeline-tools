@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Author: Trevor Barrus
 import hou
 import os
@@ -10,7 +11,7 @@ def checkout_shot():
 	filepath = checkout_window.result
 	if filepath is not None:
 		if not os.path.exists(filepath):
-			print 'Filepath doesn\'t exist'
+			print('Filepath doesn\'t exist')
 			filepath += '.hipnc'
 			hou.hipFile.clear()
 			hou.hipFile.setName(filepath)
@@ -51,6 +52,9 @@ def checkout_hda(hda, project, environment):
 				hou.hda.installFile(element_path)
 				hou.hda.uninstallFile(src, change_oplibraries_file=False)
 				hda.allowEditingOfContents()
+				aa = hda.parm("ri_auto_archive")
+				if aa:
+					aa.set("force")
 				return element_path
 	return None
 
@@ -72,7 +76,7 @@ def checkout_hda_go(hda=None):
 	if hda.type().definition() is not None:
 		result = checkout_hda(hda, project, environment)
 		if result is not None:
-			print 'checkout successful'
+			print('checkout successful')
 			#I think having the node unlock is visual que enough that the checkout was fine. Mostly it's annoying to have the window there. And we have a window that will let them know if it didn't work.
 			#message_gui.info('Checkout Successful!', title='Success!')
 		else:
