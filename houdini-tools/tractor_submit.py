@@ -183,6 +183,8 @@ class ExportDialog(QtWidgets.QWidget):
 				subprocess.call(['sh', script , str(start), str(end), str(node.path()), str(saveHipRenderCopy()), str(numCores)])
 				print 'finish rib making'
 
+				node.parm('rib_outputmode').set(False)
+
 				# Loop through every frame in framerange
 				for frame in range(start, end+1, step):
 					subtask = author.Task()
@@ -203,7 +205,7 @@ class ExportDialog(QtWidgets.QWidget):
 
 					# Real Commands
 					command = author.Command()
-					command.argv = ['prman', '-progress', ribFile]
+					command.argv = ['prman', '-progress', '-checkpoint', '5m[,60m]', '-recover', '1', ribFile]
 					command.service = 'PixarRender'
 					subtask.addCommand(command)
 					task.addChild(subtask)

@@ -29,7 +29,7 @@ class Registry:
 		self._registrydict[Department.RENDER] = self.shot_element_factory
 		self._registrydict[Department.HDA] = self.hda_element_factory
 		self._registrydict[Department.CYCLES] = self.maya_element_factory
-                self._registrydict[Department.RIB_ARCHIVE] = self.asset_element_factory
+		self._registrydict[Department.RIB_ARCHIVE] = self.asset_element_factory
 
 	def element_factory(self, filepath):
 		return Element(filepath)
