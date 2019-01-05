@@ -87,7 +87,7 @@ class Body:
 	# 	'''
 	# 	raise NotImplementedError('subclass must implement get_parent_dir')
 
-	def get_element(self, department, name=Element.DEFAULT_NAME):
+	def get_element(self, department, name=Element.DEFAULT_NAME, force_create=False):
 		'''
 		get the element object for this body from the given department. Raises EnvironmentError
 		if no such element exists.
@@ -97,7 +97,13 @@ class Body:
 		'''
 		element_dir = os.path.join(self._filepath, department, name)
 		if not os.path.exists(element_dir):
-			raise EnvironmentError('no such element: ' + element_dir + ' does not exist')
+			if force_create:
+				try:
+					self.create_element(department, name)
+				except Exception as e:
+					print(e)
+			else:
+				raise EnvironmentError('no such element: ' + element_dir + ' does not exist')
 
 		return Registry().create_element(department, element_dir)
 
