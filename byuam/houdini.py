@@ -35,3 +35,17 @@ class HDAElement(Element):
 	#	 which needs to be called otls
 	#	 """
 	#	 return os.path.join(self._env.get_users_dir(), username, 'otls')
+
+class SimElement(HDAElement):
+
+    """
+....Class describing caches of Houdini sims
+...."""
+
+    def update_cache(
+        self,
+        src,
+        shot,
+        reference=False,
+        ):
+        print 'TODO: make this save to caches per shot. This script is in byuam/houdini.py'

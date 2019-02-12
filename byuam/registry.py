@@ -2,7 +2,7 @@
 from .element import Element, AssetElement, ShotElement
 from .environment import Department
 from .maya import MayaElement
-from .houdini import HDAElement
+from .houdini import HDAElement, SimElement
 
 class Registry:
 	"""
@@ -17,7 +17,7 @@ class Registry:
 		self._registrydict[Department.MODEL] = self.maya_element_factory
 		self._registrydict[Department.RIG] = self.maya_element_factory
 		self._registrydict[Department.TEXTURE] = self.asset_element_factory
-		self._registrydict[Department.MATERIAL] = self.asset_element_factory
+		self._registrydict[Department.MATERIAL] = self.hda_element_factory
 		self._registrydict[Department.ASSEMBLY] = self.hda_element_factory
 		self._registrydict[Department.LAYOUT] = self.maya_element_factory
 		self._registrydict[Department.ANIM] = self.maya_element_factory
@@ -30,6 +30,9 @@ class Registry:
 		self._registrydict[Department.HDA] = self.hda_element_factory
 		self._registrydict[Department.CYCLES] = self.maya_element_factory
 		self._registrydict[Department.RIB_ARCHIVE] = self.asset_element_factory
+		self._registrydict[Department.MODIFY] = self.hda_element_factory
+		self._registrydict[Department.HAIR] = self.sim_element_factory
+		self._registrydict[Department.CLOTH] = self.sim_element_factory
 
 	def element_factory(self, filepath):
 		return Element(filepath)
@@ -45,6 +48,9 @@ class Registry:
 
 	def shot_element_factory(self, filepath):
 		return ShotElement(filepath)
+
+	def sim_element_factory(self, filepath):
+		return SimElement(filepath)
 
 	# TODO: add factories for subclasses
 
