@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+	<!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+	<tool name="rollback_shot" label="Rollback Shot" icon="rollback.svg">
+		<helpText><![CDATA[= Rollback Shot =
+
+"""Rollback a shot to a previous version."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import rollback
+
+rollback.rollback_shot_go()
+]]></script>
+	</tool>
+
+
+	<tool name="rollback_asset" label="Rollback Asset" icon="rollback.svg">
+		<helpText><![CDATA[= Rollback Asset =
+
+"""Rollback an asset to a previous version."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import rollback
+
+rollback.rollback_asset_go()
+]]></script>
+	</tool>
+
+
+	<tool name="rollback_tool" label="Rollback Tool" icon="rollback.svg">
+		<helpText><![CDATA[= Rollback Asset =
+
+"""Rollback an asset to a previous version."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import rollback
+
+rollback.rollback_tool_go()
+]]></script>
+	</tool>
+</shelfDocument>

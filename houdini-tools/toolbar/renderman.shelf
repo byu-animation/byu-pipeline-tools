@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+	<!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+	<tool name="renderman_setup" label="Renderman Setup" icon="renderman.svg">
+		<helpText><![CDATA[= Renderman Basic Setup =
+
+"""Bring in the nodes for a basic renderman render."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import renderman_setup
+
+renderman_setup.go()
+]]></script>
+	</tool>
+</shelfDocument>

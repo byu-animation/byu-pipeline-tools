@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# project_maya.sh: opens maya with the project environment
+# @author Brian Kingery
+
+export CURRENT_PROG='Maya'
+
+# Change directories so current directory is not in the tools folder
+cd ${BYU_TOOLS_DIR}
+
+sh project_maya.sh

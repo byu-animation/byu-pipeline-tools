@@ -1,0 +1,124 @@
+{
+	"shelfItems":[
+		{
+			"itemType":"button",
+			"icon":"new-body.svg",
+			"annotation":"Create a new body",
+			"pythonFile":"new_body.py",
+			"function":"new_body.go()"
+		}, {
+			"itemType":"button",
+			"icon":"checkout.svg",
+			"annotation":"Checkout a model, rig or animation",
+			"pythonFile":"checkout.py",
+			"function":"checkout.go()"
+		}, {
+			"itemType":"button",
+			"icon":"publish.svg",
+			"annotation":"Publish a model, rig or animation",
+			"pythonFile":"publish.py",
+			"function":"publish.go()"
+		}, {
+			"itemType":"button",
+			"icon":"rollback.svg",
+			"annotation":"Rollback body to previous version",
+			"pythonFile":"rollback.py",
+			"function":"rollback.go()"
+		}, {
+			"itemType":"button",
+			"icon":"playblast.svg",
+			"annotation":"Playblast this shot",
+			"pythonFile":"playblast.py",
+			"function":"playblast.go()"
+		}, {
+			"itemType":"button",
+			"icon":"alembic-export.svg",
+			"annotation":"Export as Alembic",
+			"pythonFile":"alembic_exporter.py",
+			"function":"alembic_exporter.go()"
+		}, {
+			"itemType":"button",
+			"icon":"tag.svg",
+			"annotation":"Tag Selected Objects for Export",
+			"pythonFile":"alembic_tagger.py",
+			"function":"alembic_tagger.go()"
+		}, {
+			"itemType":"button",
+			"icon":"untag.svg",
+			"annotation":"Untag Selected Objects for Export",
+			"pythonFile":"alembic_untagger.py",
+			"function":"alembic_untagger.go()"
+		}, {
+			"itemType":"button",
+			"icon":"reference.svg",
+			"annotation":"Reference a model or rig",
+			"pythonFile":"reference.py",
+			"function":"reference.go(useNamespace=True)"
+		}, {
+			"itemType":"separator"
+		}, {
+			"itemType":"button",
+			"icon":"quote.svg",
+			"annotation":"Inspirational quote of the day!",
+			"pythonFile":"inspire_quote.py",
+			"function":"inspire_quote.go()"
+		}, {
+			"itemType":"button",
+			"icon":"death.svg",
+			"annotation":"Scale Reference",
+		  "pythonFile":"import_death_ref.py",
+			"function":"import_death_ref.go()"
+		}, {
+			"itemType":"button",
+			"icon":"reload-scripts.svg",
+			"annotation":"Reload Scripts",
+			"pythonFile":"reload_scripts.py",
+			"function":"reload_scripts.go()"
+		}, {
+			"itemType":"button",
+			"icon":"ik-fk.svg",
+			"annotation":"FK IK Matching Tool",
+			"pythonFile":"fk_ik_snapping.py",
+			"function":"fk_ik_snapping.go()"
+		}, {
+			"itemType":"button",
+			"icon":"interpolate.svg",
+			"annotation":"Cluster Interpolate",
+			"pythonFile":"cluster_interpolate.py",
+			"function":"cluster_interpolate.go()"
+		}, {
+			"itemType":"button",
+			"icon":"turtle.png",
+			"annotation":"Remove TURTLE",
+			"pythonFile":"playground.py",
+			"function":"playground.go()"
+		}, {
+			"itemType":"button",
+			"icon":"education.svg",
+			"annotation":"Change the licence to education",
+			"pythonFile":"education.py",
+			"function":"education.go()"
+		}, {
+			"itemType":"button",
+			"icon":"agent.svg",
+			"annotation":"Bake Crowd Cycle",
+			"pythonFile":"crowdCycle.py",
+			"function":"crowdCycle.go()"
+		}, {
+			"itemType":"separator"
+		}, {
+			"itemType":"button",
+			"icon":"Sketchfab.png",
+			"annotation":"Upload to Sketch Fab",
+			"pythonFile":"sketchfab_exporter.py",
+			"function":"sketchfab_exporter.go(element=None,dept=None)"
+		}, {
+			"itemType":"button",
+			"icon":"link.png",
+			"annotation":"Get sketchFab link",
+			"pythonFile":"sketchfab_exporter.py",
+			"function":"sketchfab_exporter.get_link()"
+		}
+
+	]
+}

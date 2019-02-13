@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+import argparse
+from byuam.body import Asset, Shot
+from byuam.environment import Department
+from byuam.element import Element
+from byuam.project import Project
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-d", "--dept", type=str, choices=Department.ALL, required=True,
+		                help="create element for this department")
+	grp = parser.add_mutually_exclusive_group(required=True)
+	asset_arg = grp.add_argument("-a", "--asset", type=str, help="the asset in which to create this element")
+	shot_arg = grp.add_argument("-s", "--shot", type=str, help="the shot in which to create this element")
+	parser.add_argument("-n", "--name", type=str, default=Element.DEFAULT_NAME)
+	args = parser.parse_args()
+
+	project = Project()
+	if args.asset:
+		if args.asset in project.list_assets():
+			asset = project.get_asset(args.asset)
+			new_element = asset.create_element(args.dept, args.name)
+			print "new element created: " + new_element.get_dir()
+		else:
+			print "not a valid asset"
+	else:
+		if args.shot in project.list_shots():
+			shot = project.get_shot(args.shot)
+			new_element = shot.create_element(args.dept, args.name)
+			print "new element created: " + new_element.get_dir()
+		else:
+			print "not a valid shot"
+		

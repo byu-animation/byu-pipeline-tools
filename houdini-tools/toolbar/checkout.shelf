@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+	<!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+	<tool name="checkout_shot" label="Checkout Shot" icon="checkout.svg">
+		<helpText><![CDATA[= Checkout Shot =
+
+"""Checks out a shot for editing."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import checkout
+
+checkout.checkout_shot_go()
+]]></script>
+	</tool>
+
+
+	<tool name="checkout_tool" label="Checkout Tool" icon="checkout.svg">
+		<helpText><![CDATA[= Checkout Tool =
+
+"""Checks out a tool for editing."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import checkout
+
+checkout.checkout_tool_go()
+]]></script>
+	</tool>
+
+
+	<tool name="checkout_asset" label="Checkout Asset" icon="checkout.svg">
+		<helpText><![CDATA[= Checkout Asset =
+
+"""Checks out an asset to the user for editing."""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import checkout
+
+checkout.checkout_asset_go()
+]]></script>
+	</tool>
+</shelfDocument>

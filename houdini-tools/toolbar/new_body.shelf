@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+	<!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+	<tool name="new_body" label="Create Body" icon="new-body.svg">
+		<helpText><![CDATA[= Create Asset =
+
+"""Create a new asset or shot"""
+
+		]]></helpText>
+		<script scriptType="python"><![CDATA[import new_body
+
+new_body.go()
+]]></script>
+	</tool>
+</shelfDocument>
