@@ -36,8 +36,10 @@ export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/product
 export HOUDINI_DSO_PATH=${HOUDINI_DSO_PATH}:${BYU_PROJECT_DIR}"/production/dso;&"
 
 export HOUDINI_MENU_PATH=${HOUDINI_TOOLS}"/houdini-menus;&"
-export HOUDINI_UI_ICON_PATH=${BYU_TOOLS_DIR}"/assets/images/icons/tool-icons;&"
+export HOUDINI_TOOLBAR_PATH=${BYU_PROJECT_DIR}"/production/tabs;&"
 
+export HOUDINI_UI_ICON_PATH=${BYU_TOOLS_DIR}"/assets/images/icons/tool-icons;&"
+echo $HOUDINI_MENU_PATH
 echo "Starting Houdini..."
 # so I tried to set the $HIP variable but that didn't work. I don't really want people accientally saving their files in the tools directory and I would imagine that they would want to have their home directory as the default $HIP location anyways so we are going to cd into the users home directory, start houdini and then cd back to where ever we were.
 currLocation="$( pwd )"
