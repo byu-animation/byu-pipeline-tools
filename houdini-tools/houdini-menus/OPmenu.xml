@@ -95,11 +95,12 @@ if node:
 	if node.isLockedHDA():
 		if node.type().definition() is not None:
 			node_name = node.type().name()
-			index = node_name.find('_main')
+			index = node_name.rfind('_')
 			node_name = node_name[:index]
-			if node_name in Project().list_assets():
-				return 1
-				print "This is the Checkout Asset MenuItem"
+			node_body = Project().get_body(node_name)
+			if node_body:
+				if node_body.is_asset():
+					return 1
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -107,7 +108,7 @@ return 0
 import checkout
 node = kwargs.get('node', None)
 if node:
-	checkout.checkout_tool_go(node)
+	checkout.checkout_asset_go(node)
 				]]>
 			</scriptCode>
 		</scriptItem>
@@ -115,16 +116,18 @@ if node:
 			<insertBefore>opmenu.create_hda</insertBefore>
 			<label>Publish</label>
 			<expression>
-from byuam import Project
+from byuam import Project, Body
 node = kwargs.get('node', None)
 if node:
 	if not node.isLockedHDA():
 		if node.type().definition() is not None:
 			node_name = node.type().name()
-			index = node_name.find('_main')
+			index = node_name.rfind('_')
 			node_name = node_name[:index]
-			if node_name in Project().list_assets():
-				return 1
+			node_body = Project().get_body(node_name)
+			if node_body:
+				if node_body.is_asset():
+					return 1
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -147,11 +150,12 @@ if node:
 	if node.isLockedHDA():
 		if node.type().definition() is not None:
 			node_name = node.type().name()
-			index = node_name.find('_main')
+			index = node_name.rfind('_')
 			node_name = node_name[:index]
-			if node_name in Project().list_assets():
-				return 1
-				print "This is the Rollback Asset MenuItem"
+			node_body = Project().get_body(node_name)
+			if node_body:
+				if node_body.is_asset():
+					return 1
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -170,9 +174,6 @@ if node:
 			<expression>
 node = kwargs.get('node', None)
 if node:
-	result = node.canCreateDigitalAsset()
-	if not result:
-		return node.type().definition() is not None
 	return node.canCreateDigitalAsset()
 return 0
 			</expression>
@@ -186,7 +187,7 @@ if node:
 			</scriptCode>
 		</scriptItem>
 
-		<scriptItem id="opmenu.matchProduction">
+		<!--scriptItem id="opmenu.matchProduction">
 			<label>Match Production Definition...</label>
 			<insertBefore>opmenu.create_hda</insertBefore>
 			<expression>
@@ -194,14 +195,7 @@ from byuam import Project
 node = kwargs.get('node', None)
 if node:
 	if not node.isLockedHDA():
-		if node.type().definition() is not None:
-			node_name = node.type().name()
-			index = node_name.find('_main')
-			node_name = node_name[:index]
-			if node_name in Project().list_assets():
-				return 1
-			else:
-				return 1
+		return 1
 return 0
 			</expression>
 			<scriptCode scriptType="python">
@@ -212,10 +206,10 @@ if node:
 	matchDefinition.matchDefinition(node)
 				]]>
 			</scriptCode>
-		</scriptItem>
+		</scriptItem>-->
 
 	</menu>
 
-  
+
 	<!--<removeItem id="opmenu.synchronize"/>-->
 </menuDocument>
