@@ -118,6 +118,14 @@
 			"annotation":"Get sketchFab link",
 			"pythonFile":"sketchfab_exporter.py",
 			"function":"sketchfab_exporter.get_link()"
+		}, {
+			"itemType": "separator"
+		}, {
+			"itemType":"button",
+			"icon":"2.png",
+			"annotation":"Export JSON Set File",
+			"pythonFile":"json_exporter.py",
+			"function":"json_exporter.go()"
 		}
 
 	]

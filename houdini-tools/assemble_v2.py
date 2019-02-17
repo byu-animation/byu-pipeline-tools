@@ -91,7 +91,7 @@
 
 '''
 import hou
-import sys, os
+import sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
 from byugui import CheckoutWindow, message_gui
 
@@ -138,8 +138,30 @@ def tab_in(parent, asset_name, excluded_departments=[]):
 '''
 def byu_set(parent, set_name):
 
-    parent.createNode("byu_set")
-    return None
+    # Check if it's a set and that it exists
+    body = Project().get_body(set_name)
+    if not body.is_asset() or not body.get_type() == AssetType.SET:
+        message_gui.error("Must be a set.")
+
+    node = parent.createNode("byu_set")
+    node.parm("set").set(set_name)
+    node.parm("data").set({"set_name": set_name})
+    inside = node.node("inside")
+    set_file = os.path.join(Project().get_assets_dir(), set_name, "references.json")
+    with open(set_file) as f:
+        set_data = json.load(f)
+    for reference in set_data:
+        print reference
+        tabbed_in = tab_in(inside, reference["asset_name"])
+        tabbed_in.setParms(reference)
+        tabbed_in.parm("data").set({
+            "asset_name": str(reference["asset_name"]),
+            "version_number" : str(reference["version_number"])
+        })
+
+    inside.layoutChildren()
+
+    return node
 
 '''
     This function tabs in a BYU Character node and fills its contents with the appropriate character name.
@@ -273,8 +295,8 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
     shot_modeling = inside.node("shot_modeling")
 
     # Set the asset_name and reload
-    if node.parm("literal").evalAsString() != asset_name:
-        node.parm("literal").set(asset_name)
+    if node.parm("asset_name").evalAsString() != asset_name:
+        node.parm("asset_name").set(asset_name)
     importnode.parm("reload").pressButton()
 
     # Make sure the correct modify node is tabbed in, or none if doesn't exist
