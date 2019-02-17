@@ -13,7 +13,7 @@
     USD mid production.)
 
     Please pay attention to the differences in each of these nodes. Functional HDAs and Template HDAs are very different (for
-    example, a Content HDA is never intended to be tabbed into Houdini, it simply serves as a template for creating other
+    example, a Template HDA is never intended to be tabbed into Houdini, it simply serves as a template for creating other
     HDAs.)
 
 
@@ -118,7 +118,7 @@ hda_definitions = {
     Script accessed by toolscripts
 '''
 def tab_in(parent, asset_name, excluded_departments=[]):
-    body = this.project.get_body(asset_name)
+    body = Project().get_body(asset_name)
     if body is None or not body.is_asset():
         message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
         return
@@ -148,7 +148,7 @@ def byu_set(parent, set_name):
 def byu_character(parent, asset_name, excluded_departments=[]):
 
     # Set up the body/elements and make sure it's a character
-    body = this.project.get_body(asset_name)
+    body = Project().get_body(asset_name)
     if not body.is_asset() or not body.get_type() == AssetType.CHARACTER:
         message_gui.error("Must be a character.")
         return None
@@ -174,7 +174,7 @@ def byu_character(parent, asset_name, excluded_departments=[]):
 def set_contents_character(node, asset_name, excluded_departments=[]):
 
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
-    body = this.project.get_body(asset_name)
+    body = Project().get_body(asset_name)
     if not body.is_asset() or body.get_type() != AssetType.CHARACTER or "byu_character" not in node.type().name():
         message_gui.error("Must be a character.")
         return None
@@ -183,10 +183,11 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
 
     # Make sure the geo is set correctly
     geo = inside.node("geo")
-    if geo is None:
-        # Pass in the department list, but exclude the hair and cloth departments
-        geo = byu_geo(inside, asset_name, excluded_departments)
-    set_contents_geo(asset_name, geo)
+    if geo is not None:
+        geo.destroy()
+    # Pass in the department list, but exclude the hair and cloth departments
+    geo = byu_geo(inside, asset_name, excluded_departments, character=True)
+    set_contents_geo(geo, asset_name)
 
     # Make sure the correct hair node is tabbed in, or none if doesn't exist
     hair = inside.node("hair")
@@ -196,6 +197,7 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
             hair.destroy()
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
         if hou.preferredNodeType("Object/" + asset_name + "_" + Department.HAIR) is not None:
+            print(inside)
             hair = inside.createNode(asset_name + "_" + Department.HAIR)
             hair.setName("hair")
             hair.setInput(0, geo)
@@ -224,16 +226,16 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
 '''
     This function tabs in a BYU Geo node and fills its contents according to the appropriate asset name.
 '''
-def byu_geo(parent, asset_name, excluded_departments=[]):
+def byu_geo(parent, asset_name, excluded_departments=[], character=False):
     # Set up the body/elements and check if it's an asset.
-    body = this.project.get_body(asset_name)
+    body = Project().get_body(asset_name)
     if not body.is_asset():
         message_gui.error("Must be an asset.")
         return None
 
     # Set up the nodes, name geo
     node = parent.createNode("byu_geo")
-    if "byu_character" in parent.type().name():
+    if character:
         node.setName("geo")
     else:
         node.setName(asset_name.title(), unique_name=True)
@@ -254,7 +256,8 @@ def byu_geo(parent, asset_name, excluded_departments=[]):
 def set_contents_geo(node, asset_name, excluded_departments=[]):
 
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
-    body = this.project.get_body(asset_name)
+    project = Project()
+    body = project.get_body(asset_name)
     print(body)
     if body is None:
         message_gui.error("Asset doesn't exist.")
@@ -287,6 +290,7 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
             modify.setName("modify")
             modify.setInput(0, shot_modeling_input)
             shot_modeling.setInput(0, modify)
+            inherit_parameters(node, modify, ignore_folders=["Asset Controls"])
     elif modify is not None:
         # Delete the old one
         modify.destroy()
@@ -296,7 +300,10 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
     if Department.MATERIAL in elements and Department.MATERIAL not in excluded_departments:
         # Delete the old one
         if material is not None:
+            print("should have deleted it")
             material.destroy()
+        else:
+            print("didn't tho")
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
         if hou.preferredNodeType("Sop/" + asset_name + "_" + Department.MATERIAL) is not None:
             shot_modeling_input = shot_modeling.inputs()[0]
@@ -316,7 +323,7 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
 def create_hda(asset_name, department):
 
     # Check if this body is an asset. If not, return error.
-    body = this.project.get_body(asset_name)
+    body = Project().get_body(asset_name)
     if not body.is_asset():
         message_gui.error("Must be an asset of type PROP or CHARACTER.")
         return
@@ -335,12 +342,16 @@ def create_hda(asset_name, department):
     element = body.get_element(department, name=Element.DEFAULT_NAME, force_create=True)
 
     # Check out the department.
-    username = project.get_current_username()
+    username = Project().get_current_username()
     checkout_file = element.checkout(username)
 
     # Tab in the node
     node = tab_in(hou.node("/obj"), asset_name, excluded_departments=[department])
-    inside = node.node("inside")
+    # If it's a character and it's not a hair or cloth asset, we need to reach one level deeper.
+    if body.get_type() == AssetType.CHARACTER and department not in [Department.HAIR, Department.CLOTH]:
+        inside = node.node("inside/geo/inside")
+    else:
+        inside = node.node("inside")
 
     # CREATE NEW HDA DEFINITION
     operator_name = element.get_parent() + "_" + element.get_department()
@@ -357,7 +368,7 @@ def create_hda(asset_name, department):
     hda_instance.setSelected(True, clear_all_selected=True)
 
 '''
-
+    Check if a definition is the published definition or not
 '''
 def published_definition(asset_name, department):
     node_type = hou.objNodeTypeCategory() if department in [Department.HAIR, Department.CLOTH] else hou.sopNodeTypeCategory()
@@ -366,11 +377,39 @@ def published_definition(asset_name, department):
         hda_definition.setPreferred(True)
     else:
         return None
+
+'''
+    Promote parameters from an inner node up to an outer node.
+'''
+def inherit_parameters(upper_node, inner_node, ignore_folders=[]):
+    for inner_parm in inner_node.parms():
+        # This isn't very elegant, but I need to check if any containing folders contain any substrings from ignore_folders
+        in_containing_folder = False
+        for folder in ignore_folders:
+            for containingFolder in inner_parm.containingFolders():
+                print("checking ", folder, " against ", containingFolder)
+                if folder in containingFolder:
+                    in_containing_folder = True
+                    break
+            if in_containing_folder:
+                break
+        if in_containing_folder:
+            continue
+
+        # If not, then either set the value or promote it
+        upper_parm = upper_node.parm(inner_parm.name())
+        if upper_parm is not None:
+            upper_parm.set(inner_parm.eval())
+        else:
+            inner_parm_template = inner_parm.parmTemplate()
+            upper_node.addSpareParmTuple(inner_parm_template, inner_parm.containingFolders(), True)
+
 '''
     Helper function for create_hda()
 '''
-def tab_into_correct_place(inside, operator_name, department):
-
+def tab_into_correct_place(inside, operator_name, department, delete_if_duplicate_exists=True):
+    if inside.node(department) is not None and delete_if_duplicate_exists:
+        inside.node(department).destroy()
     hda_instance = inside.createNode(operator_name)
     hda_instance.setName(department)
 
@@ -441,9 +480,10 @@ def tab_into_correct_place(inside, operator_name, department):
 # -----------------------
 
 def convert_all_bodies():
-    for asset in this.project.list_assets():
+    project = Project()
+    for asset in project.list_assets():
         print ("currently processing: ", asset, "\n")
-        body = this.project.get_body(asset)
+        body = project.get_body(asset)
         elements = [d for d in body.default_departments() if len(body.list_elements(d)) > 0]
         if Department.MATERIAL in elements:
             print("yay")
