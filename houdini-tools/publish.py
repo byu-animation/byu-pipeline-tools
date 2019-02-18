@@ -65,7 +65,7 @@ def publish_shot(publishWindow):
 		comment = publishWindow.comment
 		element.publish(user, src, comment)
 
-def publish_hda_go(selectedHDA=None, departments=[Department.HDA, Department.ASSEMBLY, Department.MATERIAL, Department.HAIR, Department.CLOTH]):
+def publish_hda_go(selectedHDA=None, departments=[Department.HDA, Department.ASSEMBLY, Department.MODIFY, Department.MATERIAL, Department.HAIR, Department.CLOTH]):
 	if selectedHDA is None:
 		nodes = hou.selectedNodes()
 		if len(nodes) == 1:
@@ -89,7 +89,7 @@ def publish_tool_go(node=None):
 	publish_hda_go(selectedHDA=node, departments=[Department.HDA])
 
 def publish_asset_go(node=None):
-	publish_hda_go(selectedHDA=node, departments=[Department.ASSEMBLY, Department.MATERIAL, Department.HAIR, Department.CLOTH])
+	publish_hda_go(selectedHDA=node, departments=[Department.MODIFY, Department.MATERIAL, Department.HAIR, Department.CLOTH])
 
 def publish_shot_go():
 	scene = hou.hipFile.name()

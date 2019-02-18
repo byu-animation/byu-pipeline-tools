@@ -89,23 +89,37 @@
     HDAs, please update this!!
 
 
+    ========
+    Updating
+    ========
+
+    The different update modes have different meanings.
+
+        smart: Sets will add new components, and delete old ones. Props and characters will update everything except checked out items and shot_modeling.
+
+        clean: Everything is deleted and re-tabbed in, ensuring it is 100% synced. Does not allow for overrides.
+
+        frozen: Nothing happens.
+
 '''
-import hou
-import sys, os, json
+import hou, sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
 from byugui import CheckoutWindow, message_gui
+# DEBUGGING ONLY
+import inspect
+def lineno():
+    return inspect.currentframe().f_back.f_lineno
+def method_name():
+    return sys._getframe(1).f_code.co_name
+# DEBUGGING END
 
 # I set this sucker up as a singleton. It's a matter of preference.
 this = sys.modules[__name__]
 
-project = Project()
-environment = Environment()
-
 # The source HDA's are currently stored inside the pipe source code.
-hda_path = os.path.join(environment.get_project_dir(), "byu-pipeline-tools", "houdini-tools", "otls")
+hda_path = os.path.join(Environment().get_project_dir(), "byu-pipeline-tools", "houdini-tools", "otls")
 
-# TODO: Create Hair and Cloth digital assets.
-# These are a bunch of HDA's to copy each time you create a new material, hair, etc.
+# We define the template HDAs definitions here, for use in the methods below
 hda_definitions = {
     Department.MATERIAL: hou.hdaDefinition(hou.sopNodeTypeCategory(), "byu_material", os.path.join(hda_path, "byu_material.hda")),
     Department.MODIFY: hou.hdaDefinition(hou.sopNodeTypeCategory(), "byu_modify", os.path.join(hda_path, "byu_modify.hda")),
@@ -113,61 +127,160 @@ hda_definitions = {
     Department.CLOTH: hou.hdaDefinition(hou.objNodeTypeCategory(), "byu_cloth", os.path.join(hda_path, "byu_cloth.hda"))
 }
 
+# The order in which these nodes appear is the order they will be created in
+byu_geo_departments = [Department.MODIFY, Department.MATERIAL]
+byu_character_departments = [Department.HAIR, Department.CLOTH]
+
+# Update mode types
+class UpdateModes:
+    SMART = "smart"
+    CLEAN = "clean"
+    FROZEN = "frozen"
+
+    @classmethod
+    def list_modes(cls):
+        return [cls.SMART, cls.CLEAN, cls.FROZEN]
+
+# By default, we ignore "Asset Controls", so that we can put things in there without them being promoted.
+# See: inherit_parameters() method
+default_ignored_folders = ["Asset Controls"]
 
 '''
-    Script accessed by toolscripts
+    Easily callable method, meant for tool scripts
 '''
-def tab_in(parent, asset_name, excluded_departments=[]):
+def tab_in(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[]):
     body = Project().get_body(asset_name)
     if body is None or not body.is_asset():
         message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
         return
     if body.get_type() == AssetType.CHARACTER:
-        return byu_character(parent, asset_name, excluded_departments)
+        return byu_character(parent, asset_name, already_tabbed_in_node, excluded_departments)
     elif body.get_type() == AssetType.PROP:
-        return byu_geo(parent, asset_name, excluded_departments)
+        return byu_geo(parent, asset_name, already_tabbed_in_node, excluded_departments)
     elif body.get_type() == AssetType.SET:
-        return byu_set(parent, asset_name)
+        return byu_set(parent, asset_name, already_tabbed_in_node)
     else:
         message_gui.error("Pipeline error: this asset isn't a character, prop or set.")
         return
 
+'''
+    Easily callable method, meant for tool scripts
+'''
+def update_contents(node, asset_name, mode=UpdateModes.SMART):
+    if node.type().name() == "byu_set":
+        update_contents_set(node, asset_name, mode=mode)
+    elif node.type().name() == "byu_character":
+        update_contents_character(node, asset_name, mode=mode)
+    elif node.type().name() == "byu_prop":
+        update_contents_geo(node, asset_name, mode=mode)
 
 '''
     This function tabs in a BYU Set and fills its contents with other BYU Geo nodes based on JSON data
 '''
-def byu_set(parent, set_name):
+def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLEAN):
 
     # Check if it's a set and that it exists
     body = Project().get_body(set_name)
     if not body.is_asset() or not body.get_type() == AssetType.SET:
         message_gui.error("Must be a set.")
 
-    node = parent.createNode("byu_set")
+    node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_set")
     node.parm("set").set(set_name)
     node.parm("data").set({"set_name": set_name})
-    inside = node.node("inside")
+
+    # Update contents in the set
+    update_contents_set(inside, set_name, mode)
+    return node
+
+'''
+    Updates the contents of a set
+'''
+def update_contents_set(node, set_name, mode=UpdateModes.SMART):
+
+    # Check if reference file exists
     set_file = os.path.join(Project().get_assets_dir(), set_name, "references.json")
-    with open(set_file) as f:
-        set_data = json.load(f)
+
+    # Error checking
+    try:
+        with open(set_file) as f:
+            set_data = json.load(f)
+    except Exception as error:
+        message_gui.error("No valid JSON file for " + set_name)
+        return
+
+    inside = node.node("inside")
+
+    # Utility function to find if a node's asset and version number match an entry in the set's JSON
+    def matches_reference(child, reference):
+
+        # Grab data off the node. This data is stored as a key-value map parameter
+        data = current_child.parm("data").evalAsJSONMap()
+
+        # If it matches both the asset_name and version_number, it's a valid entry in the list
+        if data["asset_name"] == reference["asset_name"] and data["version_number"] == reference["version_number"]:
+            return True
+        else:
+            return False
+
+    # Grab current BYU Dynamic Content Subnets that have been tabbed in
+    current_children = [child for child in inside.children() if child.type().name() in ["byu_set", "byu_character", "byu_geo"]]
+
+    # Smart updating will only destroy assets that no longer exist in the Set's JSON list
+    if mode == UpdateModes.SMART:
+
+        # Check if each child still exists in the set's JSON
+        for child in current_children:
+            matches = False
+            for reference in set_data:
+                matches = matches_reference(child, set_data)
+                if matches:
+                    break
+            # If it doesn't, destroy it
+            if not matches:
+                child.destroy()
+
+    # Clean updating will destroy all children.
+    elif mode == UpdateModes.CLEAN:
+
+        # Clear all child nodes.
+        inside.deleteItems(inside.children())
+
+    # Tab-in/update all assets in list
     for reference in set_data:
-        print reference
-        tabbed_in = tab_in(inside, reference["asset_name"])
-        tabbed_in.setParms(reference)
-        tabbed_in.parm("data").set({
+
+        # Tab the subnet in if it doesn't exist, otherwise update_contents
+        subnet = [child for child in current_children if matches_reference(child, reference)]
+        if subnet is None:
+            subnet = tab_in(inside, reference["asset_name"])
+        else:
+            update_contents(subnet, reference["asset_name"], mode)
+
+        # Try to not override parameters in the set
+        if mode == UpdateModes.SMART:
+            for key in reference:
+                # Pull parm from node
+                parm = subnet.parm(key)
+                # If a non-default value is there, it most likely came from a user. Don't overwrite it.
+                if parm.isAtDefault():
+                    parm.set(reference[key])
+
+        # Override parameters in the set
+        elif mode == UpdateModes.CLEAN:
+            subnet.setParms(reference)
+
+        # Set the data
+        subnet.parm("data").set({
             "asset_name": str(reference["asset_name"]),
             "version_number" : str(reference["version_number"])
         })
 
     inside.layoutChildren()
 
-    return node
-
 '''
     This function tabs in a BYU Character node and fills its contents with the appropriate character name.
     Departments is a mask because sometimes we tab this asset in when we want to work on Hair or Cloth, and don't want the old ones to be there.
 '''
-def byu_character(parent, asset_name, excluded_departments=[]):
+def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[], mode=UpdateModes.CLEAN):
 
     # Set up the body/elements and make sure it's a character
     body = Project().get_body(asset_name)
@@ -175,8 +288,8 @@ def byu_character(parent, asset_name, excluded_departments=[]):
         message_gui.error("Must be a character.")
         return None
 
-    # Set the character parameter
-    node = parent.createNode("byu_character")
+    # If there's an already tabbed in node, set it to that node
+    node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_character")
     node.setName(asset_name.title(), unique_name=True)
     node.parm("character").set(asset_name)
 
@@ -186,15 +299,15 @@ def byu_character(parent, asset_name, excluded_departments=[]):
     node.parm("data").set(data)
 
     # Set the contents to the character's nodes
-    set_contents_character(node, asset_name, excluded_departments)
-
+    update_contents_character(node, asset_name, excluded_departments, mode)
     return node
 
 '''
     This function sets the inner contents of a BYU Character node.
 '''
-def set_contents_character(node, asset_name, excluded_departments=[]):
+def update_contents_character(node, asset_name, excluded_departments=[], mode=UpdateModes.SMART):
 
+    print "{0}() line {1}:\n\tcharacter: {2}\n\tmode: {3}".format(method_name(), lineno(), asset_name, mode)
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
     body = Project().get_body(asset_name)
     if not body.is_asset() or body.get_type() != AssetType.CHARACTER or "byu_character" not in node.type().name():
@@ -206,49 +319,33 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
     # Make sure the geo is set correctly
     geo = inside.node("geo")
     if geo is not None:
-        geo.destroy()
-    # Pass in the department list, but exclude the hair and cloth departments
-    geo = byu_geo(inside, asset_name, excluded_departments, character=True)
-    set_contents_geo(geo, asset_name)
+        if mode == UpdateModes.SMART:
+            update_contents_geo(geo, asset_name, excluded_departments, mode)
+        elif mode == UpdateModes.CLEAN:
+            geo.destroy()
+            geo = byu_geo(inside, asset_name, excluded_departments=excluded_departments, character=True)
+    else:
+        geo = byu_geo(inside, asset_name, excluded_departments=excluded_departments, character=True)
 
-    # Make sure the correct hair node is tabbed in, or none if doesn't exist
-    hair = inside.node("hair")
-    if Department.HAIR in elements and Department.HAIR not in excluded_departments:
-        # Delete the old one
-        if hair is not None:
-            hair.destroy()
-        # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if published_definition(asset_name, Department.HAIR):
-            print(inside)
-            hair = inside.createNode(asset_name + "_" + Department.HAIR)
-            hair.setName("hair")
-            hair.setInput(0, geo)
-    elif hair is not None:
-        # Delete the old one
-        hair.destroy()
+    # Tab in each content HDA based on department
+    for department in this.byu_character_departments:
+        # If the department is not excluded, tab-in/update the content node like normal
+        if department not in excluded_departments:
 
-    # Make sure the correct cloth node is tabbed in, or none if doesn't exist
-    cloth = inside.node("cloth")
-    if Department.CLOTH in elements and Department.CLOTH not in excluded_departments:
-        # Delete the old one
-        if cloth is not None:
-            cloth.destroy()
-        # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if published_definition(asset_name, Department.CLOTH):
-            cloth = inside.createNode(asset_name + "_" + Department.CLOTH)
-            cloth.setName("cloth")
-            cloth.setInput(0, geo)
-    elif cloth is not None:
-        # Delete the old one
-        cloth.destroy()
+            update_content_node(node, inside, asset_name, department, mode)
+        # If the department is excluded, we should delete it.
+        elif mode == UpdateModes.CLEAN:
+
+            destroy_if_there(inside, department)
 
     inside.layoutChildren()
+    print "{0}() returned {1}".format(method_name(), node)
     return node
 
 '''
     This function tabs in a BYU Geo node and fills its contents according to the appropriate asset name.
 '''
-def byu_geo(parent, asset_name, excluded_departments=[], character=False):
+def byu_geo(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[], character=False, mode=UpdateModes.CLEAN):
     # Set up the body/elements and check if it's an asset.
     body = Project().get_body(asset_name)
     if not body.is_asset():
@@ -256,7 +353,7 @@ def byu_geo(parent, asset_name, excluded_departments=[], character=False):
         return None
 
     # Set up the nodes, name geo
-    node = parent.createNode("byu_geo")
+    node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_geo")
     if character:
         node.setName("geo")
     else:
@@ -268,19 +365,16 @@ def byu_geo(parent, asset_name, excluded_departments=[], character=False):
     node.parm("data").set(data)
 
     # Set the contents to the nodes that belong to the asset
-    set_contents_geo(node, asset_name, excluded_departments)
-
+    update_contents_geo(node, asset_name, excluded_departments, mode)
     return node
 
 '''
     This function sets the dynamic inner contents of a BYU Geo node.
 '''
-def set_contents_geo(node, asset_name, excluded_departments=[]):
+def update_contents_geo(node, asset_name, excluded_departments=[], mode=UpdateModes.SMART):
 
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
-    project = Project()
-    body = project.get_body(asset_name)
-    print(body)
+    body = Project().get_body(asset_name)
     if body is None:
         message_gui.error("Asset doesn't exist.")
         return None
@@ -288,56 +382,26 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
         message_gui.error("Must be a prop or character.")
         return None
 
-    # Get the list of elements in this body, and list of interior nodes
-    elements = [d for d in body.default_departments() if len(body.list_elements(d)) > 0]
+    # Get interior nodes
     importnode = node.node("import")
     inside = node.node("inside")
-    shot_modeling = inside.node("shot_modeling")
 
     # Set the asset_name and reload
     if node.parm("asset_name").evalAsString() != asset_name:
         node.parm("asset_name").set(asset_name)
     importnode.parm("reload").pressButton()
 
-    # Make sure the correct modify node is tabbed in, or none if doesn't exist
-    modify = inside.node("modify")
-    if Department.MODIFY in elements and Department.MODIFY not in excluded_departments:
-        # Delete the old one
-        if modify is not None:
-            modify.destroy()
-        # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if published_definition(asset_name, Department.MODIFY):
-            shot_modeling_input = shot_modeling.inputs()[0]
-            modify = inside.createNode(asset_name + "_" + Department.MODIFY)
-            modify.setName("modify")
-            modify.setInput(0, shot_modeling_input)
-            shot_modeling.setInput(0, modify)
-            inherit_parameters(node, modify, ignore_folders=["Asset Controls"])
-    elif modify is not None:
-        # Delete the old one
-        modify.destroy()
-
-    # Make sure the correct material node is tabbed in, or none if doesn't exist
-    material = inside.node("material")
-    if Department.MATERIAL in elements and Department.MATERIAL not in excluded_departments:
-        # Delete the old one
-        if material is not None:
-            print("should have deleted it")
-            material.destroy()
-        else:
-            print("didn't tho")
-        # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if published_definition(asset_name, Department.MATERIAL):
-            shot_modeling_input = shot_modeling.inputs()[0]
-            material = inside.createNode(asset_name + "_" + Department.MATERIAL)
-            material.setName("material")
-            material.setInput(0, shot_modeling_input)
-            shot_modeling.setInput(0, material)
-    elif material is not None:
-        # Delete the old one
-        material.destroy()
+    # Tab in each content HDA based on department
+    for department in this.byu_geo_departments:
+        # If the department is not excluded, tab-in/update the content node like normal
+        if department not in excluded_departments:
+            update_content_node(node, inside, asset_name, department, mode, inherit_parameters = department == Department.MODIFY)
+        # If the department is excluded, we should delete it.
+        elif mode == UpdateModes.CLEAN:
+            destroy_if_there(inside, department)
 
     inside.layoutChildren()
+    return node
 
 '''
     Creates new content HDAs
@@ -363,20 +427,23 @@ def create_hda(asset_name, department):
     # Create element if does not exist.
     element = body.get_element(department, name=Element.DEFAULT_NAME, force_create=True)
 
+    # TODO: Get rid of this ugly hotfix
     # !!! HOTFIX !!!
     # Material was previously used as an AssetElement, but now is being treated like an HDAElement.
     # This will convert it's file extension to .hdanc. (Before, it's extension was "").
     element._datadict[Element.APP_EXT] = element.create_new_dict(Element.DEFAULT_NAME, department, asset_name)[Element.APP_EXT]
     element._update_pipeline_file()
+    # !!! END HOTFIX !!!
 
     # Check out the department.
     username = Project().get_current_username()
     checkout_file = element.checkout(username)
 
-    # Tab in the node
+    # Tab in the parent asset that will hold this checked out HDA
     node = tab_in(hou.node("/obj"), asset_name, excluded_departments=[department])
+
     # If it's a character and it's not a hair or cloth asset, we need to reach one level deeper.
-    if body.get_type() == AssetType.CHARACTER and department not in [Department.HAIR, Department.CLOTH]:
+    if body.get_type() == AssetType.CHARACTER and department not in this.byu_character_departments:
         inside = node.node("inside/geo/inside")
     else:
         inside = node.node("inside")
@@ -385,51 +452,132 @@ def create_hda(asset_name, department):
     operator_name = element.get_parent() + "_" + element.get_department()
     operator_label = (asset_name.replace("_", " ") + " " + element.get_department()).title()
     this.hda_definitions[department].copyToHDAFile(checkout_file, operator_name, operator_label)
-    hda_type = hou.objNodeTypeCategory() if department in [Department.HAIR, Department.CLOTH] else hou.sopNodeTypeCategory()
+    hda_type = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
     hou.hda.installFile(checkout_file)
     hda_definition = hou.hdaDefinition(hda_type, operator_name, checkout_file)
     hda_definition.setPreferred(True)
 
     # Tab an instance of this new HDA into the asset you are working on
-    hda_instance = tab_into_correct_place(inside, operator_name, department)
+    try:
+        hda_instance = inside.createNode(asset_name + "_" + department)
+    except Exception as e:
+        message_gui.error("HDA Creation Error. " + asset_name + "_" + department + " must not exist.")
+    hda_instance.setName(department)
+    tab_into_correct_place(inside, hda_instance, department)
     hda_instance.allowEditingOfContents()
     hda_instance.setSelected(True, clear_all_selected=True)
+
+'''
+    Updates a content node.
+'''
+def update_content_node(parent, inside, asset_name, department, mode=UpdateModes.SMART, inherit_parameters=False, ignore_folders=this.default_ignored_folders):
+
+    print "{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}\n\tmode: {4}".format(method_name(), lineno(), asset_name, department, mode)
+    # See if there's a content node with this department name already tabbed in.
+    content_node = inside.node(department)
+    print "\tline {0}: content_node = {1}".format(lineno() - 1, content_node)
+
+    # If the content node exists.
+    if content_node is not None:
+        # Check if the node is currently being edited.
+        if not content_node.matchesCurrentDefinition():
+            # Clean is a destructive mode that will destroy it.
+            if mode == UpdateModes.CLEAN:
+                content_node.destroy()
+            # Else, don't touch the node if it's being edited.
+            else:
+                return content_node
+
+    # This line checks to see if there's a published HDA with that name.
+    if published_definition(asset_name, department):
+        # Only create it if it's in the pipe.
+        content_node = inside.createNode(asset_name + "_" + department)
+        tab_into_correct_place(inside, content_node, department)
+        content_node.setName(department)
+        # Some nodes will promote their parameters to the top level
+        if inherit_parameters:
+            inherit_parameters_from_node(parent, content_node, mode, ignore_folders)
+
+
+    print "{0}() returned {1}".format(method_name(), content_node)
+    return content_node
+
+'''
+    Destroys unwanted content nodes if they remain in a network
+'''
+def destroy_if_there(inside, department):
+    node = inside.node(department)
+    if node is not None:
+        node.destroy()
 
 '''
     Check if a definition is the published definition or not
 '''
 def published_definition(asset_name, department):
-    # Set the node type correctly
-    node_type = hou.objNodeTypeCategory() if department in [Department.HAIR, Department.CLOTH] else hou.sopNodeTypeCategory()
 
-    # TODO: Make main not be appended to HDA's
+    print "{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}".format(method_name(), lineno(), asset_name, department)
+    # Set the node type correctly
+    node_type = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
+
+    # TODO: Get rid of this hotfix
+    # !!! HOTFIX !!!
+    # We have to append _main to the HDAs, because that's how they publish
     production_hda_filename = asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
-    production_hda_path = os.path.join(environment.get_hda_dir(), production_hda_filename)
+    # !!! END HOTFIX !!!
+
+    # Get the HDA path, if doesn't exist return false
+    production_hda_path = os.path.join(Environment().get_hda_dir(), production_hda_filename)
     if not os.path.exists(production_hda_path):
         return False
+
+    # This doesn't work unless you follow the symlink_path, I don't know why it works elsewhere
     resolved_symlink_path = os.readlink(production_hda_path)
+
+    # Install the file and get definitions from it
     hou.hda.installFile(resolved_symlink_path)
     definitions = hou.hda.definitionsInFile(resolved_symlink_path)
+
     # Get the HDA definition from production, make it preferred if exists
-    #hda_definition = hou.hdaDefinition(node_type, asset_name + "_" + department, resolved_symlink_path)
     hda_definition = next(definition for definition in definitions if definition.nodeTypeName() == asset_name + "_" + department)
     if hda_definition is not None:
         hda_definition.setPreferred(True)
+        print "{0}() returned {1}".format(method_name(), True)
         return True
     else:
         print "decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path
+        print "{0}() returned {1}".format(method_name(), False)
         return False
 
 '''
     Promote parameters from an inner node up to an outer node.
 '''
-def inherit_parameters(upper_node, inner_node, ignore_folders=[]):
-    for inner_parm in inner_node.parms():
+def inherit_parameters_from_node(upper_node, inner_node, mode=UpdateModes.SMART, ignore_folders=[]):
+
+    # Get the lists of parms
+    upper_spare_parms = inner_node.spareParms()
+    inner_parms = inner_node.parms()
+    inner_parm_names = [parm.name() for parm in inner_parms]
+
+    # Only remove the spare parms that are no longer on the inner_node
+    if mode == UpdateModes.SMART:
+        for upper_spare_parm in upper_spare_parms:
+            if upper_parm.name() not in inner_parm_names:
+                upper_node.removeSpareParmTuple(inner_parm.parmTemplate())
+
+    # Clean all spare parms
+    elif mode == UpdateModes.CLEAN:
+        upper_node.removeSpareParms()
+
+    # Else, don't do anything
+    elif mode == UpdateModes.FROZEN:
+        return
+
+    for inner_parm in inner_parms:
+
         # This isn't very elegant, but I need to check if any containing folders contain any substrings from ignore_folders
         in_containing_folder = False
         for folder in ignore_folders:
             for containingFolder in inner_parm.containingFolders():
-                print("checking ", folder, " against ", containingFolder)
                 if folder in containingFolder:
                     in_containing_folder = True
                     break
@@ -437,26 +585,22 @@ def inherit_parameters(upper_node, inner_node, ignore_folders=[]):
                 break
         if in_containing_folder:
             continue
+        # That's the end of the non-elegant solution
 
-        # If not, then either set the value or promote it
+        # If not in the ignored folders, then either set the value or promote it
         upper_parm = upper_node.parm(inner_parm.name())
         if upper_parm is not None:
             upper_parm.set(inner_parm.eval())
         else:
-            inner_parm_template = inner_parm.parmTemplate()
-            upper_node.addSpareParmTuple(inner_parm_template, inner_parm.containingFolders(), True)
+            upper_node.addSpareParmTuple(inner_parm.parmTemplate(), inner_parm.containingFolders(), True)
 
 '''
     Helper function for create_hda()
 '''
-def tab_into_correct_place(inside, operator_name, department, delete_if_duplicate_exists=True):
-    if inside.node(department) is not None and delete_if_duplicate_exists:
-        inside.node(department).destroy()
-    hda_instance = inside.createNode(operator_name)
-    hda_instance.setName(department)
+def tab_into_correct_place(inside, node, department):
 
     # If the node belongs inside a BYU Character, do the following
-    if department in [Department.HAIR, Department.CLOTH]:
+    if department in this.byu_character_departments:
 
         # Hair and Cloth assets should be connected to geo. If it doesn't exist, throw an error.
         geo = inside.node("geo")
@@ -465,7 +609,7 @@ def tab_into_correct_place(inside, operator_name, department, delete_if_duplicat
             return
 
         # Attach the Hair or Cloth asset to the geo network.
-        hda_instance.setInput(0, geo)
+        node.setInput(0, geo)
 
     # If the node belongs inside a BYU Geo, do the following
     else:
@@ -483,13 +627,13 @@ def tab_into_correct_place(inside, operator_name, department, delete_if_duplicat
             # If there is a material node, put the modify node in between material and geo.
             material = inside.node("material")
             if material is not None:
-                hda_instance.setInput(0, geo)
-                material.setInput(0, hda_instance)
+                node.setInput(0, geo)
+                material.setInput(0, node)
 
             # Else, stick it between geo and shot_modeling.
             else:
-                hda_instance.setInput(0, geo)
-                shot_modeling.setInput(0, hda_instance)
+                node.setInput(0, geo)
+                shot_modeling.setInput(0, node)
 
         # If we're inserting a material node, do the following
         elif department == Department.MATERIAL:
@@ -497,37 +641,13 @@ def tab_into_correct_place(inside, operator_name, department, delete_if_duplicat
             # If there is a modify node, put the material node in between modify and shot_modeling.
             modify = inside.node("modify")
             if modify is not None:
-                hda_instance.setInput(0, modify)
-                shot_modeling.setInput(0, hda_instance)
+                node.setInput(0, modify)
+                shot_modeling.setInput(0, node)
 
             # Else, stick it between geo and shot_modeling.
             else:
-                hda_instance.setInput(0, geo)
-                shot_modeling.setInput(0, hda_instance)
+                node.setInput(0, geo)
+                shot_modeling.setInput(0, node)
 
     inside.layoutChildren()
-    return hda_instance
-
-
-#TODO: Decide whether or not we'll have an automated script for the rest of it.
-# -----------------------
-# Idea: it's only partially automated. You pick the asset, it'll convert it and tab it into your scene. Then you decide if you
-#   want to publish it or not.
-# -----------------------
-# Idea: We can check the old import assets for if there's anything between the switch node and the output. If there is,
-#   package it up into a modify digital asset. It might include primvars, but who cares.
-# -----------------------
-# Idea: we can automatically package up the shopnet as a material node. I don't think we'll be able to distinguish enough
-#   to be able to automatically fill primvars in. But yeah.
-# -----------------------
-
-def convert_all_bodies():
-    project = Project()
-    for asset in project.list_assets():
-        print ("currently processing: ", asset, "\n")
-        body = project.get_body(asset)
-        elements = [d for d in body.default_departments() if len(body.list_elements(d)) > 0]
-        if Department.MATERIAL in elements:
-            print("yay")
-        else:
-            body.create_element(Department.MATERIAL)
+    return node
