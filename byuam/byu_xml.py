@@ -8,13 +8,14 @@ from byuam import Body
 baseXML='''<?xml version="1.0" encoding="UTF-8"?>
 <shelfDocument>
 
-    <tool name=\"$NAME\" label=\"$LABEL\" icon=\"$ICON\">
+    <tool name=\'$NAME\' label=\'$LABEL\' icon=\'$ICON\'>
         <toolMenuContext name=\"network\">
             <contextNetType>$CONTEXT</contextNetType>
         </toolMenuContext>
 
         <script scriptType ="python">
-            <![CDATA[node=hou.node('/obj').createNode(\'byu_geo\',\'$NAME\');node.parm('literal').set(\'$NAME\')]]>
+            <![CDATA[import assemble_v2;assemble_v2.tab_in(hou.node('/obj'),\'$NAME\')
+            ]]>
         </script>
     </tool>
 
@@ -25,7 +26,7 @@ baseXML='''<?xml version="1.0" encoding="UTF-8"?>
 def writeXML(assetName='None',context='OBJ'):
     project=Project()
     asset_body=project.get_body(assetName)
-
+    icon=os.path.join('$JOB','byu-pipeline-tools','assets','images','icons','tool-icons','2.png')
 
     if not asset_body.is_asset():
         print('error me this')
@@ -34,7 +35,7 @@ def writeXML(assetName='None',context='OBJ'):
 
 
     global baseXML
-    xml=Template(baseXML).substitute(NAME=assetName,LABEL=assetName.replace('_',' ').title(),ICON='',CONTEXT=context)
+    xml=Template(baseXML).substitute(NAME=assetName,LABEL=assetName.replace('_',' ').title(),ICON=icon,CONTEXT=context)
 
     try:
         path=os.path.join(project.get_assets_dir(),assetName)
