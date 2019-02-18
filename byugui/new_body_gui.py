@@ -11,6 +11,8 @@ except ImportError:
 from byuam.project import Project
 from byuam.body import AssetType
 from byuam.body_list import NameList
+from byuam import byu_xml
+
 from byugui import message_gui
 
 WINDOW_WIDTH = 300
@@ -192,6 +194,13 @@ def createBody(bodyType, name):
 			asset_type = AssetType.SET
 
 		asset = project.create_asset(name, asset_type)
+		#generate xml for houdini toolshelf
+		try:
+			byu_xml.writeXML(name)
+		except Exception as error:
+			print error
+			message_gui.error(error.args)
+
 	elif bodyType == 'shot':
 		shot = project.create_shot(name)
 	elif bodyType == 'tool':

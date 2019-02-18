@@ -8,6 +8,8 @@ from .environment import Department, Environment, User
 from . import pipeline_io
 from .registry import Registry
 
+
+
 class Project:
 	'''
 	Class describing an animation project.
@@ -53,6 +55,14 @@ class Project:
 		return the absolute filepath to the crowds directory of this project
 		'''
 		return self._env.get_crowds_dir()
+
+
+		#TODO create a get tabs dir in the byuam environment module
+	def get_tabs_dir(self):
+		'''
+		return the absolute filepath to the xml tabs directory of this project
+		'''
+		return os.path.join(self._env.get_project_dir(),'production/tabs')
 
 	def get_users_dir(self):
 		'''
@@ -145,6 +155,8 @@ class Project:
 		for dept in bodyobj.default_departments():
 			pipeline_io.mkdir(os.path.join(filepath, dept))
 			new_body.create_element(dept, Element.DEFAULT_NAME)
+
+
 		return new_body
 
 	def create_asset(self, name, asset_type=AssetType.PROP):
@@ -154,6 +166,7 @@ class Project:
 		'''
 		asset = self._create_body(name, Asset)
 		asset.update_type(asset_type)
+
 		return asset
 
 	def create_shot(self, name):
