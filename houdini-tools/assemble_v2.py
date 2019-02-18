@@ -218,7 +218,7 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
         if hair is not None:
             hair.destroy()
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if hou.preferredNodeType("Object/" + asset_name + "_" + Department.HAIR) is not None:
+        if published_definition(asset_name, Department.HAIR):
             print(inside)
             hair = inside.createNode(asset_name + "_" + Department.HAIR)
             hair.setName("hair")
@@ -234,7 +234,7 @@ def set_contents_character(node, asset_name, excluded_departments=[]):
         if cloth is not None:
             cloth.destroy()
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if hou.preferredNodeType("Object/" + asset_name + "_" + Department.CLOTH) is not None:
+        if published_definition(asset_name, Department.CLOTH):
             cloth = inside.createNode(asset_name + "_" + Department.CLOTH)
             cloth.setName("cloth")
             cloth.setInput(0, geo)
@@ -306,7 +306,7 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
         if modify is not None:
             modify.destroy()
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if hou.preferredNodeType("Sop/" + asset_name + "_" + Department.MODIFY) is not None:
+        if published_definition(asset_name, Department.MODIFY):
             shot_modeling_input = shot_modeling.inputs()[0]
             modify = inside.createNode(asset_name + "_" + Department.MODIFY)
             modify.setName("modify")
@@ -327,7 +327,7 @@ def set_contents_geo(node, asset_name, excluded_departments=[]):
         else:
             print("didn't tho")
         # This line checks to see if an HDA matches this name. If not, you probably need to create one or reload your HIP file.
-        if hou.preferredNodeType("Sop/" + asset_name + "_" + Department.MATERIAL) is not None:
+        if published_definition(asset_name, Department.MATERIAL):
             shot_modeling_input = shot_modeling.inputs()[0]
             material = inside.createNode(asset_name + "_" + Department.MATERIAL)
             material.setName("material")
@@ -363,6 +363,12 @@ def create_hda(asset_name, department):
     # Create element if does not exist.
     element = body.get_element(department, name=Element.DEFAULT_NAME, force_create=True)
 
+    # !!! HOTFIX !!!
+    # Material was previously used as an AssetElement, but now is being treated like an HDAElement.
+    # This will convert it's file extension to .hdanc. (Before, it's extension was "").
+    element._datadict[Element.APP_EXT] = element.create_new_dict(Element.DEFAULT_NAME, department, asset_name)[Element.APP_EXT]
+    element._update_pipeline_file()
+
     # Check out the department.
     username = Project().get_current_username()
     checkout_file = element.checkout(username)
@@ -382,7 +388,7 @@ def create_hda(asset_name, department):
     hda_type = hou.objNodeTypeCategory() if department in [Department.HAIR, Department.CLOTH] else hou.sopNodeTypeCategory()
     hou.hda.installFile(checkout_file)
     hda_definition = hou.hdaDefinition(hda_type, operator_name, checkout_file)
-    hda_definition.setIcon(environment.get_project_dir() + '/byu-pipeline-tools/assets/images/icons/hda-icon.png')
+    hda_definition.setPreferred(True)
 
     # Tab an instance of this new HDA into the asset you are working on
     hda_instance = tab_into_correct_place(inside, operator_name, department)
@@ -393,12 +399,26 @@ def create_hda(asset_name, department):
     Check if a definition is the published definition or not
 '''
 def published_definition(asset_name, department):
+    # Set the node type correctly
     node_type = hou.objNodeTypeCategory() if department in [Department.HAIR, Department.CLOTH] else hou.sopNodeTypeCategory()
-    hda_definition = hou.hdaDefinition(node_type, asset_name + "_" + department, os.path.join())
+
+    # TODO: Make main not be appended to HDA's
+    production_hda_filename = asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
+    production_hda_path = os.path.join(environment.get_hda_dir(), production_hda_filename)
+    if not os.path.exists(production_hda_path):
+        return False
+    resolved_symlink_path = os.readlink(production_hda_path)
+    hou.hda.installFile(resolved_symlink_path)
+    definitions = hou.hda.definitionsInFile(resolved_symlink_path)
+    # Get the HDA definition from production, make it preferred if exists
+    #hda_definition = hou.hdaDefinition(node_type, asset_name + "_" + department, resolved_symlink_path)
+    hda_definition = next(definition for definition in definitions if definition.nodeTypeName() == asset_name + "_" + department)
     if hda_definition is not None:
         hda_definition.setPreferred(True)
+        return True
     else:
-        return None
+        print "decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path
+        return False
 
 '''
     Promote parameters from an inner node up to an outer node.

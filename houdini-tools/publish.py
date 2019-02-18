@@ -16,7 +16,9 @@ def publish_hda(publishWindow, selectedHDA, src):
 		comment = publishWindow.comment
 		hdaName = selectedHDA.type().name()
         department = publishWindow.elementName
-        body = project.get_body(hdaName.replace("_" + department, ""))
+        # TODO: UGLY HOTFIX FOR OLD ASSEMBLY & TOOL ASSETS
+        asset_name = hdaName.replace("_" + department, "") if department not in [Department.ASSEMBLY, Department.HDA] else hdaName.replace("_main", "")
+        body = project.get_body(asset_name)
 
         if body is None:
             message_gui.error("Asset not found in pipe.")
@@ -40,10 +42,14 @@ def publish_hda(publishWindow, selectedHDA, src):
                 os.chmod(dst, 0660)
             except:
                 pass
-            saveFile = hdaName + '.hdanc'
+			# TODO: UGLY HOTFIX FOR OLD ASSEMBLY ASSETS
+            saveFile = hdaName + "_" + Element.DEFAULT_NAME + ".hdanc" if department not in [Department.ASSEMBLY, Department.HDA] else asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
             dst = os.path.join(environment.get_hda_dir(), saveFile)
+            print("dst ", dst)
             hou.hda.installFile(dst)
-            hou.hda.uninstallFile(src, change_oplibraries_file=False)
+            definition = hou.hdaDefinition(selectedHDA.type().category(), selectedHDA.type().name(), dst)
+            definition.setPreferred(True)
+            #hou.hda.uninstallFile(src, change_oplibraries_file=False)
         else:
             message_gui.error('File does not exist', details=src)
 
