@@ -106,11 +106,37 @@ import hou, sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
 from byugui import CheckoutWindow, message_gui
 # DEBUGGING ONLY
-import inspect
+import signal
+#import inspect
+import datetime
+
+def sigterm_handler(signal, frame):
+    # TODO: Implement this
+    # get the time
+    # get tracebacks via http://docs.python.org/library/sys.html#sys.exc_info
+    #    and http://docs.python.org/library/traceback.html
+    #
+    # Attempt to write all of the above to a file
+    with open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_log.txt"), "a+") as f:
+        f.write(str(datetime.datetime.now()))
+        f.write(str(sys.exc_info()))
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, sigterm_handler)
+
+
 def lineno():
-    return inspect.currentframe().f_back.f_lineno
+    return "nah"
+    #return inspect.currentframe().f_back.f_lineno
 def method_name():
-    return sys._getframe(1).f_code.co_name
+    return "nah"
+    #return sys._getframe(1).f_code.co_name
+def super_print(message):
+
+    with open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_log.txt"), "a+") as f:
+        print(message)
+        #f.write("\n" + str(datetime.datetime.now()) + "\n")
+        f.write(message)
 # DEBUGGING END
 
 # I set this sucker up as a singleton. It's a matter of preference.
@@ -131,6 +157,8 @@ hda_definitions = {
 byu_geo_departments = [Department.MODIFY, Department.MATERIAL]
 byu_character_departments = [Department.HAIR, Department.CLOTH]
 
+hda_dir = Environment().get_hda_dir()
+
 # Update mode types
 class UpdateModes:
     SMART = "smart"
@@ -140,6 +168,10 @@ class UpdateModes:
     @classmethod
     def list_modes(cls):
         return [cls.SMART, cls.CLEAN, cls.FROZEN]
+
+    @classmethod
+    def mode_from_index(cls, index):
+        return [cls.SMART, cls.CLEAN, cls.FROZEN][index]
 
 # By default, we ignore "Asset Controls", so that we can put things in there without them being promoted.
 # See: inherit_parameters() method
@@ -167,11 +199,12 @@ def tab_in(parent, asset_name, already_tabbed_in_node=None, excluded_departments
     Easily callable method, meant for tool scripts
 '''
 def update_contents(node, asset_name, mode=UpdateModes.SMART):
+    #super_print("{0}() line {1}:\n\tasset: {2}\n\tmode: {3}\n\tnode type name: {4}".format(method_name(), lineno(), asset_name, mode, node.type().name()))
     if node.type().name() == "byu_set":
         update_contents_set(node, asset_name, mode=mode)
     elif node.type().name() == "byu_character":
         update_contents_character(node, asset_name, mode=mode)
-    elif node.type().name() == "byu_prop":
+    elif node.type().name() == "byu_geo":
         update_contents_geo(node, asset_name, mode=mode)
 
 '''
@@ -307,7 +340,7 @@ def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_depa
 '''
 def update_contents_character(node, asset_name, excluded_departments=[], mode=UpdateModes.SMART):
 
-    print "{0}() line {1}:\n\tcharacter: {2}\n\tmode: {3}".format(method_name(), lineno(), asset_name, mode)
+    ##super_print("{0}() line {1}:\n\tcharacter: {2}\n\tmode: {3}".format(method_name(), lineno(), asset_name, mode))
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
     body = Project().get_body(asset_name)
     if not body.is_asset() or body.get_type() != AssetType.CHARACTER or "byu_character" not in node.type().name():
@@ -339,7 +372,7 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
             destroy_if_there(inside, department)
 
     inside.layoutChildren()
-    print "{0}() returned {1}".format(method_name(), node)
+    ##super_print("{0}() returned {1}".format(method_name(), node))
     return node
 
 '''
@@ -472,10 +505,10 @@ def create_hda(asset_name, department):
 '''
 def update_content_node(parent, inside, asset_name, department, mode=UpdateModes.SMART, inherit_parameters=False, ignore_folders=this.default_ignored_folders):
 
-    print "{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}\n\tmode: {4}".format(method_name(), lineno(), asset_name, department, mode)
+    #super_print("{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}\n\tmode: {4}".format(method_name(), lineno(), asset_name, department, mode))
     # See if there's a content node with this department name already tabbed in.
     content_node = inside.node(department)
-    print "\tline {0}: content_node = {1}".format(lineno() - 1, content_node)
+    #super_print("\tline {0}: content_node = {1}".format(lineno() - 1, content_node))
 
     # If the content node exists.
     if content_node is not None:
@@ -487,19 +520,29 @@ def update_content_node(parent, inside, asset_name, department, mode=UpdateModes
             # Else, don't touch the node if it's being edited.
             else:
                 return content_node
+        # Else, we need to destroy the old node. This happens in SMART mode
+        else:
+            try:
+                content_node.destroy()
+            except Exception as e:
+                print(e)
 
+    is_published = published_definition(asset_name, department)
+    ##super_print("{0}() returned from published_definition() as {1}".format(method_name(), is_published))
     # This line checks to see if there's a published HDA with that name.
-    if published_definition(asset_name, department):
+    if is_published:
         # Only create it if it's in the pipe.
+        ##super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         content_node = inside.createNode(asset_name + "_" + department)
-        tab_into_correct_place(inside, content_node, department)
-        content_node.setName(department)
-        # Some nodes will promote their parameters to the top level
-        if inherit_parameters:
-            inherit_parameters_from_node(parent, content_node, mode, ignore_folders)
+        if content_node:
+            tab_into_correct_place(inside, content_node, department)
+            content_node.setName(department)
+            # Some nodes will promote their parameters to the top level
+            if inherit_parameters:
+                inherit_parameters_from_node(parent, content_node, mode, ignore_folders)
 
 
-    print "{0}() returned {1}".format(method_name(), content_node)
+    ##super_print("{0}() returned {1}".format(method_name(), content_node))
     return content_node
 
 '''
@@ -515,37 +558,49 @@ def destroy_if_there(inside, department):
 '''
 def published_definition(asset_name, department):
 
-    print "{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}".format(method_name(), lineno(), asset_name, department)
+    ##super_print("{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}".format(method_name(), lineno(), asset_name, department))
     # Set the node type correctly
     node_type = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
 
     # TODO: Get rid of this hotfix
     # !!! HOTFIX !!!
     # We have to append _main to the HDAs, because that's how they publish
     production_hda_filename = asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
     # !!! END HOTFIX !!!
+    ##super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
 
     # Get the HDA path, if doesn't exist return false
-    production_hda_path = os.path.join(Environment().get_hda_dir(), production_hda_filename)
-    if not os.path.exists(production_hda_path):
-        return False
+    production_hda_path = os.path.join(this.hda_dir, production_hda_filename)
+
+    try:
+        if not os.path.islink(os.path.join(Environment().get_project_dir(), "production", "hda", production_hda_filename)):
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+            return False
+    except Exception as e:
+        print (e)
+        ##super_print("{0}() line {1}:\n\tlocals: {2}\n\texception: {3}".format(method_name(), lineno(), str(locals()), str(e)))
 
     # This doesn't work unless you follow the symlink_path, I don't know why it works elsewhere
     resolved_symlink_path = os.readlink(production_hda_path)
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
 
     # Install the file and get definitions from it
     hou.hda.installFile(resolved_symlink_path)
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     definitions = hou.hda.definitionsInFile(resolved_symlink_path)
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
 
     # Get the HDA definition from production, make it preferred if exists
     hda_definition = next(definition for definition in definitions if definition.nodeTypeName() == asset_name + "_" + department)
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     if hda_definition is not None:
         hda_definition.setPreferred(True)
-        print "{0}() returned {1}".format(method_name(), True)
+        ##super_print("{0}() returned {1}".format(method_name(), True))
         return True
     else:
-        print "decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path
-        print "{0}() returned {1}".format(method_name(), False)
+        #super_print("decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path)
+        ##super_print("{0}() returned {1}".format(method_name(), False))
         return False
 
 '''
