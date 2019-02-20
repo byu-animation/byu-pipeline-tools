@@ -106,23 +106,10 @@ import hou, sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
 from byugui import CheckoutWindow, message_gui
 # DEBUGGING ONLY
-import signal
 import inspect
 import datetime
 
-def sigterm_handler(signal, frame):
-    # TODO: Implement this
-    # get the time
-    # get tracebacks via http://docs.python.org/library/sys.html#sys.exc_info
-    #    and http://docs.python.org/library/traceback.html
-    #
-    # Attempt to write all of the above to a file
-    with open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_log.txt"), "a+") as f:
-        f.write(str(datetime.datetime.now()))
-        f.write(str(sys.exc_info()))
-    sys.exit(0)
-
-signal.signal(signal.SIGTERM, sigterm_handler)
+#sys.stdout = open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_console_output.txt"), "a+")
 
 
 def lineno():
@@ -130,11 +117,12 @@ def lineno():
 def method_name():
     return sys._getframe(1).f_code.co_name
 def super_print(message):
-
     with open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_log.txt"), "a+") as f:
         print(message)
+        sys.stdout.flush()
         f.write("\n" + str(datetime.datetime.now()) + "\n")
         f.write(message)
+        f.flush()
 # DEBUGGING END
 
 # I set this sucker up as a singleton. It's a matter of preference.
@@ -491,6 +479,7 @@ def create_hda(asset_name, department):
     # Tab an instance of this new HDA into the asset you are working on
     try:
         hda_instance = inside.createNode(asset_name + "_" + department)
+        print('noce')
     except Exception as e:
         message_gui.error("HDA Creation Error. " + asset_name + "_" + department + " must not exist.")
     hda_instance.setName(department)
@@ -515,6 +504,7 @@ def update_content_node(parent, inside, asset_name, department, mode=UpdateModes
             # Clean is a destructive mode that will destroy it.
             if mode == UpdateModes.CLEAN:
                 content_node.destroy()
+                content_node = None
             # Else, don't touch the node if it's being edited.
             else:
                 return content_node
@@ -522,24 +512,38 @@ def update_content_node(parent, inside, asset_name, department, mode=UpdateModes
         else:
             try:
                 content_node.destroy()
+                content_node = None
             except Exception as e:
                 print(e)
-
-    is_published = published_definition(asset_name, department)
-    ##super_print("{0}() returned from published_definition() as {1}".format(method_name(), is_published))
+    try:
+        is_published = published_definition(asset_name, department)
+        super_print("{0}() returned from published_definition() as {1}".format(method_name(), is_published))
+    except:
+        is_published = False
+        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     # This line checks to see if there's a published HDA with that name.
     if is_published:
         # Only create it if it's in the pipe.
-        ##super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-        content_node = inside.createNode(asset_name + "_" + department)
+        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+        try:
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+            content_node = inside.createNode(asset_name + "_" + department)
+        except:
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+            pass
+        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         if content_node:
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             tab_into_correct_place(inside, content_node, department)
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             content_node.setName(department)
+            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             # Some nodes will promote their parameters to the top level
             if inherit_parameters:
+                #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
                 inherit_parameters_from_node(parent, content_node, mode, ignore_folders)
 
-
+    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     ##super_print("{0}() returned {1}".format(method_name(), content_node))
     return content_node
 
@@ -569,12 +573,13 @@ def published_definition(asset_name, department):
         definition = node_type.definition()
         if definition is None:
             continue
-        if asset_name+'_'+department in definition.libraryFilePath() and 'production' in definition.libraryFilePath() :
+        if asset_name + '_' + department in definition.libraryFilePath() and 'production' in definition.libraryFilePath():
             hda_path = definition.libraryFilePath()
             break
     if len(hda_path) < 1:
         super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         return False
+
     super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     # Install the file and get definitions from it
     hou.hda.installFile(hda_path)
@@ -649,7 +654,7 @@ def inherit_parameters_from_node(upper_node, inner_node, mode=UpdateModes.SMART,
     Helper function for create_hda()
 '''
 def tab_into_correct_place(inside, node, department):
-
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     # If the node belongs inside a BYU Character, do the following
     if department in this.byu_character_departments:
 
@@ -700,5 +705,6 @@ def tab_into_correct_place(inside, node, department):
                 node.setInput(0, geo)
                 shot_modeling.setInput(0, node)
 
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     inside.layoutChildren()
     return node
