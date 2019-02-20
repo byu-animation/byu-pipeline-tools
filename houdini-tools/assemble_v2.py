@@ -107,7 +107,7 @@ from byuam import Project, Department, Element, Environment, Body, Asset, Shot, 
 from byugui import CheckoutWindow, message_gui
 # DEBUGGING ONLY
 import signal
-#import inspect
+import inspect
 import datetime
 
 def sigterm_handler(signal, frame):
@@ -126,16 +126,14 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 
 
 def lineno():
-    return "nah"
-    #return inspect.currentframe().f_back.f_lineno
+    return inspect.currentframe().f_back.f_lineno
 def method_name():
-    return "nah"
-    #return sys._getframe(1).f_code.co_name
+    return sys._getframe(1).f_code.co_name
 def super_print(message):
 
     with open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_log.txt"), "a+") as f:
         print(message)
-        #f.write("\n" + str(datetime.datetime.now()) + "\n")
+        f.write("\n" + str(datetime.datetime.now()) + "\n")
         f.write(message)
 # DEBUGGING END
 
@@ -557,48 +555,46 @@ def destroy_if_there(inside, department):
     Check if a definition is the published definition or not
 '''
 def published_definition(asset_name, department):
-
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     ##super_print("{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}".format(method_name(), lineno(), asset_name, department))
     # Set the node type correctly
-    node_type = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
+    category = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
     #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-
-    # TODO: Get rid of this hotfix
-    # !!! HOTFIX !!!
-    # We have to append _main to the HDAs, because that's how they publish
-    production_hda_filename = asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
-    # !!! END HOTFIX !!!
-    ##super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-
-    # Get the HDA path, if doesn't exist return false
-    production_hda_path = os.path.join(this.hda_dir, production_hda_filename)
-
-    try:
-        if not os.path.islink(os.path.join(Environment().get_project_dir(), "production", "hda", production_hda_filename)):
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-            return False
-    except Exception as e:
-        print (e)
-        ##super_print("{0}() line {1}:\n\tlocals: {2}\n\texception: {3}".format(method_name(), lineno(), str(locals()), str(e)))
-
-    # This doesn't work unless you follow the symlink_path, I don't know why it works elsewhere
-    resolved_symlink_path = os.readlink(production_hda_path)
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+    hou.hda.reloadAllFiles()
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+    hda_path=""
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+    for node_type in category.nodeTypes().values():
+        definition = node_type.definition()
+        if definition is None:
+            continue
+        if asset_name+'_'+department in definition.libraryFilePath() and 'production' in definition.libraryFilePath() :
+            hda_path = definition.libraryFilePath()
+            break
+    if len(hda_path) < 1:
+        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+        return False
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     # Install the file and get definitions from it
-    hou.hda.installFile(resolved_symlink_path)
+    hou.hda.installFile(hda_path)
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    definitions = hou.hda.definitionsInFile(resolved_symlink_path)
+    definitions = hou.hda.definitionsInFile(hda_path)
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
 
     # Get the HDA definition from production, make it preferred if exists
     hda_definition = next(definition for definition in definitions if definition.nodeTypeName() == asset_name + "_" + department)
+    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     if hda_definition is not None:
         hda_definition.setPreferred(True)
+        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         ##super_print("{0}() returned {1}".format(method_name(), True))
         return True
     else:
+        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         #super_print("decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path)
         ##super_print("{0}() returned {1}".format(method_name(), False))
         return False

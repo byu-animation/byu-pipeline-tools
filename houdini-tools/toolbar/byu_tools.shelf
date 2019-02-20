@@ -22,5 +22,6 @@
     <memberTool name="checkout_tool"/>
     <memberTool name="publish_tool"/>
     <memberTool name="rollback_tool"/>
+    <memberTool name="tool_4"/>
   </toolshelf>
 </shelfDocument>
