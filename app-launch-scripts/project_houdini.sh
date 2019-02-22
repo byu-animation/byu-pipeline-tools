@@ -34,6 +34,7 @@ TRACTOR_AUTHOR=/opt/pixar/Tractor-2.2/lib/python2.7/site-packages
 export PYTHONPATH=${PYTHONPATH}:${HOUDINI_TOOLS}:${TRACTOR_AUTHOR}
 export HOUDINI_PATH=${HOUDINI_PATH}:${HOUDINI_TOOLS}:${BYU_PROJECT_DIR}"/production;&":${BYU_PROJECT_DIR}"/production/hda;&"
 export HOUDINI_DSO_PATH=${HOUDINI_DSO_PATH}:${BYU_PROJECT_DIR}"/production/dso;&"
+export HOUDINI_DEFAULT_RIB_TARGET="prman21.0.byu"
 
 export HOUDINI_MENU_PATH=${HOUDINI_TOOLS}"/houdini-menus;&"
 export HOUDINI_TOOLBAR_PATH=${BYU_PROJECT_DIR}"/production/tabs;&"
