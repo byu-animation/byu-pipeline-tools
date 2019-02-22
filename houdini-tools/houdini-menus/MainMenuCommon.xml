@@ -231,7 +231,9 @@ create_tool_hda.go()
 					<label>Generate XML</label>
 					<scriptCode scriptType="python">
 							<![CDATA[
-import byu_xml
+import menu_scripts
+menu_scripts.make_xml()
+
 							]]>
 						</scriptCode>
 				</scriptItem>
@@ -247,19 +249,8 @@ reload_scripts.go()
 					</scriptCode>
 				</scriptItem>
 
-			 <scriptItem id="h.reload_shelves">
-						<label>Create Grendel Digital Asset</label>
-						<scriptCode scriptType="python">
-							<![CDATA[
-hou.shelves.reloadShelfFiles()
-							]]>
-						</scriptCode>
-				</scriptItem>
 
-
-
-				</scriptItem>
-					<scriptItem id="h.clear_console">
+				<scriptItem id="h.clear_console">
 						<label>Clear Console</label>
 						<scriptCode scriptType="python">
 							<![CDATA[
