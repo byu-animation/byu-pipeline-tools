@@ -87,6 +87,7 @@ checkout.checkout_asset_go()
 						<![CDATA[
 import checkout
 checkout.checkout_tool_go()
+
 						]]>
 					</scriptCode>
 				</scriptItem>
@@ -230,8 +231,7 @@ create_tool_hda.go()
 					<label>Generate XML</label>
 					<scriptCode scriptType="python">
 							<![CDATA[
-import create_tool_hda
-create_tool_hda.go()
+import byu_xml
 							]]>
 						</scriptCode>
 				</scriptItem>
