@@ -19,28 +19,25 @@ from byugui import selection_gui, message_gui
 from byuam.body import AssetType
 from byuam.project import Project
 from byuam.environment import Environment, Department, Status
+import publish
+from byugui.publish_gui import PublishWindow
 
 
-def confirmWriteSetReferences():
+global maya_publish_dialog
+
+def confirmWriteSetReferences(body=None):
 
     response = showConfirmationPopup()
     if response == "Yes":
         filePath = pm.sceneName()
         fileDir = os.path.dirname(filePath)
         proj = Project()
-        checkout = proj.get_checkout(fileDir)
-        bodyName = checkout.get_body_name()
-        deptName = checkout.get_department_name()
-        elemName = checkout.get_element_name()
-        body = proj.get_body(bodyName)
-        element = body.get_element(deptName, name=elemName)
+        if not body:
+            checkout = proj.get_checkout(fileDir)
+            bodyName = checkout.get_body_name()
+            body = proj.get_body(bodyName)
 
-        print("filePath = " + filePath)
-        print("fileDir = " + fileDir)
-        print("bodyname = " + bodyName) #this is the scene number i.e. "a001"
-        print("deptName = " + deptName) #this is the department i.e. "anim"
-        print("elemName = " + elemName) #this is "main", idk what else it can be
-        refsFilePath = os.path.join(Project().get_assets_dir(), bodyName)    # I'm pretty sure this is how you get the name of the set?
+        refsFilePath = os.path.join(Project().get_assets_dir(), body.get_name())    # I'm pretty sure this is how you get the name of the set?
         #refsFilePath = "/groups/dand/production/assets/b005_hallway" #TEMP ONLY!
 
         if body.is_asset():
@@ -52,9 +49,22 @@ def confirmWriteSetReferences():
                 # I don't think we want to export anything in this case, just stop it
                 showFailurePopup('No set found in current scene.')
 
+def getLoadedReferences():
+	references = pm.ls(references=True, transforms=True)
+	loaded=[]
+	print "Loaded References: "
+	for ref in references:
+		print "Checking status of " + ref
+		try:
+			if ref.isLoaded():
+				loaded.append(ref)
+		except:
+			print "Warning: " + ref + " was not associated with a reference file"
+	return loaded
+
 # Creates a list of all reference files in the current set
 def exportReferences(filePath):
-    refsSelection = reference_selection.getLoadedReferences()
+    refsSelection = getLoadedReferences()
     print("refsSelection = ", refsSelection)
 
     allReferences = [] #this will be the JSON array with one {} obj for each ref
@@ -167,5 +177,24 @@ def showFailurePopup(msg):
                                      , cancelButton  = 'OK'
                                      , dismissString = 'OK')
 
-def go():
-    confirmWriteSetReferences()
+def post_publish():
+    global maya_publish_dialog
+    element = maya_publish_dialog.result
+    confirmWriteSetReferences(Project().get_body(element.get_parent()))
+
+def go(body=None):
+    if not body:
+        parent = publish.maya_main_window()
+    	filePath = pm.sceneName()
+        fileDir = os.path.dirname(filePath)
+        proj = Project()
+        checkout = proj.get_checkout(fileDir)
+    	if not checkout:
+    		filePath = Environment().get_user_workspace()
+    		filePath = os.path.join(filePath, 'untitled.mb')
+    		filePath = pipeline_io.version_file(filePath)
+    	global maya_publish_dialog
+    	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL])
+    	maya_publish_dialog.finished.connect(post_publish)
+    else:
+        confirmWriteSetReferences(body)

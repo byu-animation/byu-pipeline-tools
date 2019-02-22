@@ -123,6 +123,7 @@ def super_print(message):
         f.write("\n" + str(datetime.datetime.now()) + "\n")
         f.write(message)
         f.flush()
+
 # DEBUGGING END
 
 # I set this sucker up as a singleton. It's a matter of preference.
@@ -193,6 +194,7 @@ def update_contents(node, asset_name, mode=UpdateModes.SMART):
     elif node.type().name() == "byu_geo":
         update_contents_geo(node, asset_name, mode=mode)
 
+
 '''
     This function tabs in a BYU Set and fills its contents with other BYU Geo nodes based on JSON data
 '''
@@ -204,11 +206,10 @@ def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLE
         message_gui.error("Must be a set.")
 
     node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_set")
-    node.parm("set").set(set_name)
-    node.parm("data").set({"set_name": set_name})
+    node.setName(set_name)
 
     # Update contents in the set
-    update_contents_set(inside, set_name, mode)
+    update_contents_set(node, set_name, mode)
     return node
 
 '''
@@ -227,13 +228,18 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
         message_gui.error("No valid JSON file for " + set_name)
         return
 
+    node.parm("asset_name").set(set_name)
+    data = node.parm("data").evalAsJSONMap()
+    data["asset_name"] = set_name
+    node.parm("data").set(data)
+
     inside = node.node("inside")
 
     # Utility function to find if a node's asset and version number match an entry in the set's JSON
     def matches_reference(child, reference):
 
         # Grab data off the node. This data is stored as a key-value map parameter
-        data = current_child.parm("data").evalAsJSONMap()
+        data = child.parm("data").evalAsJSONMap()
 
         # If it matches both the asset_name and version_number, it's a valid entry in the list
         if data["asset_name"] == reference["asset_name"] and data["version_number"] == reference["version_number"]:
@@ -247,16 +253,9 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
     # Smart updating will only destroy assets that no longer exist in the Set's JSON list
     if mode == UpdateModes.SMART:
 
-        # Check if each child still exists in the set's JSON
-        for child in current_children:
-            matches = False
-            for reference in set_data:
-                matches = matches_reference(child, set_data)
-                if matches:
-                    break
-            # If it doesn't, destroy it
-            if not matches:
-                child.destroy()
+        non_matching = [child for child in current_children if len([reference for reference in set_data if matches_reference(child, reference)]) == 0]
+        for non_match in non_matching:
+            non_match.destroy()
 
     # Clean updating will destroy all children.
     elif mode == UpdateModes.CLEAN:
@@ -264,11 +263,18 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
         # Clear all child nodes.
         inside.deleteItems(inside.children())
 
+    # Grab current children again
+    current_children = [child for child in inside.children() if child.type().name() in ["byu_set", "byu_character", "byu_geo"]]
+
     # Tab-in/update all assets in list
     for reference in set_data:
 
+        body = Project().get_body(reference["asset_name"])
+        if not body.is_asset() or body.get_type() == AssetType.SET:
+            continue
+
         # Tab the subnet in if it doesn't exist, otherwise update_contents
-        subnet = [child for child in current_children if matches_reference(child, reference)]
+        subnet = next((child for child in current_children if matches_reference(child, reference)), None)
         if subnet is None:
             subnet = tab_in(inside, reference["asset_name"])
         else:
@@ -280,7 +286,7 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
                 # Pull parm from node
                 parm = subnet.parm(key)
                 # If a non-default value is there, it most likely came from a user. Don't overwrite it.
-                if parm.isAtDefault():
+                if parm and parm.isAtDefault():
                     parm.set(reference[key])
 
         # Override parameters in the set
@@ -310,7 +316,7 @@ def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_depa
     # If there's an already tabbed in node, set it to that node
     node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_character")
     node.setName(asset_name.title(), unique_name=True)
-    node.parm("character").set(asset_name)
+    node.parm("asset_name").set(asset_name)
 
     # Set the asset_name data tag
     data = node.parm("data").evalAsJSONMap()
@@ -332,7 +338,11 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
     if not body.is_asset() or body.get_type() != AssetType.CHARACTER or "byu_character" not in node.type().name():
         message_gui.error("Must be a character.")
         return None
-    elements = [d for d in body.default_departments() if len(body.list_elements(d)) > 0]
+
+    data = node.parm("data").evalAsJSONMap()
+    data["asset_name"] = asset_name
+    node.parm("data").set(data)
+
     inside = node.node("inside")
 
     # Make sure the geo is set correctly
@@ -340,6 +350,7 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
     if geo is not None:
         if mode == UpdateModes.SMART:
             update_contents_geo(geo, asset_name, excluded_departments, mode)
+
         elif mode == UpdateModes.CLEAN:
             geo.destroy()
             geo = byu_geo(inside, asset_name, excluded_departments=excluded_departments, character=True)
@@ -352,13 +363,15 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
         if department not in excluded_departments:
 
             update_content_node(node, inside, asset_name, department, mode)
+
         # If the department is excluded, we should delete it.
         elif mode == UpdateModes.CLEAN:
 
             destroy_if_there(inside, department)
 
+
     inside.layoutChildren()
-    ##super_print("{0}() returned {1}".format(method_name(), node))
+    super_print("{0}() returned {1}".format(method_name(), node))
     return node
 
 '''
@@ -385,6 +398,7 @@ def byu_geo(parent, asset_name, already_tabbed_in_node=None, excluded_department
 
     # Set the contents to the nodes that belong to the asset
     update_contents_geo(node, asset_name, excluded_departments, mode)
+
     return node
 
 '''
@@ -415,11 +429,14 @@ def update_contents_geo(node, asset_name, excluded_departments=[], mode=UpdateMo
         # If the department is not excluded, tab-in/update the content node like normal
         if department not in excluded_departments:
             update_content_node(node, inside, asset_name, department, mode, inherit_parameters = department == Department.MODIFY)
+
         # If the department is excluded, we should delete it.
         elif mode == UpdateModes.CLEAN:
             destroy_if_there(inside, department)
 
+
     inside.layoutChildren()
+
     return node
 
 '''
@@ -492,59 +509,42 @@ def create_hda(asset_name, department):
 '''
 def update_content_node(parent, inside, asset_name, department, mode=UpdateModes.SMART, inherit_parameters=False, ignore_folders=this.default_ignored_folders):
 
-    #super_print("{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}\n\tmode: {4}".format(method_name(), lineno(), asset_name, department, mode))
     # See if there's a content node with this department name already tabbed in.
     content_node = inside.node(department)
-    #super_print("\tline {0}: content_node = {1}".format(lineno() - 1, content_node))
 
     # If the content node exists.
     if content_node is not None:
-        # Check if the node is currently being edited.
-        if not content_node.matchesCurrentDefinition():
-            # Clean is a destructive mode that will destroy it.
-            if mode == UpdateModes.CLEAN:
-                content_node.destroy()
-                content_node = None
-            # Else, don't touch the node if it's being edited.
-            else:
-                return content_node
-        # Else, we need to destroy the old node. This happens in SMART mode
-        else:
-            try:
-                content_node.destroy()
-                content_node = None
-            except Exception as e:
-                print(e)
+        # Delete it if we're in clean mode
+        if mode == UpdateModes.CLEAN:
+            content_node.destroy()
+            content_node = None
+
+    # Check if there's a published asset with this name
     try:
         is_published = published_definition(asset_name, department)
-        super_print("{0}() returned from published_definition() as {1}".format(method_name(), is_published))
     except:
         is_published = False
-        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+
+    # If there isn't a published asset, delete the impostor!
+    if not is_published and content_node:
+        content_node.destroy()
+
     # This line checks to see if there's a published HDA with that name.
-    if is_published:
+    elif is_published and not content_node:
         # Only create it if it's in the pipe.
-        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
         try:
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             content_node = inside.createNode(asset_name + "_" + department)
         except:
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-            pass
-        #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+            content_node = None
+        # Check if node was successfully created
         if content_node:
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             tab_into_correct_place(inside, content_node, department)
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             content_node.setName(department)
-            #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
             # Some nodes will promote their parameters to the top level
             if inherit_parameters:
-                #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
                 inherit_parameters_from_node(parent, content_node, mode, ignore_folders)
 
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    ##super_print("{0}() returned {1}".format(method_name(), content_node))
+
     return content_node
 
 '''
@@ -554,54 +554,40 @@ def destroy_if_there(inside, department):
     node = inside.node(department)
     if node is not None:
         node.destroy()
+    node = None
 
 '''
     Check if a definition is the published definition or not
 '''
 def published_definition(asset_name, department):
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    ##super_print("{0}() line {1}:\n\tasset_name: {2}\n\tdepartment: {3}".format(method_name(), lineno(), asset_name, department))
     # Set the node type correctly
     category = hou.objNodeTypeCategory() if department in this.byu_character_departments else hou.sopNodeTypeCategory()
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
     hou.hda.reloadAllFiles()
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    hda_path=""
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    for node_type in category.nodeTypes().values():
-        definition = node_type.definition()
-        if definition is None:
-            continue
-        if asset_name + '_' + department in definition.libraryFilePath() and 'production' in definition.libraryFilePath():
-            hda_path = definition.libraryFilePath()
-            break
-    if len(hda_path) < 1:
-        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+
+    # Get the HDA File Path
+    hda_name = asset_name + "_" + department
+    hda_file = hda_name + "_main.hdanc"
+    new_hda_path = os.path.join(Project().get_project_dir(), "production", "hda", hda_file)
+    old_hda_path = os.path.join(Project().get_project_dir(), "production", "otls", hda_file)
+
+    hda_path = ""
+    # Does it exist?
+    if os.path.islink(new_hda_path):
+        hda_path = os.readlink(new_hda_path)
+    elif os.path.islink(old_hda_path):
+        hda_path = os.readlink(old_hda_path)
+    else:
         return False
 
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    # Install the file and get definitions from it
+    # If it does, grab the definition
     hou.hda.installFile(hda_path)
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    definitions = hou.hda.definitionsInFile(hda_path)
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+    hda_definition = hou.hdaDefinition(category, hda_name, hda_path)
 
-    # Get the HDA definition from production, make it preferred if exists
-    hda_definition = next(definition for definition in definitions if definition.nodeTypeName() == asset_name + "_" + department)
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-    #super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+    # If the definition failed for some reason, don't tab it in.
     if hda_definition is not None:
         hda_definition.setPreferred(True)
-        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-        ##super_print("{0}() returned {1}".format(method_name(), True))
         return True
     else:
-        super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
-        #super_print("decided not to tab in " + str(node_type) + " type node named " + asset_name + "_" + department + " from " + resolved_symlink_path)
-        ##super_print("{0}() returned {1}".format(method_name(), False))
         return False
 
 '''
@@ -654,7 +640,7 @@ def inherit_parameters_from_node(upper_node, inner_node, mode=UpdateModes.SMART,
     Helper function for create_hda()
 '''
 def tab_into_correct_place(inside, node, department):
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+
     # If the node belongs inside a BYU Character, do the following
     if department in this.byu_character_departments:
 
@@ -705,6 +691,33 @@ def tab_into_correct_place(inside, node, department):
                 node.setInput(0, geo)
                 shot_modeling.setInput(0, node)
 
-    super_print("{0}() line {1}:\n\tlocals: {2}".format(method_name(), lineno(), str(locals())))
+
     inside.layoutChildren()
     return node
+
+def rebuildAllAssets():
+    # Recursively go through each node, and push the build button if exists.
+
+    # Initialize stack.
+    stack = []
+
+    # Start at root.
+    stack.append(hou.node("/obj"))
+
+    # While stack is not empty,
+    while len(stack) > 0:
+        # Pop off the latest entry
+        parent = stack.pop()
+
+        # Re-grab children each generation (so that the results of the previous "build" apply
+        for child in parent.children():
+
+            # Add to stack
+            stack.append(child)
+
+            # Check if it is a dynamic content subnet, and press the build button. Else, continue.
+            type_name = child.type().name()
+            if "byu_geo" in type_name or "byu_character" in type_name or "byu_set" in type_name:
+                build_button = child.parm("build")
+                if build_button:
+                    build_button.pressButton()
