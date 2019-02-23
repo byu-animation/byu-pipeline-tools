@@ -442,23 +442,23 @@ def update_contents_geo(node, asset_name, excluded_departments=[], mode=UpdateMo
 '''
     Creates new content HDAs
 '''
-def create_hda(asset_name, department):
+def create_hda(asset_name, department, already_tabbed_in_node=None):
 
     # Check if this body is an asset. If not, return error.
     body = Project().get_body(asset_name)
     if not body.is_asset():
         message_gui.error("Must be an asset of type PROP or CHARACTER.")
-        return
+        return None
 
     # Check if it is a set.
     if body.get_type() == AssetType.SET:
         message_gui.error("Asset must be a PROP or CHARACTER.")
-        return
+        return None
 
     # Check if the user is trying to create a Hair or Cloth asset for a Prop on accident.
     if body.get_type() == AssetType.PROP and (department == Department.HAIR or department == Department.CLOTH):
         message_gui.error("Hair and cloth should only be made for characters.")
-        return
+        return None
 
     # Create element if does not exist.
     element = body.get_element(department, name=Element.DEFAULT_NAME, force_create=True)
@@ -476,7 +476,7 @@ def create_hda(asset_name, department):
     checkout_file = element.checkout(username)
 
     # Tab in the parent asset that will hold this checked out HDA
-    node = tab_in(hou.node("/obj"), asset_name, excluded_departments=[department])
+    node = already_tabbed_in_node if already_tabbed_in_node else tab_in(hou.node("/obj"), asset_name, excluded_departments=[department])
 
     # If it's a character and it's not a hair or cloth asset, we need to reach one level deeper.
     if body.get_type() == AssetType.CHARACTER and department not in this.byu_character_departments:
@@ -503,6 +503,8 @@ def create_hda(asset_name, department):
     tab_into_correct_place(inside, hda_instance, department)
     hda_instance.allowEditingOfContents()
     hda_instance.setSelected(True, clear_all_selected=True)
+
+    return hda_instance
 
 '''
     Updates a content node.
@@ -721,3 +723,90 @@ def rebuildAllAssets():
                 build_button = child.parm("build")
                 if build_button:
                     build_button.pressButton()
+
+def convertV1_to_V2(nodes):
+    for node in nodes:
+        geometry = next((child for child in node.children() if child.type().name() == "geo"), None)
+        shopnet = next((child for child in node.children() if child.type().name() == "shopnet"), None)
+
+        # If there's not a geometry network inside that has the same name as the operator,
+        # then it's probably not an old BYU asset that we know how to deal with, so skip it.
+        if not geometry or not shopnet or not geometry.name() not in node.type().name() or not geometry.name() in shopnet.name():
+            continue
+
+        root = geometry.node("hide_geo")
+        if not root:
+            continue
+
+        parent = node.parent()
+        output = geometry.displayNode()
+
+        # Find descendants of the root node, these are the old components
+        descendants = []
+        stack = []
+        stack.append(root)
+        while len(stack) > 0:
+            ancestor = stack.pop()
+            descendants.append(ancestor)
+            for output in ancestor.outputs():
+                stack.append(output)
+
+        # Tab in a V2 Dynamic Content Subnet
+        asset_name = geometry.name()
+        new_node = tab_in(parent, asset_name, excluded_departments=[Department.MODIFY, Department.MATERIAL])
+
+        # Copy old components into a modify node
+        modify_node = create_hda(asset_name, Department.MODIFY, already_tabbed_in_node=new_node)
+        hou.copyNodesTo(descendants, modify_node)
+
+        # Copy old components into a material node
+        material_node = create_hda(asset_name, Department.MATERIAL, already_tabbed_in_node=new_node)
+        hou.copyNodesTo(shopnet.children(), material_node.node("shopnet/shaders"))
+
+        # Do material assignment as much as possible
+        # TODO: riley
+
+        # Name the nodes
+        node.setName(asset_name + "_old")
+        new_node.setName(asset_name + "_new")
+
+        # Put them both into a network box, so we can see that they are related.
+        box = parent.createNetworkBox()
+        box.addItem(node)
+        box.addItem(new_node)
+        box.fitAroundContents()
+        box.setComment(node.type().name().replace("_main", "").title())
+        parent.layoutChildren()
+
+'''
+    The user has selected a bunch of nodes/network boxes and this should sort out which is which,
+    so that it can commit the conversions for those groups.
+'''
+def commit_conversions():
+
+    # Find all boxes that have nodes that were made by the conversion script
+    boxes = []
+    for item in hou.selectedItems():
+        if not isinstance(item, hou.NetworkBox):
+            continue
+        for a in item.nodes():
+            if "_old" not in a.name() and "_new" not in a.name():
+                continue
+            for b in item.nodes():
+                if "_old" not in b.name() or "_new" not in b.name():
+                    continue
+                if a.name()[:-4] not in b.name():
+                    continue
+                boxes.append(item)
+
+    # Don't go on unless there's a valid network box
+    if len(boxes) < 1:
+        message_gui.error("There aren't any network boxes created by the conversion script.")
+        return
+
+    for box in boxes:
+        old_node = next(node for nodes in box.nodes() if "_old" in node.name())
+        new_node = next(node for nodes in box.nodes() if "_new" in node.name())
+
+        # commit old_node
+        # commit new_node

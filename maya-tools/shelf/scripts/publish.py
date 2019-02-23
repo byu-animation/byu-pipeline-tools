@@ -73,6 +73,7 @@ def publishElement(element, user, src, comment):
 	print 'Publish Complete. Begin Exporting Alembic, or JSON if set'
 	body = Project().get_body(element.get_parent())
 	if body and body.is_asset() and body.get_type() == AssetType.SET:
+		alembic_exporter.go(element=element)
 		json_exporter.go(body)
 	else:
 		alembic_exporter.go(element=element)
