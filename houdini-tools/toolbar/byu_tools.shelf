@@ -25,5 +25,6 @@
     <memberTool name="xml_tool"/>
     <memberTool name="reload_shelves"/>
     <memberTool name="clear_console"/>
+    <memberTool name="mass_xml"/>
   </toolshelf>
 </shelfDocument>

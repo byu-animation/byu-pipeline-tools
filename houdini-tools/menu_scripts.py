@@ -36,6 +36,22 @@ def xml_callBack():
         print e.args
         message_gui.error('There was a problem',e.args)
 
+
+def mass_xml():
+    project=Project()
+
+    errors=[]
+    for asset in project.list_assets():
+        try:
+            byu_xml.writeXML(asset)
+
+        except Exception as e:
+            print asset
+            errors.append(asset)
+
+    if len(errors)>0:
+        print 'failed generating xml for: ' + str(errors)
+
 def make_xml():
 
     if len(hou.selectedNodes()) > 0:

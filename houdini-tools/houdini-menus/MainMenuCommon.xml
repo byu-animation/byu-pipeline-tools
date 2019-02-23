@@ -238,6 +238,16 @@ menu_scripts.make_xml()
 						</scriptCode>
 				</scriptItem>
 
+				<scriptItem id="h.mass_xml">
+						<label>Mass XML</label>
+						<scriptCode scriptType="python">
+							<![CDATA[
+import menu_scripts
+menu_scripts.mass_xml()
+							]]>
+						</scriptCode>
+				</scriptItem>
+
 
 				<scriptItem id="h.reload_scripts">
 					<label>Reload Scripts</label>
