@@ -194,10 +194,27 @@ def update_contents(node, asset_name, mode=UpdateModes.SMART):
     elif node.type().name() == "byu_geo":
         update_contents_geo(node, asset_name, mode=mode)
 
+def subnet_type(asset_name):
+    body = Project().get_body(asset_name)
+    if body is None or not body.is_asset():
+        message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
+        return
+    if body.get_type() == AssetType.CHARACTER:
+        return "byu_character"
+    elif body.get_type() == AssetType.PROP:
+        return "byu_geo"
+    elif body.get_type() == AssetType.SET:
+        return "byu_set"
+    else:
+        message_gui.error("Pipeline error: this asset isn't a character, prop or set.")
+        return
+
+
 
 '''
     This function tabs in a BYU Set and fills its contents with other BYU Geo nodes based on JSON data
 '''
+
 def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLEAN):
 
     # Check if it's a set and that it exists

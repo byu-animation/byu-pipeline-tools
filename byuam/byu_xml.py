@@ -50,7 +50,11 @@ def writeXML(assetName='None',context='OBJ'):
             os.makedirs(project.get_tabs_dir())
 
         sym=os.path.join(project.get_tabs_dir(),assetName+'.shelf')
-        os.symlink(path,sym)
 
-    except:
+        if os.path.exists(sym):
+            os.unlink(sym)
+        os.link(path,sym)
+
+    except Exception as e:
+        print e
         raise Exception('Failed to generate XML for: '+ assetName)

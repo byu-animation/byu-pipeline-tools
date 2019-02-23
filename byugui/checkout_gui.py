@@ -121,7 +121,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 
 			if dept in Department.ASSET_DEPTS:
 				for asset in self.project.list_assets():
-					print(asset)
+					#print(asset)
 					if not self.show_published.isChecked() or self.hasPreviousPublish(asset, dept):
 						asset_array = asset.split("_")
 						firstelement = element_list.findItems(asset_array[0], 0, 0)
@@ -140,7 +140,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 						element_list.currentItemChanged.connect(self.set_current_item)
 			elif dept in Department.SHOT_DEPTS:
 				for shot in self.project.list_shots():
-					print(shot)
+					#print(shot)
 					if not self.show_published.isChecked() or self.hasPreviousPublish(shot, dept):
 						shot_array = shot.split("_")
 						firstelement = element_list.findItems(shot_array[0], 0, 0)
@@ -245,4 +245,3 @@ if __name__ == '__main__':
 	app = QtWidgets.QApplication(sys.argv)
 	ex = CheckoutWindow(app)
 	sys.exit(app.exec_())
-
