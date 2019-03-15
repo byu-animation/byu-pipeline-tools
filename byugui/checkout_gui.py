@@ -224,7 +224,7 @@ class CheckoutWindow(QtWidgets.QWidget):
 		current_user = self.environment.get_current_username()
 		current_dept = self.dept_list[self.dept_tabs.currentIndex()]
 		asset_obj = self.project.get_body(self.current_item)
-		element_obj = asset_obj.get_element(current_dept)
+		element_obj = asset_obj.get_element(current_dept,force_create=True)
 		element_path = element_obj.checkout(current_user)
 		if element_path != None:
 			self.result = element_path

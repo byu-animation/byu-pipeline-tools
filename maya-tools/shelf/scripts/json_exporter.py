@@ -11,7 +11,8 @@ import maya.cmds as mc
 import maya.mel as mel
 import pymel.core as pm
 from byuam import Project
-import os
+from byuam import pipeline_io
+import os, sys
 import shutil
 import json
 import reference_selection
@@ -21,9 +22,15 @@ from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 import publish
 from byugui.publish_gui import PublishWindow
+from byugui.item_list import SelectFromList
+from PySide2 import QtCore
+from PySide2 import QtWidgets
+from PySide2.QtCore import Signal, Slot
+
 
 
 global maya_publish_dialog
+global select_from_list_dialog
 
 def confirmWriteSetReferences(body=None):
 
@@ -37,17 +44,38 @@ def confirmWriteSetReferences(body=None):
             bodyName = checkout.get_body_name()
             body = proj.get_body(bodyName)
 
-        refsFilePath = os.path.join(Project().get_assets_dir(), body.get_name())    # I'm pretty sure this is how you get the name of the set?
-        #refsFilePath = "/groups/dand/production/assets/b005_hallway" #TEMP ONLY!
-
         if body.is_asset():
             if body.get_type() == AssetType.SET:
                 print("SET OK")
+                element = body.get_element(Department.MODEL)
+                refsFilePath = os.path.join(Project().get_assets_dir(), element.get_cache_dir())
                 exportReferences(refsFilePath)
             else:
                 print("NOT A SET")
-                # I don't think we want to export anything in this case, just stop it
                 showFailurePopup('No set found in current scene.')
+
+
+def confirmWriteShotReferences(body=None):
+
+    response = showConfirmationPopup()
+    if response == "Yes":
+        filePath = pm.sceneName()
+        filDir = os.path.dirname(filePath)
+        proj = Project()
+        if not body:
+            checkout = proj.get_checkout(fileDir)
+            bodyName = checkout.get_body_name()
+            body = proj.get_body(bodyName)
+
+        if body.is_shot():
+            print("SHOT OK")
+            element = body.get_element(Department.ANIM)
+            refsFilePath = os.path.join(Project().get_assets_dir(), element.get_cache_dir())
+            export_shot(refsFilePath)
+        else:
+            print("NOT A SHOT")
+            showFailurePopup('No set found in current scene.')
+
 
 def getLoadedReferences():
 	references = pm.ls(references=True, transforms=True)
@@ -62,11 +90,99 @@ def getLoadedReferences():
 			print "Warning: " + ref + " was not associated with a reference file"
 	return loaded
 
+def export_shot(filePath):
+    refsSelection = getLoadedReferences()
+
+    props = []
+    characters = []
+    sets = []
+    for ref in refsSelection:
+        refPath = pm.referenceQuery(unicode(ref), filename=True)
+        refNodes = pm.referenceQuery(unicode(refPath), nodes=True)
+        rootNode = pm.ls(refNodes[0])[0]
+        currRefName, currRefVerNum = getReferenceName(rootNode)
+        body = Project().get_body(currRefName)
+        if not body or not body.is_asset():
+            print "Asset \"{0}\" does not exist.".format(currRefName)
+            continue
+        if body.get_type() == AssetType.PROP:
+            props.append({"asset_name" : currRefName, "version_number" : int(currRefVerNum if len(currRefVerNum) > 0 else 0)})
+        elif body.get_type() == AssetType.CHARACTER:
+            characters.append({"asset_name" : currRefName, "version_number" : int(currRefVerNum if len(currRefVerNum) > 0 else 0)})
+        else:
+            parent_is_set = False
+            parent_node = rootNode.getParent()
+            while parent_node is not None:
+                asset_name, _ = getReferenceName(parent_node)
+                parent_body = Project().get_body(asset_name)
+                if parent_body is not None and parent_body.is_asset() and parent_body.get_type() == AssetType.SET:
+                    parent_is_set = True
+                    break
+                parent_node = parent_node.parent_node()
+            if parent_is_set:
+                continue
+            sets.append({"asset_name" : currRefName, "version_number" : int(currRefVerNum if len(currRefVerNum) > 0 else 0)})
+
+    print "props: {0}\ncharacters: {1}\nsets: {2}".format(props, characters, sets)
+
+    jsonCharacters = json.dumps(characters)
+    path = os.path.join(filePath, "characters.json")
+    with open(path, "w") as f:
+        f.write(jsonCharacters)
+        f.close()
+
+    jsonSets = json.dumps(sets)
+    path = os.path.join(filePath, "sets.json")
+    with open(path, "w") as f:
+        f.write(jsonSets)
+        f.close()
+
+    response = showAnimatedPropPopup()
+    if response == "No":
+        showSuccessPopup()
+        return
+
+    global select_from_list_dialog
+    def write_animated_props():
+        animated_props = select_from_list_dialog.animated_props
+        print "writing animated props: {0}".format(animated_props)
+        animated_prop_jsons = []
+        for animated_prop in animated_props:
+            animated_prop_name = animated_prop.split(", version")[0]
+            animated_prop_number = animated_prop.split(", version")[1]
+            animated_prop_jsons.append({"asset_name" : animated_prop_name, "version_number": animated_prop_number, "animated" : True})
+        if len(animated_prop_jsons) < 1:
+            return
+        jsonAnimatedProps = json.dumps(animated_prop_jsons)
+        path = os.path.join(filePath, "animated_props.json")
+        with open(path, "w") as f:
+            f.write(jsonAnimatedProps)
+            f.close()
+        showSuccessPopup()
+
+    select_from_list_dialog = SelectFromList(parent=maya_main_window(), multiple_selection=True)
+    select_from_list_dialog.setWindowTitle("Select any animated props")
+    props_and_nums = [prop["asset_name"] + ", version: " + str(prop["version_number"]) for prop in props]
+    select_from_list_dialog.setList(props_and_nums)
+    select_from_list_dialog.filePath = filePath
+    select_from_list_dialog.selected_list.connect(write_animated_props)
+    select_from_list_dialog.show()
+    #AnimatedPropWriter(filePath, props)
+    #select_from_list_dialog.show()
+
+def maya_main_window():
+	'''Return Maya's main window'''
+	for obj in QtWidgets.qApp.topLevelWidgets():
+		if obj.objectName() == 'MayaWindow':
+			return obj
+	raise RuntimeError('Could not find MayaWindow instance')
+
 # Creates a list of all reference files in the current set
 def exportReferences(filePath):
     refsSelection = getLoadedReferences()
     print("refsSelection = ", refsSelection)
 
+    #try:
     allReferences = [] #this will be the JSON array with one {} obj for each ref
     for ref in refsSelection:
         currRefObj = {}
@@ -74,60 +190,86 @@ def exportReferences(filePath):
         refPath = pm.referenceQuery(unicode(ref), filename=True)
         #print("\t Curr refpath:", refPath)
         refNodes = pm.referenceQuery(unicode(refPath), nodes=True )
-        #print("\t Curr refNode:", refNodes)
         rootNode = pm.ls(refNodes[0])[0]
-        #print("\t Curr rootNode:", rootNode)
+        rootNodes = pm.ls(refNodes[0])
+        print("\t Curr refNodes: ", refNodes)
+        print("\t Curr rootNode: ", rootNode)
+        print("\t Curr rootNodes:", rootNodes)
         currRefName, currRefVerNum = getReferenceName(rootNode)
         print("\t CurrRefName:", currRefName)
+
+        body = Project().get_body(currRefName)
+        if not body or not body.is_asset() or body.get_type() != AssetType.PROP:
+            print "The asset %s does not exist as a prop, skipping.".format(currRefName)
+            continue
+        element = body.get_element(Department.MODEL)
 
         # Check if verNum is nothing - if so, we need to make it be an int 0
         if not currRefVerNum:
             currRefVerNum = 0
 
-        # Get transform data
-        tx = pm.getAttr(rootNode + '.translateX')
-        ty = pm.getAttr(rootNode + '.translateY')
-        tz = pm.getAttr(rootNode + '.translateZ')
-        rx = pm.getAttr(rootNode + '.rotateX')
-        ry = pm.getAttr(rootNode + '.rotateY')
-        rz = pm.getAttr(rootNode + '.rotateZ')
-        sx = pm.getAttr(rootNode + '.scaleX')
-        sy = pm.getAttr(rootNode + '.scaleY')
-        sz = pm.getAttr(rootNode + '.scaleZ')
+        def strip_reference(input):
+            i = input.rfind(":")
+            if i == -1:
+                return input
+            return input[i + 1:]
+
+        firstMesh = None
+        path = ""
+        stack = []
+        stack.append(rootNode)
+        while len(stack) > 0 and firstMesh is None:
+            curr = stack.pop()
+            path = path + "/" + strip_reference(curr.name())
+            for child in curr.getChildren():
+                if isinstance(child, pm.nodetypes.Shape):
+                    firstMesh = child
+                    path = path + "/" + strip_reference(child.name())
+                    break
+                elif not isinstance(child, pm.nodetypes.Transform):
+                    continue
+                if child.getShape() is not None:
+                    firstMesh = child.getShape()
+                    path = path + "/" + strip_reference(child.name()) + "/" + strip_reference(child.getShape().name())
+                    break
+            for child in curr.getChildren():
+                stack.append(child)
+
+        verts = firstMesh.vtx
+        vertpos1 = verts[0].getPosition(space='world')
+        vertpos2 = verts[1].getPosition(space='world')
+        vertpos3 = verts[2].getPosition(space='world')
 
         # Put all relevant data into dictionary object
         currRefObj = {"asset_name": currRefName,
                       "version_number": currRefVerNum,
-                      "tx": tx,
-                      "ty": ty,
-                      "tz": tz,
-                      "rx": rx,
-                      "ry": ry,
-                      "rz": rz,
-                      "sx": sx,
-                      "sy": sy,
-                      "sz": sz }
+                      "path" : path,
+                      "a" : [vertpos1.x, vertpos1.y, vertpos1.z],
+                      "b" : [vertpos2.x, vertpos2.y, vertpos2.z],
+                      "c" : [vertpos3.x, vertpos3.y, vertpos3.z] }
         print("Finished currRefObj: ", currRefObj)
-        allReferences.append(currRefObj)
-
-    # Convert allReferences to JSON string
-    jsonRefs = json.dumps(allReferences)
-    print("\n FINAL JSON")
-    print(jsonRefs)
-
-    # Write JSON to file
-    try:
-        wholePath = os.path.join(filePath, "references.json")
+        allReferences.append({"asset_name" : currRefObj["asset_name"], "version_number" :  currRefObj["version_number"]})
+        # Write JSON to fill
+        jsonRef = json.dumps(currRefObj)
+        print("\n FINAL JSON")
+        print(jsonRef)
+        wholePath = os.path.join(filePath, os.path.join(filePath, currRefName + "_" + str(currRefVerNum) + ".json"))
         print(">> Writing to: " + wholePath)
         outfile = open(wholePath, "w")  # *** THIS IS THE NAME OF THE OUTPUT FILE ***
-        outfile.write(jsonRefs)
+        outfile.write(jsonRef)
         outfile.close()
-    except IOError as e:
-        showFailurePopup("I/O error({0}): {1}".format(e.errno, e.strerror))
-    except:
-        showFailurePopup("Unexpected error: " + str(sys.exc_info()[0]))
-    else:
-        showSuccessPopup()
+    print "all References: {0}".format(allReferences)
+    jsonRefs = json.dumps(allReferences)
+    path = os.path.join(filePath, "whole_set.json")
+    with open(path, "w") as f:
+        f.write(jsonRefs)
+        f.close()
+    #except IOError as e:
+        #showFailurePopup("I/O error({0}): {1}".format(e.errno, e.strerror))
+    #except:
+        #showFailurePopup("Unexpected error: " + str(sys.exc_info()[0]))
+    #else:
+        #showSuccessPopup()
 
 
 def getReferenceName(ref):
@@ -154,8 +296,16 @@ def refPathToRefName(path):
             return pathItems[i]
 
 def showConfirmationPopup():
-    return mc.confirmDialog( title         = 'JSON Set Reference'
-                                     , message       = 'Write JSON reference file for set?' #it'd be nice to print the set name here
+    return mc.confirmDialog( title         = 'JSON References'
+                                     , message       = 'Write JSON reference files?'
+                                     , button        = ['Yes', 'No']
+                                     , defaultButton = 'Yes'
+                                     , cancelButton  = 'No'
+                                     , dismissString = 'No')
+
+def showAnimatedPropPopup():
+    return mc.confirmDialog( title         = 'Animated Props'
+                                     , message       = 'Are there any animated props?'
                                      , button        = ['Yes', 'No']
                                      , defaultButton = 'Yes'
                                      , cancelButton  = 'No'
@@ -163,7 +313,7 @@ def showConfirmationPopup():
 
 def showSuccessPopup():
     return mc.confirmDialog( title         = 'Success'
-                                     , message       = 'JSON set reference written successfully.'
+                                     , message       = 'JSON references written successfully.'
                                      , button        = ['OK']
                                      , defaultButton = 'OK'
                                      , cancelButton  = 'OK'
@@ -180,9 +330,21 @@ def showFailurePopup(msg):
 def post_publish():
     global maya_publish_dialog
     element = maya_publish_dialog.result
-    confirmWriteSetReferences(Project().get_body(element.get_parent()))
+    if element.get_department() == Department.ANIM:
+        confirmWriteShotReferences(Project().get_body(element.get_parent()))
+    else:
+        confirmWriteSetReferences(Project().get_body(element.get_parent()))
 
-def go(body=None):
+def publish_submitted(value):
+    body = Project().get_body(value)
+    if body.is_asset() and body.get_type() == AssetType.SET:
+        confirmWriteSetReferences(body)
+    elif body.is_shot():
+        confirmWriteShotReferences(body)
+    else:
+        message_gui.error("Not a valid body.")
+
+def go(body = None, shot = False):
     if not body:
         parent = publish.maya_main_window()
     	filePath = pm.sceneName()
@@ -194,7 +356,21 @@ def go(body=None):
     		filePath = os.path.join(filePath, 'untitled.mb')
     		filePath = pipeline_io.version_file(filePath)
     	global maya_publish_dialog
-    	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL])
-    	maya_publish_dialog.finished.connect(post_publish)
+        selection_list = []
+        if shot:
+            selection_list = Project().list_shots()
+            #maya_publish_dialog = PublishWindow(filePath, parent, [Department.ANIM])
+        else:
+            selection_list = Project().list_sets()
+    	    #maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL])
+        maya_publish_dialog = SelectFromList(parent=maya_main_window())
+        maya_publish_dialog.setWindowTitle("Select shot" if shot else "Select set")
+        maya_publish_dialog.setList(selection_list)
+        maya_publish_dialog.filePath = filePath
+        maya_publish_dialog.selected.connect(publish_submitted)
+        maya_publish_dialog.show()
     else:
-        confirmWriteSetReferences(body)
+        if shot:
+            confirmWriteShotReferences(body)
+        else:
+            confirmWriteSetReferences(body)

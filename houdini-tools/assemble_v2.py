@@ -105,9 +105,11 @@
 import hou, sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
 from byugui import CheckoutWindow, message_gui
+import publish
 # DEBUGGING ONLY
 import inspect
 import datetime
+import checkout
 
 #sys.stdout = open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_console_output.txt"), "a+")
 
@@ -168,6 +170,7 @@ default_ignored_folders = ["Asset Controls"]
     Easily callable method, meant for tool scripts
 '''
 def tab_in(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[]):
+    print "Creating node for {0}".format(asset_name)
     body = Project().get_body(asset_name)
     if body is None or not body.is_asset():
         message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
@@ -223,8 +226,10 @@ def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLE
         message_gui.error("Must be a set.")
 
     node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_set")
-    node.setName(set_name)
-
+    try:
+        node.setName(set_name)
+    except:
+        node.setName(set_name + "_1", unique_name=True)
     # Update contents in the set
     update_contents_set(node, set_name, mode)
     return node
@@ -235,7 +240,7 @@ def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLE
 def update_contents_set(node, set_name, mode=UpdateModes.SMART):
 
     # Check if reference file exists
-    set_file = os.path.join(Project().get_assets_dir(), set_name, "references.json")
+    set_file = os.path.join(Project().get_assets_dir(), set_name, "model", "main", "cache", "whole_set.json")
 
     # Error checking
     try:
@@ -258,10 +263,14 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
         # Grab data off the node. This data is stored as a key-value map parameter
         data = child.parm("data").evalAsJSONMap()
 
+        print "{0}:\n\t checked {1} against {2}".format(str(child), str(data), str(reference))
+
         # If it matches both the asset_name and version_number, it's a valid entry in the list
-        if data["asset_name"] == reference["asset_name"] and data["version_number"] == reference["version_number"]:
+        if data["asset_name"] == reference["asset_name"] and data["version_number"] == str(reference["version_number"]):
+            print "\tand it matched"
             return True
         else:
+            print "\tand it didn't match"
             return False
 
     # Grab current BYU Dynamic Content Subnets that have been tabbed in
@@ -308,7 +317,13 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
 
         # Override parameters in the set
         elif mode == UpdateModes.CLEAN:
-            subnet.setParms(reference)
+            newparms = {"asset_name" : reference["asset_name"], "version_number" : reference["version_number"] }
+            subnet.setParms(newparms)
+
+        # Set the set accordingly
+        subnet.parm("space").set("set")
+        subnet.parm("set").set(set_name)
+        subnet.parm("update_mode").setExpression("ch(\"../../update_mode\")", language=hou.exprLanguage.Hscript)
 
         # Set the data
         subnet.parm("data").set({
@@ -322,7 +337,7 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
     This function tabs in a BYU Character node and fills its contents with the appropriate character name.
     Departments is a mask because sometimes we tab this asset in when we want to work on Hair or Cloth, and don't want the old ones to be there.
 '''
-def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[], mode=UpdateModes.CLEAN):
+def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_departments=[], mode=UpdateModes.CLEAN, shot=None):
 
     # Set up the body/elements and make sure it's a character
     body = Project().get_body(asset_name)
@@ -332,7 +347,10 @@ def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_depa
 
     # If there's an already tabbed in node, set it to that node
     node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_character")
-    node.setName(asset_name.title(), unique_name=True)
+    try:
+        node.setName(asset_name.title())
+    except:
+        node.setName(asset_name.title() + "_1", unique_name=True)
     node.parm("asset_name").set(asset_name)
 
     # Set the asset_name data tag
@@ -341,13 +359,13 @@ def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_depa
     node.parm("data").set(data)
 
     # Set the contents to the character's nodes
-    update_contents_character(node, asset_name, excluded_departments, mode)
+    update_contents_character(node, asset_name, excluded_departments, mode, shot)
     return node
 
 '''
     This function sets the inner contents of a BYU Character node.
 '''
-def update_contents_character(node, asset_name, excluded_departments=[], mode=UpdateModes.SMART):
+def update_contents_character(node, asset_name, excluded_departments=[], mode=UpdateModes.SMART, shot=None):
 
     ##super_print("{0}() line {1}:\n\tcharacter: {2}\n\tmode: {3}".format(method_name(), lineno(), asset_name, mode))
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
@@ -356,6 +374,7 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
         message_gui.error("Must be a character.")
         return None
 
+    # Reset the data parm
     data = node.parm("data").evalAsJSONMap()
     data["asset_name"] = asset_name
     node.parm("data").set(data)
@@ -388,7 +407,15 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
 
 
     inside.layoutChildren()
-    super_print("{0}() returned {1}".format(method_name(), node))
+
+    geo.parm("version_number").setExpression("ch(\"../../version_number\")", language=hou.exprLanguage.Hscript)
+
+    # If this character is being animated, set parms accordingly
+    if shot is not None:
+        geo.parm("space").set("anim")
+        geo.parm("asset_department").set("rig")
+        geo.parm("shot").set(shot)
+
     return node
 
 '''
@@ -406,7 +433,10 @@ def byu_geo(parent, asset_name, already_tabbed_in_node=None, excluded_department
     if character:
         node.setName("geo")
     else:
-        node.setName(asset_name.title(), unique_name=True)
+        try:
+            node.setName(asset_name.title())
+        except:
+            node.setName(asset_name.title() + "_1", unique_name=True)
 
     # Set the asset_name data tag
     data = node.parm("data").evalAsJSONMap()
@@ -742,18 +772,28 @@ def rebuildAllAssets():
                     build_button.pressButton()
 
 def convertV1_to_V2(nodes):
+
     for node in nodes:
+
+        if node.type().name() == "byu_geo":
+            node = node.parent().createNode(node.parm("asset_name").evalAsString() + "_main")
+
         geometry = next((child for child in node.children() if child.type().name() == "geo"), None)
         shopnet = next((child for child in node.children() if child.type().name() == "shopnet"), None)
 
+        print geometry
         # If there's not a geometry network inside that has the same name as the operator,
         # then it's probably not an old BYU asset that we know how to deal with, so skip it.
-        if not geometry or not shopnet or not geometry.name() not in node.type().name() or not geometry.name() in shopnet.name():
+
+        if not geometry or not shopnet or geometry.name() not in node.type().name() or geometry.name() not in shopnet.name():
             continue
 
         root = geometry.node("hide_geo")
+        print root
         if not root:
             continue
+
+        checkout.checkout_asset_go(node)
 
         parent = node.parent()
         output = geometry.displayNode()
@@ -768,13 +808,57 @@ def convertV1_to_V2(nodes):
             for output in ancestor.outputs():
                 stack.append(output)
 
+
+
+
         # Tab in a V2 Dynamic Content Subnet
         asset_name = geometry.name()
+
+        new_node=None
         new_node = tab_in(parent, asset_name, excluded_departments=[Department.MODIFY, Department.MATERIAL])
 
         # Copy old components into a modify node
         modify_node = create_hda(asset_name, Department.MODIFY, already_tabbed_in_node=new_node)
-        hou.copyNodesTo(descendants, modify_node)
+
+        display_out=modify_node.displayNode()
+        copied_nodes=hou.copyNodesTo(descendants, modify_node)
+
+        ## TODO: PARSE THROUGH NODES AND CONNECT TO OUTPUT
+
+
+        hide_geo=None
+        descend_out=None
+        mat_node=None
+
+        for copied_node in copied_nodes:
+            if 'switch' in copied_node.type().name():
+                hide_geo=copied_node
+            elif 'material' == copied_node.type().name():
+                mat_node=copied_node
+            elif 'output' == copied_node.type().name():
+                descend_out=copied_node
+            elif 'null' == copied_node.type().name() and 'OUT' in copied_node.name():
+                descend_out=copied_node
+
+
+
+        hide_geo.setInput(0,modify_node.indirectInputs()[0])
+        display_out.setInput(0,descend_out)
+
+
+
+        display_out.setDisplayFlag(True)
+        display_out.setRenderFlag(True)
+
+        display_out.setInput(0,descend_out)
+        modify_node.layoutChildren()
+
+        descend_out.destroy()
+        hide_geo.destroy()
+        mat_node.destroy()
+
+
+
 
         # Copy old components into a material node
         material_node = create_hda(asset_name, Department.MATERIAL, already_tabbed_in_node=new_node)
@@ -782,6 +866,36 @@ def convertV1_to_V2(nodes):
 
         # Do material assignment as much as possible
         # TODO: riley
+
+        material= geometry.node("material1")
+        num_groups=material.evalParm('num_materials')
+
+        #map of material to string of group mask
+        info={}
+
+        for i in range(1,num_groups+1):
+            group=material.evalParm('group'+str(i))
+            mat=material.evalParm('shop_materialpath'+str(i))
+
+            mat='../shopnet/shaders/'+'/'.join(mat.split('/')[-2:])
+
+            if mat in info:
+                info[mat]+=' '+group
+            else:
+                info[mat]=group
+
+
+        mat_assign=material_node.node('material_assign')
+        mat_assign.parm('num_materials').set(len(info))
+
+
+        #transfer material assignments
+        for i,key in enumerate(info):
+            mat_assign.parm('group'+str(i+1)).set(info[key])
+            mat_assign.parm('material_options'+str(i+1)).set(1)
+            mat_assign.parm('mat_option'+str(i+1)+'_1').set(key)
+
+
 
         # Name the nodes
         node.setName(asset_name + "_old")
@@ -795,6 +909,7 @@ def convertV1_to_V2(nodes):
         box.setComment(node.type().name().replace("_main", "").title())
         parent.layoutChildren()
 
+
 '''
     The user has selected a bunch of nodes/network boxes and this should sort out which is which,
     so that it can commit the conversions for those groups.
@@ -806,15 +921,32 @@ def commit_conversions():
     for item in hou.selectedItems():
         if not isinstance(item, hou.NetworkBox):
             continue
-        for a in item.nodes():
-            if "_old" not in a.name() and "_new" not in a.name():
-                continue
-            for b in item.nodes():
-                if "_old" not in b.name() or "_new" not in b.name():
-                    continue
-                if a.name()[:-4] not in b.name():
-                    continue
-                boxes.append(item)
+
+        # If the box doesn't have two nodes in it, it's definitely not ours
+        nodes = item.nodes()
+        if len(nodes) != 2:
+            continue
+
+        # If neither is named _new and/or neither is named _old, it's not one of ours
+        if not "_new" in nodes[0].name() and not "_new" in nodes[1].name():
+            continue
+        if not "_old" in nodes[0].name() and not "_old" in nodes[1].name():
+            continue
+
+        # If the assets are not named the same, it's not one of ours
+        print nodes[0].name()[:-4]
+        print nodes[1].name()[:-4]
+
+
+
+
+        if nodes[0].name()[:-4] != nodes[1].name()[:-4]:
+            continue
+
+        # If it passed the tests, add it to the list of network boxes we can work with
+        boxes.append(item)
+
+    print boxes
 
     # Don't go on unless there's a valid network box
     if len(boxes) < 1:
@@ -822,8 +954,16 @@ def commit_conversions():
         return
 
     for box in boxes:
-        old_node = next(node for nodes in box.nodes() if "_old" in node.name())
-        new_node = next(node for nodes in box.nodes() if "_new" in node.name())
+        old_node = next((node for node in box.nodes() if "_old" in node.name()), None)
+        new_node = next((node for node in box.nodes() if "_new" in node.name()), None)
+
+        old_hda = old_node.type().definition()
+        old_hda.setIcon(Environment().get_project_dir() + '/byu-pipeline-tools/assets/images/icons/tool-icons/1.png')
+
+        publish.non_gui_publish_go(old_node, "Converted to V2")
+        for child in new_node.allSubChildren():
+            if "_material" in child.type().name() or "_modify" in child.type().name():
+                publish.non_gui_publish_go(child, "Converted from V1")
 
         # commit old_node
         # commit new_node

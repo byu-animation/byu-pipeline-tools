@@ -21,6 +21,19 @@ hou.shelves.reloadShelfFiles()
 							</scriptCode>
 			</scriptItem>
 
+			<subMenu id="import_menu">
+				<label>Import</label>
+				<scriptItem id="h.import_shot">
+					<label>Shot</label>
+					<scriptCode scriptType="python">
+						<![CDATA[
+import import_shot
+import_shot.go()
+						]]>
+					</scriptCode>
+				</scriptItem>
+			</subMenu>
+
 			<subMenu id="add_menu">
 				<label>Add</label>
 				<scriptItem id="h.add_modify">
@@ -30,18 +43,27 @@ hou.shelves.reloadShelfFiles()
 						<![CDATA[
 from byuam import Department
 import menu_scripts
-menu_scripts.add_hda([Department.MODIFY])
+if len(hou.selectedNodes()) == 0:
+		menu_scripts.add_hda([Department.MODIFY])
+else:
+		menu_scripts.create_hda_from_selection(hou.selectedNodes(),Department.MODIFY)
+
 print 'Add modify'
 						]]>
 					</scriptCode>
 				</scriptItem>
-				<scriptItem id="h.add_materiall">
+
+				<scriptItem id="h.add_material">
 					<label>Material</label>
 					<scriptCode scriptType="python">
 						<![CDATA[
 from byuam import Department
 import menu_scripts
-menu_scripts.add_hda([Department.MATERIAL])
+
+if len(hou.selectedNodes()) == 0:
+		menu_scripts.add_hda([Department.MATERIAL])
+else:
+		menu_scripts.create_hda_from_selection(hou.selectedNodes(),Department.MATERIAL)
 						]]>
 					</scriptCode>
 				</scriptItem>
@@ -139,6 +161,22 @@ publish.publish_shot_go()
 					</scriptCode>
 				</scriptItem>
 
+
+
+			<scriptItem id="h.publish_v1_Asset">
+				<label>v1 Asset</label>
+				<scriptCode scriptType="python">
+					<![CDATA[
+import publish
+from byuam import Department
+if len(hou.selectedNodes())>0:
+		publish.publish_hda_go(hou.selectedNodes()[0], departments=[Department.ASSEMBLY, Department.HDA])
+else:
+		print 'No selected Nodes'
+					]]>
+				</scriptCode>
+			</scriptItem>
+
 			</subMenu>
 
 			<subMenu>
@@ -214,6 +252,30 @@ assemble_asset.rego()
 
 			<subMenu id="pipeline_menu">
 				<label>Pipeline</label>
+
+
+
+
+				<scriptItem id="h.convert_v1">
+					<label>Convert v1 to v2</label>
+					<scriptCode scriptType="python">
+							<![CDATA[
+import assemble_v2
+assemble_v2.convertV1_to_V2(hou.selectedNodes())
+							]]>
+						</scriptCode>
+				</scriptItem>
+
+				<scriptItem id="h.commit_convert">
+					<label>Commit Convert</label>
+					<scriptCode scriptType="python">
+							<![CDATA[
+import assemble_v2
+assemble_v2.commit_conversions()
+							]]>
+						</scriptCode>
+				</scriptItem>
+
 
 				<scriptItem id="h.create_tool">
 					<label>Create Digital Asset</label>

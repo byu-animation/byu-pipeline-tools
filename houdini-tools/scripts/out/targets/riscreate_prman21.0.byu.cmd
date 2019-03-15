@@ -42,5 +42,6 @@ if ( "$arg1" != "" ) then
     
     opcf $location
     opparm $arg1 shop_integratorpath `run("echo /out/$shopnet/$risnet/$integrator")`
+    opparm $arg1 camera "/obj/byu_camera1/_/_/cam"
 
 endif
