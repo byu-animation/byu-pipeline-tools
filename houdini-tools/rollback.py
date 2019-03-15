@@ -77,14 +77,37 @@ def rollback_asset_go(node=None):
 	project = Project()
 	src = node.type().definition().libraryFilePath()
 	asset_name = os.path.basename(src)
+
+
+
+	base_name=node.type().name()
+	print base_name
+
 	index = asset_name.find('_assembly')
-	if index > 0:
-		base_name = asset_name[:index]
+
+	base_name=base_name.replace('_main1','')
+	print base_name
+	#if index > 0:
+	#	base_name = asset_name[:index]
+	##	message_gui.error('There was a problem finding the asset')
+	#	return
+	#print '--------'
+	#print base_name
+
+	body = None
+	element=None
+
+	if  node.name() in Department.ASSET_DEPTS:
+		base_name=base_name.replace('_'+str(node.name()),'')
+		body=project.get_body(base_name)
+		element = body.get_element(str(node.name()))
+
 	else:
-		message_gui.error('There was a problem finding the asset')
-		return
-	body = project.get_body(base_name)
-	element = body.get_element(Department.ASSEMBLY)
+		body = project.get_body(base_name.replace('_main',''))
+		element = body.get_element(Department.ASSEMBLY)
+
+
+
 	rollback_window = RollbackWindow(element, hou.ui.mainQtWindow())
 	rollback_window.finished.connect(rollback_hda)
 

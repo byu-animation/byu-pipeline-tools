@@ -17,6 +17,7 @@ import playground
 import education
 import crowdCycle
 import sketchfab_exporter
+import json_exporter
 
 def go():
 	reload(alembic_static_exporter)
@@ -37,5 +38,6 @@ def go():
 	reload(education)
 	reload(crowdCycle)
 	reload(sketchfab_exporter)
-	# reload(byuam)
+	reload(json_exporter)
+	#reload(byuam)
 	# reload(byugui)

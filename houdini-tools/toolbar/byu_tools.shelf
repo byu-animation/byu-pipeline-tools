@@ -25,6 +25,7 @@
     <memberTool name="xml_tool"/>
     <memberTool name="reload_shelves"/>
     <memberTool name="clear_console"/>
-    <memberTool name="mass_xml"/>
+    <memberTool name="convert_V1_to_V2"/>
+    <memberTool name="commit_con"/>
   </toolshelf>
 </shelfDocument>

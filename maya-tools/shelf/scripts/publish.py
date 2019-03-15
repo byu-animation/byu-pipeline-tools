@@ -77,6 +77,7 @@ def publishElement(element, user, src, comment):
 		json_exporter.go(body)
 	else:
 		alembic_exporter.go(element=element)
+		json_exporter.go(body, shot=True)
 	noEducationalLicence()
 	#sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 

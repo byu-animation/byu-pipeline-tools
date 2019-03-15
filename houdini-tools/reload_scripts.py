@@ -11,6 +11,10 @@ import tractor_submit
 import reload_scripts
 import render_callbacks
 import matchDefinition
+import assemble_v2
+import menu_scripts
+import byuam
+import import_shot
 
 def go():
 	reload(assemble_asset)
@@ -26,3 +30,9 @@ def go():
 	reload(test_geo)
 	reload(tractor_submit)
 	reload(matchDefinition)
+	reload(import_shot)
+	reload(byuam)
+	reload(assemble_v2)
+	reload(menu_scripts)
+
+	print ('Scripts reloaded')

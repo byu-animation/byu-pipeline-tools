@@ -79,11 +79,103 @@ def publish_hda_go(selectedHDA=None, departments=[Department.HDA, Department.ASS
 
 	if selectedHDA.type().definition() is not None:
 		src = selectedHDA.type().definition().libraryFilePath()
-		publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), departments)
+		print departments
+		if selectedHDA.name() in departments:
+			publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), departments)
+		else:
+			publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), [Department.ASSEMBLY])
+
 	else:
 		message_gui.error('The selected node is not a digital asset')
 		return
 	publishWindow.finished.connect(lambda *args: publish_hda(publishWindow, selectedHDA, src))
+
+
+
+
+
+#publish v2 hda, abtracted so that multiple functions can call
+
+def non_gui_publish_hda(hda=None,comment='N/A'):
+	if hda is None:
+		print ('Error with asset')
+
+	project = Project()
+	environment = Environment()
+	user = environment.get_current_username()
+	hdaName = hda.type().name()
+
+
+	department=None
+
+	if str(hda) not in Department.ALL:
+		print 'v1 asset'
+		department=Department.ASSEMBLY
+	else:
+		department=str(hda)
+
+
+	asset_name = hdaName.replace("_" + department, "") if department not in [Department.ASSEMBLY, Department.HDA] else hdaName.replace("_main", "")
+	body = project.get_body(asset_name)
+
+
+	if body is None:
+		message_gui.error('No asset in pipe')
+		return
+
+	#TODO: publish tools
+	if body.is_tool():
+		print (asset_name+' is tool')
+		return
+		department=Department.HDA
+
+
+
+	hda_src = hda.type().definition().libraryFilePath()
+	print hda_src
+	element = body.get_element(department, Element.DEFAULT_NAME,force_create=True)
+
+	try:
+		hda.type().definition().updateFromNode(hda)
+	except hou.OperationFailed, e:
+		message_gui.error('There was a problem publishing the HDA to the pipeline.\n', details=str(e))
+		return
+
+	try:
+		hda.matchCurrentDefinition()
+	except hou.OperationFailed, e:
+		message_gui.warning('There was a problem while trying to match the current definition.', details=str(e))
+
+	dst = element.publish(user, hda_src, comment)
+	#Ensure file has correct permissions
+	try:
+		os.chmod(dst, 0660)
+	except:
+		pass
+
+	# TODO: UGLY HOTFIX FOR OLD ASSEMBLY ASSETS for v1 backwards compatability
+	saveFile = hdaName + "_" + Element.DEFAULT_NAME + ".hdanc" if department not in [Department.ASSEMBLY, Department.HDA] else asset_name + "_" + department + "_" + Element.DEFAULT_NAME + ".hdanc"
+
+	dst = os.path.join(environment.get_hda_dir(), saveFile)
+	print("dst ", dst)
+	hou.hda.installFile(dst)
+	definition = hou.hdaDefinition(hda.type().category(), hda.type().name(), dst)
+	definition.setPreferred(True)
+
+
+
+
+##quick publish for v2 assets
+def non_gui_publish_go(selectedHDA=None,comment=None):
+
+	if selectedHDA != None:
+		non_gui_publish_hda(selectedHDA,comment)
+	else:
+		message_gui.error('Please select a single node')
+		return
+
+
+
 
 def publish_tool_go(node=None):
 	publish_hda_go(selectedHDA=node, departments=[Department.HDA])

@@ -22,6 +22,21 @@ def add_hda(department):
 
     WINDOW.finished.connect(add_callback)
 
+def create_hda_from_selection(nodes,department):
+    if len(nodes) == 0:
+        message_gui.error('Error with Selected Nodes')
+        return
+    else:
+        errors=[]
+        for node in nodes:
+            try:
+                assetName=node.parm('data').evalAsJSONMap()['asset_name']
+                assemble_v2.create_hda(assetName,department)
+            except Exception as e:
+                errors.append(e)
+        if len(errors)>0:
+            message_gui.error('A problem occured',str(errors))
+
 
 def xml_callBack():
     global WINDOW
