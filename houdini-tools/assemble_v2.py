@@ -324,6 +324,7 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
         subnet.parm("space").set("set")
         subnet.parm("set").set(set_name)
         subnet.parm("update_mode").setExpression("ch(\"../../update_mode\")", language=hou.exprLanguage.Hscript)
+        subnet.parm("bypass_dynamic_content").set(True)
 
         # Set the data
         subnet.parm("data").set({

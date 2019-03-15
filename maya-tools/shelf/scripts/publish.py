@@ -72,12 +72,14 @@ def publishElement(element, user, src, comment):
 	#Export Alembics
 	print 'Publish Complete. Begin Exporting Alembic, or JSON if set'
 	body = Project().get_body(element.get_parent())
-	if body and body.is_asset() and body.get_type() == AssetType.SET:
+	try:
 		alembic_exporter.go(element=element)
-		json_exporter.go(body)
+	except:
+		print("alembic export failed.")
+	if body and body.is_asset():
+		json_exporter.go(body, body.get_type())
 	else:
-		alembic_exporter.go(element=element)
-		json_exporter.go(body, shot=True)
+		json_exporter.go(body, type="shot")
 	noEducationalLicence()
 	#sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 
