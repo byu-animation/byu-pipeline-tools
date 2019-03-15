@@ -1,12 +1,14 @@
 from byuam import Department
 from byuam import Environment
 from byuam import pipeline_io
+from byuam import Project
+from byuam import AssetType
 from byugui.publish_gui import PublishWindow
 from PySide2 import QtWidgets
 import maya.cmds as cmds
 import maya.OpenMayaUI as omu
 import os
-import alembic_exporter
+import alembic_exporter, json_exporter
 from byugui import message_gui
 import pymel.core as pm
 import sketchfab_exporter
@@ -68,8 +70,14 @@ def publishElement(element, user, src, comment):
 	print element.get_name()
 
 	#Export Alembics
-	print 'Publish Complete. Begin Exporting Alembic'
-	alembic_exporter.go(element=element)
+	print 'Publish Complete. Begin Exporting Alembic, or JSON if set'
+	body = Project().get_body(element.get_parent())
+	if body and body.is_asset() and body.get_type() == AssetType.SET:
+		alembic_exporter.go(element=element)
+		json_exporter.go(body)
+	else:
+		alembic_exporter.go(element=element)
+		json_exporter.go(body, shot=True)
 	noEducationalLicence()
 	#sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 

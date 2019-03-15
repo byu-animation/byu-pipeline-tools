@@ -1,0 +1,8 @@
+This directory contains renderer specific target scripts.  Currently,
+these scripts are only used by RIB renderers.
+
+The environment variable HOUDINI_DEFAULT_RIB_TARGET is used to choose which
+RIB renderer is the desired target.
+
+When a RIB output driver is created, the script run is:
+    ribcreate_$HOUDINI_DEFAULT_RIB_TARGET.cmd

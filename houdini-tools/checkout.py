@@ -27,7 +27,10 @@ def checkout_hda(hda, project, environment):
 	#if node is digital asset
 	if hda.type().definition() is not None:
 		asset_name = hda.type().name() #get name of hda
-		index = asset_name.find('_main')
+		index = asset_name.rfind('_')
+		department_name = asset_name[index+1:]
+		# Our old assets have "_main" at the end. We want them to refer to the "assembly" department.
+		department_name = "assembly" if department_name == "main" else department_name
 		asset_name = asset_name[:index]
 		src = hda.type().definition().libraryFilePath()
 		current_user = environment.get_current_username()
@@ -39,10 +42,14 @@ def checkout_hda(hda, project, environment):
 		else:
 			message_gui.error('We could not find ' + asset_name + ' in the list of things you can checkout.')
 
+		if department_name not in Department.ALL:
+			message_gui.error(department_name + ' is not a valid Department')
+			return None
+
 		if os.path.exists(src):
 			if body is not None:
-				if Element.DEFAULT_NAME in body.list_elements(Department.ASSEMBLY):
-					element = body.get_element(Department.ASSEMBLY, Element.DEFAULT_NAME)
+				if Element.DEFAULT_NAME in body.list_elements(department_name):
+					element = body.get_element(department_name, Element.DEFAULT_NAME)
 				elif Element.DEFAULT_NAME in body.list_elements(Department.HDA):
 					element = body.get_element(Department.HDA, Element.DEFAULT_NAME)
 				else:
@@ -50,7 +57,9 @@ def checkout_hda(hda, project, environment):
 					return None
 				element_path = element.checkout(current_user)
 				hou.hda.installFile(element_path)
-				hou.hda.uninstallFile(src, change_oplibraries_file=False)
+				definition = hou.hdaDefinition(hda.type().category(), hda.type().name(), element_path)
+				definition.setPreferred(True)
+				#hou.hda.uninstallFile(src, change_oplibraries_file=False)
 				hda.allowEditingOfContents()
 				aa = hda.parm("ri_auto_archive")
 				if aa:

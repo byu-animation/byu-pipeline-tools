@@ -22,5 +22,10 @@
     <memberTool name="checkout_tool"/>
     <memberTool name="publish_tool"/>
     <memberTool name="rollback_tool"/>
+    <memberTool name="xml_tool"/>
+    <memberTool name="reload_shelves"/>
+    <memberTool name="clear_console"/>
+    <memberTool name="convert_V1_to_V2"/>
+    <memberTool name="commit_con"/>
   </toolshelf>
 </shelfDocument>
