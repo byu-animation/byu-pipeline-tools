@@ -100,3 +100,13 @@ def go():
 	global maya_publish_dialog
 	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX, Department.CYCLES])
 	maya_publish_dialog.finished.connect(post_publish)
+
+def non_gui_publish(element, user, src, comment):
+	dst = element.publish(user, src, comment)
+	#Ensure file has correct permissions
+	try:
+		os.chmod(dst, 0660)
+	except:
+		pass
+	print 'TODO: export playblast'
+	print element.get_name()
