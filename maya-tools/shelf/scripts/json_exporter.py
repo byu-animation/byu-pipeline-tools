@@ -32,7 +32,7 @@ from PySide2.QtCore import Signal, Slot
 global maya_publish_dialog
 global select_from_list_dialog
 
-def confirmWriteSetReferences(body=None):
+def confirmWriteSetReferences(body=None, gui=True):
 
     #response = showConfirmationPopup()
     #if response == "Yes":
@@ -50,13 +50,18 @@ def confirmWriteSetReferences(body=None):
             element = body.get_element(Department.MODEL)
             refsFilePath = os.path.join(Project().get_assets_dir(), element.get_cache_dir())
             exportReferences(refsFilePath)
-            showSuccessPopup()
+            if gui:
+                showSuccessPopup()
+            else:
+                print("Successfully wrote JSON references for {0}".format(body.get_name()))
         else:
-            print("NOT A SET")
-            showFailurePopup('No set found in current scene.')
+            if gui:
+                showFailurePopup('No set found in current scene.')
+            else:
+                print("NOT A SET")
 
 
-def confirmWritePropReference(body=None):
+def confirmWritePropReference(body=None, gui=True):
 
     filePath = pm.sceneName()
     fileDir = os.path.dirname(filePath)
@@ -75,11 +80,14 @@ def confirmWritePropReference(body=None):
         cameras = pm.selected()
         pm.select([])
         non_cameras = [assembly for assembly in assemblies if assembly not in cameras]
-        exportPropJSON(filePath, non_cameras[0], isReference=False, name=body.get_name())
-        showSuccessPopup()
+        exportPropJSON(filePath, non_cameras[0], isReference=False, name=body.get_name(), gui=gui)
+        if gui:
+            showSuccessPopup()
+        else:
+            print("Successfully exported prop JSON for {0}".format(body.get_name()))
 
 
-def confirmWriteShotReferences(body=None):
+def confirmWriteShotReferences(body=None, gui=True):
 
     #response = showConfirmationPopup()
     #if response == "Yes":
@@ -98,7 +106,10 @@ def confirmWriteShotReferences(body=None):
         export_shot(refsFilePath)
     else:
         print("NOT A SHOT")
-        showFailurePopup('No set found in current scene.')
+        if gui:
+            showFailurePopup('No shot found in current scene.')
+        else:
+            print("No shot found in current scene.")
 
 
 def getLoadedReferences():
@@ -202,7 +213,7 @@ def maya_main_window():
     raise RuntimeError('Could not find MayaWindow instance')
 
 # Creates a list of all reference files in the current set
-def exportReferences(filePath):
+def exportReferences(filePath, gui=True):
     refsSelection = getLoadedReferences()
     print("refsSelection = ", refsSelection)
 
@@ -215,7 +226,7 @@ def exportReferences(filePath):
         print("\t Curr refNodes: ", refNodes)
         print("\t Curr rootNode: ", rootNode)
         print("\t Curr rootNodes:", rootNodes)
-        propJSON = exportPropJSON(filePath, rootNode)
+        propJSON = exportPropJSON(filePath, rootNode, gui=gui)
         if propJSON:
             allReferences.append(propJSON)
     print "all References: {0}".format(allReferences)
@@ -225,7 +236,7 @@ def exportReferences(filePath):
         f.write(jsonRefs)
         f.close()
 
-def exportPropJSON(filePath, rootNode, isReference=True, name="", version_number=None):
+def exportPropJSON(filePath, rootNode, isReference=True, name="", version_number=None, gui=True):
     if isReference:
         name, version_number = getReferenceName(rootNode)
     body = Project().get_body(name)
@@ -284,7 +295,7 @@ def exportPropJSON(filePath, rootNode, isReference=True, name="", version_number
     outfile.write(jsonRef)
     outfile.close()
 
-    if not isReference:
+    if not isReference and gui:
         showSuccessPopup()
 
     return {"asset_name" : json_data["asset_name"], "version_number" :  json_data["version_number"]}

@@ -5,6 +5,12 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 
+class SelectFromMultipleLists(QtWidgets.QWidget):
+
+	submit = QtCore.Signal(object)
+	def __init__(self, lists, parent=None, multiple_selection=False):
+		super(SelectFromMultipleLists, self).__init__()
+
 class SelectFromList(QtWidgets.QWidget):
     selected_list = QtCore.Signal(list)
     selected = QtCore.Signal(str)
@@ -14,7 +20,7 @@ class SelectFromList(QtWidgets.QWidget):
     allItems = []
     shownItems = []
 
-    def __init__(self, parent=None, multiple_selection=False):
+    def __init__(self, list=[], parent=None, multiple_selection=False):
         super(SelectFromList, self).__init__()
 
         self.resize(600,600)
@@ -37,6 +43,7 @@ class SelectFromList(QtWidgets.QWidget):
 
         # Create the list widget
         self.listWidget = QtWidgets.QListWidget()
+		self.setList(list)
         self.listWidget.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
         self.listWidget.currentItemChanged.connect(self.set_value)
         if multiple_selection:
