@@ -5,96 +5,130 @@ try:
 except ImportError:
 	from PySide2 import QtWidgets, QtGui, QtCore
 
-class SelectFromMultipleLists(QtWidgets.QWidget):
 
-	submit = QtCore.Signal(object)
+class SelectFromMultipleLists(SelectFromList):
+
+	labels = []
+	lists = []
+	currLabel = ""
+
+	submitted = QtCore.Signal(object)
 	def __init__(self, lists, parent=None, multiple_selection=False):
-		super(SelectFromMultipleLists, self).__init__()
+		self.setObjectName('SelectFromMultipleLists')
+        self.resize(600,600)
+		self.labels = [x for x in lists].sort()
+        self.initializeVBox()
+		self.setLayout(self.vbox)
+
+		self.lists = lists
+		self.currLabel = labels[0]
+		self.switchList(self.currLabel)
+
+	self.initializeVBox(self):
+		self.vbox = QtWidgets.QVBoxLayout()
+		self.initializeDropdown()
+		self.initializeSearchBar()
+		self.initializeListWidget()
+		self.initializeSubmitButton()
+
+	def initializeDropdown(self):
+		comboBox = QtWidgets.QComboBox()
+		for label in self.labels[::-1]:
+			comboBox.insertItem(0, label)
+		comboBox.currentIndexChanged.connect(self.switchList)
+		self.vbox.addLayout(comboBox)
+
+	def switchList(self, i):
+		newLabel = labels[i]
+		if index > len(lists) or lists[currLabel] == lists[newLabel]:
+			return
+		newList = lists[newLabel]
+		self.currLabel = newLabel
+		self.listWidget.all_items = self.listWidget.shown_items = newList
+		self.listWidget.set_list(newList)
+		if self.multiple_selection:
+			self.textEdited(self.searchBox.text())
+		self.values = [value for value in self.values if value in self.listWidget.shown_items]
 
 class SelectFromList(QtWidgets.QWidget):
-    selected_list = QtCore.Signal(list)
-    selected = QtCore.Signal(str)
-    value = ""
+    submitted = QtCore.Signal(list)
     values = []
 
-    allItems = []
-    shownItems = []
-
-    def __init__(self, list=[], parent=None, multiple_selection=False):
-        super(SelectFromList, self).__init__()
-
-        self.resize(600,600)
-
-        self.multiple_selection = multiple_selection
+	def __init__(self, parent=None, list=[], multiple_selection=False):
+		super(SelectFromSingleList, self).__init__()
         self.setObjectName('SelectFromList')
-        vbox = QtWidgets.QVBoxLayout()
 
+		self.multiple_selection = multiple_selection
+        self.resize(600,600)
+		self.initializeVBox()
+        self.setLayout(self.vbox)
+
+	def initializeVBox(self):
+		self.vbox = QtWidgets.QVBoxLayout()
+		self.initializeSearchBar()
+		self.initializeListWidget()
+		self.initializeSubmitButton()
+
+	def initializeSearchBar(self, vbox):
         # If it's single selection, bring in the searchbox
-        if not multiple_selection:
-            hbox = QtWidgets.QHBoxLayout()
-            label = QtWidgets.QLabel("Refine Search: ")
-            hbox.addWidget(label)
-            self.searchBox = QtWidgets.QLineEdit()
-            self.searchBox.textEdited.connect(self.textEdited)
-            self.searchBox.setStyleSheet("color: white")
-            self.searchBox.setFocus()
-            hbox.addWidget(self.searchBox)
-            vbox.addLayout(hbox)
+        if self.multiple_selection:
+			return
+        hbox = QtWidgets.QHBoxLayout()
+        label = QtWidgets.QLabel("Refine Search: ")
+        hbox.addWidget(label)
+        self.searchBox = QtWidgets.QLineEdit()
+        self.searchBox.textEdited.connect(self.textEdited)
+        self.searchBox.setStyleSheet("color: white")
+        self.searchBox.setFocus()
+        hbox.addWidget(self.searchBox)
+        self.vbox.addLayout(hbox)
 
-        # Create the list widget
-        self.listWidget = QtWidgets.QListWidget()
-		self.setList(list)
-        self.listWidget.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
-        self.listWidget.currentItemChanged.connect(self.set_value)
-        if multiple_selection:
-            self.listWidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        vbox.addWidget(self.listWidget)
+	def initializeListWidget(self):
+		self.listWidget = ItemList(list, multiple_selection)
+		self.listWidget.currentItemChanged.connect(self.select)
+		self.vbox.addWidget(listWidget)
 
-        # Create the button widget
+	def initializeSubmitButton(self):
+		# Create the button widget
         self.button = QtWidgets.QPushButton("choose")
         self.button.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
-        self.button.clicked.connect(self.select)
+        self.button.clicked.connect(self.submit)
         self.button.setEnabled(False)
-        vbox.addWidget(self.button)
+        self.vbox.addWidget(self.button)
 
-        # Set layout
-        self.setLayout(vbox)
-
-    def textEdited(self, newText):
-        #newText = self.searchBox.text()
-        print "Text changed: {0}".format(newText)
-        self.shownItems = []
-        for item in self.allItems:
-            if newText in item:
-                self.shownItems.append(item)
-        self.setList(self.shownItems)
-
-    def setList(self, l):
-        if len(self.allItems) == 0:
-            self.allItems = l
-            self.shownItems = self.allItems
-        self.listWidget.clear()
-        for item in l:
-            self.listWidget.addItem(item)
-
-#    @Slot(bool)
-    def set_value(self, checked):
-        if self.multiple_selection:
-            if len(self.listWidget.selectedItems()) == 0:
-                self.values = [self.listWidget.currentItem().text()]
-            else:
-                self.values = [x.text() for x in self.listWidget.selectedItems()]
+    def select(self, checked):
+        if len(self.item_list.listWidget.selectedItems()) == 0:
+            self.values = []
         else:
-            self.value = self.listWidget.currentItem().text()
-        if self.value != "" or len(self.values) > 0:
+            self.values = [x.text() for x in self.item_list.listWidget.selectedItems()]
+        if len(self.values) > 0:
             self.button.setEnabled(True)
 
-#    @Slot()
-    def select(self):
-        if self.multiple_selection:
-            self.animated_props = self.values
-            self.selected_list.emit(self.values)
-        else:
-            self.animated_prop = self.value
-            self.selected.emit(self.value)
+    def textEdited(self, newText):
+        self.listWidget.shown_items = []
+        for item in self.listWidget.all_items:
+            if newText in item:
+                self.listWidget.shown_items.append(item)
+        self.set_list(self.listWidget.shown_items)
+
+    def submit(self):
+        self.submitted.emit(self.values)
         self.close()
+
+class ItemList(QtWidgets.QListWidget):
+    all_items = []
+    shown_items = []
+
+    def __init__(self, list=[], multiple_selection=False):
+        super(SelectFromList, self).__init__()
+
+        # Create the list widget
+		self.shown_items = self.all_items = l
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+        if multiple_selection:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+
+    def set_list(self, l):
+        self.clear()
+        for item in l:
+            self.addItem(item)

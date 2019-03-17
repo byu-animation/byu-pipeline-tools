@@ -66,12 +66,10 @@ class MayaPublisher(Publisher):
 
         return CheckBoxOptions(parent=maya_utils.maya_main_window(), title=title, options=options)
 
-    @Slot(list)
+    @Slot(dict)
     def submitted_scene_prep(self, selections):
 
-        for selection in selections:
-            self.publish_data.update({selection[1], selection[2]}})
-
+        self.data.update(selections)
         self.do_next_gui_method()
 
     '''

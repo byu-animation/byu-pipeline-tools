@@ -52,7 +52,7 @@ class GUITool:
             return
 
         method, handler = self.method_order[self.method_number]
-        if connected_method:
+        if handler:
             window_instance = method()
             window_instance.submitted.connect(handler)
             window_instance.show()
@@ -75,7 +75,7 @@ class GUITool:
 
     def SelectElementDialog(self):
         title = "Select element:"
-        lists = Project().list_department_tuples()
+        lists = Project().list_bodies_by_departments()
         window = maya_utils.maya_main_window()
         return SelectFromMultipleLists(title, lists, window)
 
