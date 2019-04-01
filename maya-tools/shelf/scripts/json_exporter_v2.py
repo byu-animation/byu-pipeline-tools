@@ -1,15 +1,28 @@
 from byuam import *
 from byuminigui import quick_dialogs
-from byutools.exporter import Exporter
 import pymel.core as pm
 
 import json
 
-import exporter, maya_utils
+from maya_exporter import MayaExporter
 
-class JSONExporter(Exporter):
-    def __init__(self, publisher=None, gui=True):
-        super(JSONExporter, self).__init__()
+import maya_utils
+
+class JSONExporter(MayaExporter, object):
+    def __init__(self, gui=True, element=None, show_tagger=False):
+        MayaExporter.__init__(self, gui=gui, element=element, show_tagger=show_tagger)
+
+    def insert_gui_methods_first(self):
+        super(JSONExporter, self).insert_gui_methods_first()
+
+    def insert_gui_methods_middle(self):
+        super(JSONExporter, self).insert_gui_methods_middle()
+
+    def insert_gui_methods_last(self):
+        super(JSONExporter, self).insert_gui_methods_last()
+
+    def append_gui_methods_after(self):
+        super(JSONExporter, self).append_gui_methods_after()
 
     def export_prop(self):
         prop_node = maya_utils.get_top_level_nodes()[0]

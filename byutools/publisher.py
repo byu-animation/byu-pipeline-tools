@@ -1,22 +1,18 @@
 import os
 
 # We're going to need asset management module
-from byuam import *
-
-# Minimal UI
-from byuminigui.select_from_list import SelectFromList, SelectFromMultipleLists
-from byuminigui.write_message import WriteMessage
+from byuam import Environment, Project
 
 try:
     from PySide.QtCore import Slot
 except ImportError:
-    from PySide2.Core import Slot
+    from PySide2.QtCore import Slot
 
 from gui_tool import GUITool
+from gui_method import GUIMethod
 
 '''
     Executes a series of methods prompting for user input where needed.
-
     Alternatively, will auto publish if gui is set to False.
 '''
 
@@ -24,14 +20,16 @@ class Publisher(GUITool):
 
     def __init__(self, gui=True, src=None):
 
+        super(Publisher, self).__init__(gui=gui)
+
         if not src:
             src = self.get_src_file()
 
-        self.data = {
-            "gui" : gui,
-            "user" : Environment().get_user(),
+        self.data.update({
+            "tool" : "Publisher",
+            "user" : Environment().get_current_username(),
             "src" : src
-        }
+        })
 
     def get_src_file(self):
         raise NotImplementedError("get_src_file() is not implemented.")
@@ -46,66 +44,72 @@ class Publisher(GUITool):
                 "element" : element
             })
 
-        if not self.data["gui"]:
-            if "element" in self.data:
-                self.auto_publish_element()
-            else:
-                print "Cannot publish {0}, not checked out.".format(src)
+        if self.gui:
+            self.set_gui_methods()
+            self.run_gui_methods()
+
         else:
-            self.set_gui_method_order()
-            self.do_next_gui_method()
+            if "element" in self.data:
+                self.non_gui_publish()
+            else:
+                self.display_error("Cannot publish {0}, not checked out.".format(src))
+                self.exit_tool(succeeded=False)
 
     '''
-        We set the steps, in order, that each part of Publish will run.
-        Entries with two non-null elements are a Slot/Signal pair.
-        The first method must return a QtWidget that has a submitted() signal.
+        We insert prepare_scene(), SelectElementDialog() and CommitMessageDialog()
+        at the beginning of the gui_methods, to be run immediately after before_gui_methods()
     '''
 
-    def set_gui_method_order(self):
+    def insert_gui_methods_first(self):
+        super(Publisher, self).insert_gui_methods_first()
+        self.gui_methods = [
+            GUIMethod(self.prepare_scene),
+            GUIMethod(self.SelectElementDialog, handler=self.submitted_element),
+            GUIMethod(self.CommitMessageDialog, handler=self.submitted_commit_message)
+        ] + self.gui_methods
 
-        self.gui_method_number = 0
+    '''
+        We call the super, in case it has anything to insert in the middle. We, however,
+        do not.
+    '''
 
-        self.gui_method_order = [
-            (self.prepare_scene, None),
-            (self.SelectElementDialog, self.submitted_element),
-            (self.CommitMessageDialog, self.submitted_commit_message),
-            (self.publish_element, None)
-            (self.export, None)
+    def insert_gui_methods_middle(self):
+        super(Publisher, self).insert_gui_methods_middle()
+
+    '''
+        We insert GUI Methods at the end, to be run right before after_gui_methods()
+    '''
+
+    def insert_gui_methods_last(self):
+        super(Publisher, self).insert_gui_methods_last()
+        self.gui_methods += [
+            GUIMethod(self.publish_element)
         ]
 
     '''
         Step 0: A non-gui way of doing this.
     '''
 
-    def auto_publish(self):
+    def non_gui_publish(self):
         self.prepare_scene()
         self.publish_element()
-        self.export()
 
     '''
         Step 1: Prepare the scene for export, doing whatever is needed.
     '''
     def prepare_scene(self):
         if "element" in self.data:
-            self.skip_to_next((self.CommitMessageDialog, self.submitted_commit_message))
-        else:
-            self.do_next_gui_method()
+            self.skip_to_next(GUIMethod(self.CommitMessageDialog, self.submitted_element))
 
     '''
         Step 2: SelectElementDialog() -> submitted_element()
-        (Defined in the GUITool class)
+        (Defined in the byutools.GeneralPrompts class)
     '''
 
     '''
-        Step 3: Write a commit message
+        Step 3: CommitMessageDialog() -> submitted_commit_message()
+        (Defined in byutools.GeneralPrompts class)
     '''
-    def CommitMessageDialog(self):
-        return WriteMessage("Write commit message:")
-
-    @Slot(str)
-    def submitted_commit_message(self, message):
-        data.update({"message" : message})
-        self.do_next_method()
 
     '''
         Step 4: Publish element
@@ -116,11 +120,3 @@ class Publisher(GUITool):
         src = self.data["src"]
         message = self.data["message"]
         element.publish(user, src, message)
-        self.do_next_method()
-
-    '''
-        Step 5: Export will be implemented in child classes as needed.
-    '''
-    def export(self):
-        print "Finished publish with the following data:"
-        print self.data

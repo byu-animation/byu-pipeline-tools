@@ -2,7 +2,6 @@ import os
 import shutil
 
 from .body import Body, Asset, Shot, Tool, CrowdCycle, AssetType
-from .department import Department
 from .element import Checkout, Element
 from .environment import Department, Environment, User
 from . import pipeline_io
@@ -264,17 +263,22 @@ class Project:
 		userlist.sort()
 		return userlist
 
-	def list_bodies_by_departments(self):
+	def list_bodies_by_departments(self, departments=Department.ALL):
 		'''
 		returns a list of tuples containing label and list of body names
 		'''
 		result = {}
-		for department in Department.ALL:
+		for department in departments:
 			result[department] = []
-		for body in list_bodies():
+		for body_name in self.list_bodies():
 			for department in Department.ALL:
-				if body.get_element(department):
-					result[deparment].append(body.get_name())
+				body = self.get_body(body_name)
+				try:
+					if body and body.get_element(department):
+						result[department].append(body.get_name())
+				except Exception as e:
+					pass
+		return result
 
 	def is_checkout_dir(self, path):
 		'''

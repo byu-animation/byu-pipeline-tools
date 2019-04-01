@@ -5,22 +5,22 @@ from PySide2 import QtWidgets
 from byuam import *
 
 def maya_main_window():
-	for obj in QtWidgets.qApp.topLevelWidgets():
-		if obj.objectName() == 'MayaWindow':
-			return obj
-	raise RuntimeError('Could not find MayaWindow instance')
+    for obj in QtWidgets.qApp.topLevelWidgets():
+        if obj.objectName() == 'MayaWindow':
+            return obj
+    raise RuntimeError('Could not find MayaWindow instance')
 
 def get_scene_file():
     filename = pm.system.sceneName()
     if not filename:
-        return filename, True
         filename = os.environ['HOME']
-        filename = os.path.join(filepath, 'untitled.mb')
+        filename = os.path.join(filename, 'untitled.mb')
+        return filename, True
     else:
         return filename, False
 
 def save_scene_file():
-    filename, untitled = maya_utils.get_scene_file()
+    filename, untitled = get_scene_file()
     if untitled:
         pm.system.renameFile(filename)
     return pm.system.saveFile()
@@ -39,7 +39,7 @@ def freeze_transformations():
     return failed
 
 def convert_to_education():
-	pm.FileInfo()['license'] = 'education'
+    pm.FileInfo()['license'] = 'education'
 
 def get_top_level_nodes():
     assemblies = pm.ls(assemblies=True)
@@ -50,7 +50,12 @@ def get_top_level_nodes():
 
 def group_top_level():
     top_level_nodes = get_top_level_nodes()
-    if len(top_level_nodes) > 0:
+    for top_level_node in top_level_nodes:
+        # If the top level has a mesh, group it.
+        if top_level_node.getShape() is not None:
+            pm.group(top_level_nodes)
+    # If the top level has more than one node, group it.
+    if len(top_level_nodes) > 1:
         pm.group(top_level_nodes)
 
 def delete_image_planes():

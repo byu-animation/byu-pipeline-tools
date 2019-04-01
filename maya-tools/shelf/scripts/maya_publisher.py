@@ -1,14 +1,16 @@
 import os
 
 # Other export scripts
-import maya_utils, alembic_exporter, json_exporter
+import maya_utils
+from alembic_exporter_v2 import AlembicExporter
+from json_exporter_v2 import JSONExporter
 
 # We're going to need asset management module
-from byuam import *
+from byuam import Environment, Project
 
 # Minimal UI
 from byuminigui.checkbox_options import CheckBoxOptions
-from byuminigui import quick_dialogs
+from byuminigui.select_from_list import SelectFromList
 
 # Import BYU Tools
 from byutools.publisher import Publisher
@@ -16,7 +18,7 @@ from byutools.publisher import Publisher
 try:
     from PySide.QtCore import Slot
 except ImportError:
-    from PySide2.Core import Slot
+    from PySide2.QtCore import Slot
 
 
 '''
@@ -28,49 +30,45 @@ class MayaPublisher(Publisher):
     def __init__(self, gui=True, src=None):
         super(MayaPublisher, self).__init__(gui, src)
 
+    def get_src_file(self):
+        filename, untitled = maya_utils.get_scene_file()
+        if untitled:
+            return maya_utils.save_scene_file()
+        else:
+            return maya_utils.get_scene_file()[0]
 
-    def set_gui_method_order(self):
-        # Use the default steps defined in byutools.Publisher
-        super(MayaPublisher, self).set_gui_method_order()
+    def insert_gui_methods_first(self):
+        super(JSONExporter, self).insert_gui_methods_first()
+        self.gui_methods = [
+            (self.ScenePrepDialog, self.submitted_scene_prep)
+        ] + self.gui_methods
 
-        # We insert a scene prep dialog that will run first.
-        self.gui_method_order.insert(0, (self.ScenePrepDialog, self.submitted_scene_prep))
+    def insert_gui_methods_middle(self):
+        super(JSONExporter, self).insert_gui_methods_middle()
+
+    def insert_gui_methods_last(self):
+        super(JSONExporter, self).insert_gui_methods_last()
+
+    def append_gui_methods_after(self):
+        super(JSONExporter, self).append_gui_methods_after()
 
     '''
         Step 0: A non-gui way of doing this.
     '''
-    def auto_publish(self):
+    def non_gui_publish(self):
         self.data.update({
-            "clear_construction_history" : True,
-            "freeze_transformations" : True,
-            "delete_image_planes" : True,
+            "clear_construction_history" : False,
+            "freeze_transformations" : False,
+            "delete_image_planes" : False,
             "group_top_level" : True,
             "convert_to_education" : True
         })
-        super(MayaPublisher, self).auto_publish()
+        super(MayaPublisher, self).non_gui_publish(self)
 
     '''
-        Step 1: Scene prep dialog to ask for settings
+        Step 1: ScenePrepDialog() -> submitted_scene_prep
+        Defined in maya-tools.MayaPrompts
     '''
-    def ScenePrepDialog(self):
-
-        title = "Scene Cleanup Options"
-
-        options = [
-            ("Clear Construction History", "clear_construction_history", True),
-            ("Freeze Transformations", "freeze_transformations", True),
-            ("Delete Image Planes", "delete_image_planes", True),
-            ("Group Top Level", "group_top_level", True),
-            ("Conert To Education License", "convert_to_education", True)
-        ]
-
-        return CheckBoxOptions(parent=maya_utils.maya_main_window(), title=title, options=options)
-
-    @Slot(dict)
-    def submitted_scene_prep(self, selections):
-
-        self.data.update(selections)
-        self.do_next_gui_method()
 
     '''
         Step 2: Prepare the scene
@@ -92,10 +90,10 @@ class MayaPublisher(Publisher):
             maya_utils.save_scene_file()
 
         except Exception as e:
-            self.display_error("Problems preparing scene {0}".format(self.publish_data["src"], details=str(e))
-            return False
+            self.display_error("Problems preparing scene {0}".format(self.publish_data["src"], details=str(e)))
 
-        self.do_next_gui_method()
+        else:
+            self.do_next_gui_method()
 
     '''
         Step 3: Select an element.
@@ -119,7 +117,21 @@ class MayaPublisher(Publisher):
         Step 6 (final): Run maya exporters
     '''
     def export(self):
-        AlembicExporter(self.publish_data["gui"], self, True).export()
-        JsonExporter(self.publish_data["gui"], self).export()
         print "Finished publish with the following data:"
-        print self.publish_data
+        print self.data
+        self.exportAlembic()
+
+    def exportAlembic(self):
+        abcExporter = AlembicExporter(gui=self.data["gui"], element=self.data["element"], show_tagger=True)
+        abcExporter.export()
+        self.exportJSON()
+
+    def alembicExported(self):
+        self.do_next_gui_method()
+
+    def exportJSON(self):
+        jsonExporter = JSONExporter(gui=self.data["gui"], element=self.data["element"])
+        jsonExporter.export()
+
+    def jsonExported(self):
+        self.do_next_gui_method()

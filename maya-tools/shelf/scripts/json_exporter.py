@@ -22,10 +22,12 @@ from byuam.project import Project
 from byuam.environment import Environment, Department, Status
 import publish
 from byugui.publish_gui import PublishWindow
-from byugui.item_list import SelectFromList
+#from byugui.item_list import SelectFromList
+from byuminigui.select_from_list import SelectFromList
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2.QtCore import Signal, Slot
+import maya_utils
 
 
 
@@ -195,10 +197,11 @@ def export_shot(filePath):
             f.close()
         showSuccessPopup()
 
-    select_from_list_dialog = SelectFromList(parent=maya_main_window(), multiple_selection=True)
-    select_from_list_dialog.setWindowTitle("Select any animated props")
+
     props_and_nums = [prop["asset_name"] + ", version: " + str(prop["version_number"]) for prop in props]
-    select_from_list_dialog.setList(props_and_nums)
+    #select_from_list_dialog.setList(props_and_nums)
+    select_from_list_dialog = SelectFromList(parent=maya_main_window(), l=props_and_nums, multiple_selection=True)
+    #select_from_list_dialog.setWindowTitle("Select any animated props")
     select_from_list_dialog.filePath = filePath
     select_from_list_dialog.selected_list.connect(write_animated_props)
     select_from_list_dialog.show()
@@ -406,11 +409,11 @@ def go(body = None, type = AssetType.SET):
             print("Didn't export JSON, because it probably is a character.")
             return
 
-        maya_publish_dialog = SelectFromList(parent=maya_main_window())
-        maya_publish_dialog.setWindowTitle("Select shot" if type == "shot" else "Select prop" if type==AssetType.PROP else "Select set")
-        maya_publish_dialog.setList(selection_list)
-        maya_publish_dialog.filePath = filePath
-        maya_publish_dialog.selected.connect(publish_submitted)
+        maya_publish_dialog = SelectFromList(parent=maya_utils.maya_main_window(), l=selection_list)
+        #maya_publish_dialog.setWindowTitle("Select shot" if type == "shot" else "Select prop" if type==AssetType.PROP else "Select set")
+        #maya_publish_dialog.setList(selection_list)
+        #maya_publish_dialog.filePath = filePath
+        maya_publish_dialog.submitted.connect(publish_submitted)
         maya_publish_dialog.show()
     else:
         if type == "shot":
