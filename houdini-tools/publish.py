@@ -79,11 +79,7 @@ def publish_hda_go(selectedHDA=None, departments=[Department.HDA, Department.ASS
 
 	if selectedHDA.type().definition() is not None:
 		src = selectedHDA.type().definition().libraryFilePath()
-		print departments
-		if selectedHDA.name() in departments:
-			publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), departments)
-		else:
-			publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), [Department.ASSEMBLY])
+		publishWindow = PublishWindow(src, hou.ui.mainQtWindow(), departments)
 
 	else:
 		message_gui.error('The selected node is not a digital asset')

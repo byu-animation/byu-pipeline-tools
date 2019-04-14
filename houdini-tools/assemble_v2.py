@@ -296,13 +296,17 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
     for reference in set_data:
 
         body = Project().get_body(reference["asset_name"])
+
+        if body is None:
+            print 'Error on: ', reference["asset_name"]
+            continue
         if not body.is_asset() or body.get_type() == AssetType.SET:
             continue
 
         # Tab the subnet in if it doesn't exist, otherwise update_contents
         subnet = next((child for child in current_children if matches_reference(child, reference)), None)
         if subnet is None:
-            subnet = tab_in(inside, reference["asset_name"])
+            subnet = byu_geo(inside, reference["asset_name"])
         else:
             update_contents(subnet, reference["asset_name"], mode)
 
@@ -321,10 +325,11 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
             subnet.setParms(newparms)
 
         # Set the set accordingly
+
         subnet.parm("space").set("set")
         subnet.parm("set").set(set_name)
-        subnet.parm("update_mode").setExpression("ch(\"../../update_mode\")", language=hou.exprLanguage.Hscript)
-
+        #subnet.parm("update_mode").setExpression("ch(\"../../update_mode\")", language=hou.exprLanguage.Hscript)
+        subnet.parm("update_mode").set(UpdateModes.list_modes().index(mode))
         # Set the data
         subnet.parm("data").set({
             "asset_name": str(reference["asset_name"]),
@@ -967,3 +972,23 @@ def commit_conversions():
 
         # commit old_node
         # commit new_node
+'''this function has the set look for shot specific information, specifically if it has any animated objects'''
+def shotInfo(shot_name):
+    print shot_name
+    shot_file = os.path.join(Project().get_shots_dir(),shot_name, "anim", "main", "cache", "animated_props.json")
+
+    shot_data=None
+    try:
+        with open(shot_file) as f:
+            shot_data = json.load(f)
+    except Exception as error:
+        message_gui.error("No valid JSON file for " + shot_name)
+        return
+
+    for asset in shot_data:
+        try:
+            node=hou.node('./inside/'+asset['asset_name'])
+            node.parm('space').set('2')
+            node.parm('shot').set(shot_name)
+        except:
+            print 'error ', asset['asset_name']

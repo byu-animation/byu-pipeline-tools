@@ -234,11 +234,18 @@ def exportReferences(filePath):
                     break
             for child in curr.getChildren():
                 stack.append(child)
+        try:
+            verts = firstMesh.vtx
+            vertpos1 = verts[0].getPosition(space='world')
+            vertpos2 = verts[1].getPosition(space='world')
+            vertpos3 = verts[2].getPosition(space='world')
 
-        verts = firstMesh.vtx
-        vertpos1 = verts[0].getPosition(space='world')
-        vertpos2 = verts[1].getPosition(space='world')
-        vertpos3 = verts[2].getPosition(space='world')
+        except Exception as e:
+            log=open('/tmp/byuDebug.txt','w+')
+            log.write('error: ' +str(e))
+            log.close()
+            print'error: ', e
+            continue
 
         # Put all relevant data into dictionary object
         currRefObj = {"asset_name": currRefName,
