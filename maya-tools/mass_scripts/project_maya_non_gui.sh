@@ -1,11 +1,5 @@
-#!/bin/sh
-
-# project_maya.sh: opens maya with the project environment
-# @author Brian Kingery
-
-# source project environment
 DIR=`dirname $0`
-source ${DIR}/project_env.sh
+source ../../app-launch-scripts/project_env.sh
 
 
 
@@ -18,8 +12,9 @@ export MAYA_SHELF_PATH=${BYU_TOOLS_DIR}/maya-tools/shelf
 export MAYA_CUSTOM_TEMPLATE_WRITE_PATH=${BYU_TOOLS_DIR}/maya-tools/viewTemplates
 export XBMLANGPATH=${BYU_TOOLS_DIR}/maya-tools/shelf/icons/%B
 
-# Change directories so current directory is not in the tools folder
-cd ${USER_DIR}
 
-echo "Starting Maya..."
-maya -script ${MAYA_SHELF_DIR}/byu_shelf.mel &
+# Change directories so current directory is not in the tools folder
+#cd ${USER_DIR}
+if [ $# -eq 0 ]; then echo 'Specify Python Script to run as first argument'; exit
+else '/usr/autodesk/maya2018/bin/mayapy' $1
+fi

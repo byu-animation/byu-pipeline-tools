@@ -29,6 +29,16 @@ def open_file():
 			cmds.file(filepath, open=True, force=True)
 			print "open file "+filepath
 
+def non_gui_open(filePath=None,assetName='Temp'):
+	if filePath == None:
+		print 'no file'
+		return
+	if os.path.exists(filePath):
+		cmds.file(filePath, open=True, force=True)
+		print "open file " + assetName
+	else:
+		print 'Does not Exist: '+assetName
+
 def go():
 	parent = maya_main_window()
 	global maya_checkout_dialog

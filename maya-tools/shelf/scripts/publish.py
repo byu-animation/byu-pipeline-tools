@@ -72,12 +72,14 @@ def publishElement(element, user, src, comment):
 	#Export Alembics
 	print 'Publish Complete. Begin Exporting Alembic, or JSON if set'
 	body = Project().get_body(element.get_parent())
-	if body and body.is_asset() and body.get_type() == AssetType.SET:
+	try:
 		alembic_exporter.go(element=element)
-		json_exporter.go(body)
+	except:
+		print("alembic export failed.")
+	if body and body.is_asset():
+		json_exporter.go(body, body.get_type())
 	else:
-		alembic_exporter.go(element=element)
-		json_exporter.go(body, shot=True)
+		json_exporter.go(body, type="shot")
 	noEducationalLicence()
 	#sketchfab_exporter.go(element=element, dept=maya_publish_dialog.department)
 
@@ -100,3 +102,13 @@ def go():
 	global maya_publish_dialog
 	maya_publish_dialog = PublishWindow(filePath, parent, [Department.MODEL, Department.RIG, Department.LAYOUT, Department.ANIM, Department.CFX, Department.CYCLES])
 	maya_publish_dialog.finished.connect(post_publish)
+
+def non_gui_publish(element, user, src, comment):
+	dst = element.publish(user, src, comment)
+	#Ensure file has correct permissions
+	try:
+		os.chmod(dst, 0660)
+	except:
+		pass
+	print 'TODO: export playblast'
+	print element.get_name()
