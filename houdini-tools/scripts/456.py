@@ -1,5 +1,5 @@
-import assemble_v2
+'''
+    If anything needs to happen after the scene loads, here's where to do it
+'''
 
-print "attempting to rebuild all assets."
-
-#assemble_v2.rebuildAllAssets()
+print "script that runs before"

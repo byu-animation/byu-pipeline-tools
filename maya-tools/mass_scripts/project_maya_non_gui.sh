@@ -1,6 +1,8 @@
-DIR=`dirname $0`
+SOURCEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+CURRDIR=${pwd}
+cd ${SOURCEDIR}
 source ../../app-launch-scripts/project_env.sh
-
+cd ${CURRDIR}
 
 
 export CURRENT_PROG='Maya'
@@ -15,6 +17,6 @@ export XBMLANGPATH=${BYU_TOOLS_DIR}/maya-tools/shelf/icons/%B
 
 # Change directories so current directory is not in the tools folder
 #cd ${USER_DIR}
-if [ $# -eq 0 ]; then echo 'Specify Python Script to run as first argument'; exit
+if [ $# -eq 0 ]; then echo 'Specify Python Script to run as first argument'; return
 else '/usr/autodesk/maya2018/bin/mayapy' $1
 fi

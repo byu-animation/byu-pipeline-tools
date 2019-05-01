@@ -8,6 +8,7 @@ pwd=$(pwd)
 scriptLocation="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${scriptLocation}
 projectDir="$( cd ../../ && pwd )"
+toolsDir="$( cd ../ && pwd )"
 
 #Check ouptions for specifying a project directory
 while getopts p: option
@@ -27,7 +28,7 @@ then
 fi
 
 export BYU_PROJECT_DIR=${projectDir}
-export BYU_TOOLS_DIR=${projectDir}/byu-pipeline-tools
+export BYU_TOOLS_DIR=${toolsDir}
 
 # PySide (Note PySide doesn't work with Maya but PySide2 comes with Maya and gets loaded in automatically)
 # Also in /usr/lib64/python2.7/site-packages are most of the other python packages like PyQt4 (which we don't use) and sip (but I don't know if anything really uses anything here but we can have it just in case.)

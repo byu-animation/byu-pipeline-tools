@@ -4,10 +4,10 @@
 # @author Brian Kingery
 
 # source project environment
-DIR=`dirname $0`
-source ${DIR}/project_env.sh
+SOURCEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source ${SOURCEDIR}/project_env.sh
 
-
+echo "TOOLS DIR: "${BYU_TOOLS_DIR}
 
 export CURRENT_PROG='Maya'
 

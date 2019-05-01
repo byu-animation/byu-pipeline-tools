@@ -1,7 +1,7 @@
 def pre_render():
     print("Pre render script executing.")
-    import assemble_v2
-    assemble_v2.rebuildAllAssets()
+    #import assemble_v2
+    #assemble_v2.rebuildAllAssets()
 
 def pre_frame():
     print ("Pre frame script executing.")

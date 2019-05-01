@@ -339,6 +339,42 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
     inside.layoutChildren()
 
 '''
+    Cache all the contents of the set for faster cooking
+'''
+def set_cache_path(parent, child):
+    data = child.parm("data").evalAsJSONMap()
+    cachepath = parent.parm("cachepath").evalAsString() + "/" + child.name()
+    child.parm("cachepath").set(cachepath)
+
+def set_read_from_disk(node, on_or_off):
+    inside = node.node("inside")
+    children = [child for child in inside.children() if child.type().name() == "byu_geo"]
+
+    for child in children:
+        set_cache_path(node, child)
+        child.parm("read_from_disk").set(on_or_off)
+
+def reload_from_disk(node):
+    inside = node.node("inside")
+    children = [child for child in inside.children() if child.type().name() == "byu_geo"]
+
+    for child in children:
+        set_cache_path(node, child)
+        child.parm("reload_from_disk").pressButton()
+
+def save_to_disk(node):
+    inside = node.node("inside")
+    children = [child for child in inside.children() if child.type().name() == "byu_geo"]
+
+    for child in children:
+        set_cache_path(node, child)
+        read_from_disk_value = child.parm("read_from_disk").evalAsInt()
+        child.parm("read_from_disk").set(0)
+        child.parm("save_to_disk").pressButton()
+        child.parm("read_from_disk").set(read_from_disk_value)
+
+
+'''
     This function tabs in a BYU Character node and fills its contents with the appropriate character name.
     Departments is a mask because sometimes we tab this asset in when we want to work on Hair or Cloth, and don't want the old ones to be there.
 '''
