@@ -1,6 +1,11 @@
 import getpass
 import os
-import pwd
+global pwd_failed
+try:
+	import pwd
+	pwd_failed = False
+except:
+	pwd_failed = True
 
 from . import pipeline_io
 
@@ -167,7 +172,11 @@ class User:
 	def create_new_dict(username):
 		datadict = {}
 		datadict[User.CSID] = username
-		name = pwd.getpwnam(username).pw_gecos
+		global pwd_failed
+		if pwd_failed:
+			name = os.getenv("USER")
+		else:
+			name = pwd.getpwnam(username).pw_gecos
 		datadict[User.NAME] = name
 		datadict[User.EMAIL] = ''
 		return datadict

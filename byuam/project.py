@@ -2,7 +2,6 @@ import os
 import shutil
 
 from .body import Body, Asset, Shot, Tool, CrowdCycle, AssetType
-from .department import Department
 from .element import Checkout, Element
 from .environment import Department, Environment, User
 from . import pipeline_io

@@ -132,19 +132,24 @@ def super_print(message):
 this = sys.modules[__name__]
 
 # The source HDA's are currently stored inside the pipe source code.
-hda_path = os.path.join(Environment().get_project_dir(), "byu-pipeline-tools", "houdini-tools", "otls")
-
+hda_path = os.path.join(Environment().get_project_dir(), "byu-pipeline-tools", "houdini-tools", "hda")
 # We define the template HDAs definitions here, for use in the methods below
+
+print "hda path: " + hda_path
+sys.stdout.flush()
+'''
 hda_definitions = {
     Department.MATERIAL: hou.hdaDefinition(hou.sopNodeTypeCategory(), "byu_material", os.path.join(hda_path, "byu_material.hda")),
     Department.MODIFY: hou.hdaDefinition(hou.sopNodeTypeCategory(), "byu_modify", os.path.join(hda_path, "byu_modify.hda")),
     Department.HAIR: hou.hdaDefinition(hou.objNodeTypeCategory(), "byu_hair", os.path.join(hda_path, "byu_hair.hda")),
     Department.CLOTH: hou.hdaDefinition(hou.objNodeTypeCategory(), "byu_cloth", os.path.join(hda_path, "byu_cloth.hda"))
 }
+'''
 
 # The order in which these nodes appear is the order they will be created in
 byu_geo_departments = [Department.MODIFY, Department.MATERIAL]
 byu_character_departments = [Department.HAIR, Department.CLOTH]
+
 
 hda_dir = Environment().get_hda_dir()
 
