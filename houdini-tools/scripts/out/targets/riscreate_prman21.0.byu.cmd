@@ -32,6 +32,8 @@ if ( "$arg1" != "" ) then
     opparm $arg1 postrender "import ris_render_scripts;ris_render_scripts.post_render()"
     opparm $arg1 lpostframe "python"
 
+    opspare -a -t toggle -s 1 -l "Expand Rib Archives" -v 1 expand_rib_archives $arg1
+
     set location = `run("oppwf")`
     opcf /out
     set shopnet = `run("opadd -v shopnet")`
@@ -39,7 +41,7 @@ if ( "$arg1" != "" ) then
     set risnet = `run("opadd -v risnet")`
     opcf $risnet
     set integrator = `run("opadd -v pxrvcm")`
-    
+
     opcf $location
     opparm $arg1 shop_integratorpath `run("echo /out/$shopnet/$risnet/$integrator")`
     opparm $arg1 camera "/obj/byu_camera1/_/_/cam"
