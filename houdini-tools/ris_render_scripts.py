@@ -9,7 +9,7 @@ def pre_frame():
 
 def post_frame():
     print ("Post frame script executing.")
-    
+
     import hou
     node = hou.pwd()
     rib_outputmode = node.parm("rib_outputmode").evalAsInt()
@@ -53,59 +53,65 @@ def rib_expand(ribfile):
                     print "Error on this line: {0}".format(line)
                     return
                 archive_path = archive.group().replace("\"", "")
+                try:
+                    with open(archive_path) as archive_file:
+                        started_parsing = False
 
-                with open(archive_path) as archive_file:
-                    started_parsing = False
+                        lines_written = 0
 
-                    lines_written = 0
+                        for archive_line in archive_file:
+                            archive_begin = archive_begin_expr.search(archive_line)
+                            archive_end = archive_end_expr.search(archive_line)
 
-                    for archive_line in archive_file:
-                        archive_begin = archive_begin_expr.search(archive_line)
-                        archive_end = archive_end_expr.search(archive_line)
+                            # Error cases
+                            if (started_parsing and archive_begin) or (not started_parsing and archive_end):
+                                print "Malformed rib archive on this line: {0}".format(archive_line)
+                                new_file.write(line)
+                                break
 
-                        # Error cases
-                        if (started_parsing and archive_begin) or (not started_parsing and archive_end):
-                            print "Malformed rib archive on this line: {0}".format(archive_line)
-                            new_file.write(line)
-                            break
+                            # Edge case: One line that contains ArchiveBegin and ArchiveEnd
+                            if not started_parsing and archive_begin and archive_end:
+                                print "Rare case on line: {0}".format(archive_line)
+                                start_index = archive_begin.span()[1] + 1
+                                end_index = archive_end.span()[0] - 1
 
-                        # Edge case: One line that contains ArchiveBegin and ArchiveEnd
-                        if not started_parsing and archive_begin and archive_end:
-                            print "Rare case on line: {0}".format(archive_line)
-                            start_index = archive_begin.span()[1] + 1
-                            end_index = archive_end.span()[0] - 1
+                                new_file.write(archive_line[start_index : end_index])
+                                lines_written += 1
+                                break
 
-                            new_file.write(archive_line[start_index : end_index])
-                            lines_written += 1
-                            break
+                            # One line that contains ArchiveBegin, signalling start of archive
+                            if archive_begin:
+                                print "Start of archive {0} on line {1}".format(archive_path, archive_line)
+                                start_index = archive_begin.span()[1] + 1
+                                start_index = start_index if start_index < len(line) else len(line) - 1
 
-                        # One line that contains ArchiveBegin, signalling start of archive
-                        if archive_begin:
-                            print "Start of archive {0} on line {1}".format(archive_path, archive_line)
-                            start_index = archive_begin.span()[1] + 1
-                            start_index = start_index if start_index < len(line) else len(line) - 1
+                                new_file.write(archive_line[start_index : ])
+                                lines_written += 1
+                                started_parsing = True
 
-                            new_file.write(archive_line[start_index : ])
-                            lines_written += 1
-                            started_parsing = True
+                            # One line that contains ArchiveEnd, signalling end of archive
+                            elif archive_end:
+                                print "End of archive {0} on line {1}".format(archive_path, archive_line)
+                                end_index = archive_end.span()[0] - 1
+                                end_index = end_index if end_index > 0 else 0
 
-                        # One line that contains ArchiveEnd, signalling end of archive
-                        elif archive_end:
-                            print "End of archive {0} on line {1}".format(archive_path, archive_line)
-                            end_index = archive_end.span()[0] - 1
-                            end_index = end_index if end_index > 0 else 0
+                                new_file.write(archive_line[ : end_index])
+                                lines_written += 1
+                                started_parsing = False
 
-                            new_file.write(archive_line[ : end_index])
-                            lines_written += 1
-                            started_parsing = False
+                            # The line is in between archive_start and archive_end, so write it
+                            elif started_parsing:
+                                print "Wrote line {0} from archive {1}".format(lines_written, archive_path)
+                                new_file.write(archive_line)
+                                lines_written += 1
 
-                        # The line is in between archive_start and archive_end, so write it
-                        elif started_parsing:
-                            print "Wrote line {0} from archive {1}".format(lines_written, archive_path)
-                            new_file.write(archive_line)
-                            lines_written += 1
+                        print "{0} Total lines written from archive {1}".format(lines_written, archive_path)
+                except IOError:
+                    print "Unable to open {0}".format(archive_path)
+                except Error as e:
+                    print "Other error with {0}".format(e)
 
-                    print "{0} Total lines written from archive {1}".format(lines_written, archive_path)
+
 
     #Remove original file
     remove(ribfile)

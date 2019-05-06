@@ -30,7 +30,7 @@ if ( "$arg1" != "" ) then
 
     opparm $arg1 tpostrender ( 1 )
     opparm $arg1 postrender "import ris_render_scripts;ris_render_scripts.post_render()"
-    opparm $arg1 lpostframe "python"
+    opparm $arg1 lpostrender "python"
 
     opspare -a -t toggle -s 1 -l "Expand Rib Archives" -v 1 expand_rib_archives $arg1
 
