@@ -107,9 +107,13 @@ def rib_expand(ribfile):
 
                         print "{0} Total lines written from archive {1}".format(lines_written, archive_path)
                 except IOError:
+                    new_file.write(line)
                     print "Unable to open {0}".format(archive_path)
                 except Error as e:
+                    new_file.write(line)
                     print "Other error with {0}".format(e)
+
+
 
 
 
