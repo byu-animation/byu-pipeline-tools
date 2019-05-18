@@ -1,6 +1,12 @@
 
 def pre_render():
     print("Pre render script executing.")
+
+    import hou
+    for child in hou.node("/obj/").allSubChildren():
+        dbound = child.parm("ri_dbound")
+        if dbound and dbound.isAtDefault():
+            child.parm("ri_dbound").set(0.099)
     #import assemble_v2
     #assemble_v2.rebuildAllAssets()
 

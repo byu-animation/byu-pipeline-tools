@@ -5,8 +5,11 @@ import os
 import re
 import shutil
 import hou
-from byugui import message_gui
-from byugui.assemble_gui import AssembleWindow
+try:
+	from byugui import message_gui
+	from byugui.assemble_gui import AssembleWindow
+except:
+	pass
 from byuam import Project, Environment
 import tractor.api.author as author
 

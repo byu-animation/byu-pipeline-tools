@@ -104,15 +104,32 @@
 '''
 import hou, sys, os, json
 from byuam import Project, Department, Element, Environment, Body, Asset, Shot, AssetType
-from byugui import CheckoutWindow, message_gui
+gui = True
+try:
+    from byugui import CheckoutWindow, message_gui
+
+except:
+    gui = False
+
+# CHECKOUT BREAKS IN NON_GUI MODE
+try:
+    import checkout
+except:
+    pass
+
 import publish
 # DEBUGGING ONLY
 import inspect
 import datetime
-import checkout
 
 #sys.stdout = open(os.path.join(Project().get_users_dir(), Project().get_current_username(), "houdini_console_output.txt"), "a+")
 
+def error_message(message):
+    global gui
+    if gui:
+        message_gui.error(message)
+    else:
+        print message
 
 def lineno():
     return inspect.currentframe().f_back.f_lineno
@@ -173,7 +190,7 @@ def tab_in(parent, asset_name, already_tabbed_in_node=None, excluded_departments
     print "Creating node for {0}".format(asset_name)
     body = Project().get_body(asset_name)
     if body is None or not body.is_asset():
-        message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
+        error_message("Pipeline error: This asset either doesn't exist or isn't an asset.")
         return
     if body.get_type() == AssetType.CHARACTER:
         return byu_character(parent, asset_name, already_tabbed_in_node, excluded_departments)
@@ -182,7 +199,7 @@ def tab_in(parent, asset_name, already_tabbed_in_node=None, excluded_departments
     elif body.get_type() == AssetType.SET:
         return byu_set(parent, asset_name, already_tabbed_in_node)
     else:
-        message_gui.error("Pipeline error: this asset isn't a character, prop or set.")
+        error_message("Pipeline error: this asset isn't a character, prop or set.")
         return
 
 '''
@@ -200,7 +217,7 @@ def update_contents(node, asset_name, mode=UpdateModes.SMART):
 def subnet_type(asset_name):
     body = Project().get_body(asset_name)
     if body is None or not body.is_asset():
-        message_gui.error("Pipeline error: This asset either doesn't exist or isn't an asset.")
+        error_message("Pipeline error: This asset either doesn't exist or isn't an asset.")
         return
     if body.get_type() == AssetType.CHARACTER:
         return "byu_character"
@@ -209,7 +226,7 @@ def subnet_type(asset_name):
     elif body.get_type() == AssetType.SET:
         return "byu_set"
     else:
-        message_gui.error("Pipeline error: this asset isn't a character, prop or set.")
+        error_message("Pipeline error: this asset isn't a character, prop or set.")
         return
 
 
@@ -223,7 +240,7 @@ def byu_set(parent, set_name, already_tabbed_in_node=False, mode=UpdateModes.CLE
     # Check if it's a set and that it exists
     body = Project().get_body(set_name)
     if not body.is_asset() or not body.get_type() == AssetType.SET:
-        message_gui.error("Must be a set.")
+        error_message("Must be a set.")
 
     node = already_tabbed_in_node if already_tabbed_in_node else parent.createNode("byu_set")
     try:
@@ -247,7 +264,7 @@ def update_contents_set(node, set_name, mode=UpdateModes.SMART):
         with open(set_file) as f:
             set_data = json.load(f)
     except Exception as error:
-        message_gui.error("No valid JSON file for " + set_name)
+        error_message("No valid JSON file for " + set_name)
         return
 
     node.parm("asset_name").set(set_name)
@@ -383,7 +400,7 @@ def byu_character(parent, asset_name, already_tabbed_in_node=None, excluded_depa
     # Set up the body/elements and make sure it's a character
     body = Project().get_body(asset_name)
     if not body.is_asset() or not body.get_type() == AssetType.CHARACTER:
-        message_gui.error("Must be a character.")
+        error_message("Must be a character.")
         return None
 
     # If there's an already tabbed in node, set it to that node
@@ -412,7 +429,7 @@ def update_contents_character(node, asset_name, excluded_departments=[], mode=Up
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
     body = Project().get_body(asset_name)
     if not body.is_asset() or body.get_type() != AssetType.CHARACTER or "byu_character" not in node.type().name():
-        message_gui.error("Must be a character.")
+        error_message("Must be a character.")
         return None
 
     # Reset the data parm
@@ -466,7 +483,7 @@ def byu_geo(parent, asset_name, already_tabbed_in_node=None, excluded_department
     # Set up the body/elements and check if it's an asset.
     body = Project().get_body(asset_name)
     if not body.is_asset():
-        message_gui.error("Must be an asset.")
+        error_message("Must be an asset.")
         return None
 
     # Set up the nodes, name geo
@@ -497,10 +514,10 @@ def update_contents_geo(node, asset_name, excluded_departments=[], mode=UpdateMo
     # Set up the body/elements and make sure it's a character. Just do some simple error checking.
     body = Project().get_body(asset_name)
     if body is None:
-        message_gui.error("Asset doesn't exist.")
+        error_message("Asset doesn't exist.")
         return None
     if not body.is_asset() or body.get_type() == AssetType.SET or "byu_geo" not in node.type().name():
-        message_gui.error("Must be a prop or character.")
+        error_message("Must be a prop or character.")
         return None
 
     # Get interior nodes
@@ -535,17 +552,17 @@ def create_hda(asset_name, department, already_tabbed_in_node=None):
     # Check if this body is an asset. If not, return error.
     body = Project().get_body(asset_name)
     if not body.is_asset():
-        message_gui.error("Must be an asset of type PROP or CHARACTER.")
+        error_message("Must be an asset of type PROP or CHARACTER.")
         return None
 
     # Check if it is a set.
     if body.get_type() == AssetType.SET:
-        message_gui.error("Asset must be a PROP or CHARACTER.")
+        error_message("Asset must be a PROP or CHARACTER.")
         return None
 
     # Check if the user is trying to create a Hair or Cloth asset for a Prop on accident.
     if body.get_type() == AssetType.PROP and (department == Department.HAIR or department == Department.CLOTH):
-        message_gui.error("Hair and cloth should only be made for characters.")
+        error_message("Hair and cloth should only be made for characters.")
         return None
 
     # Create element if does not exist.
@@ -586,7 +603,7 @@ def create_hda(asset_name, department, already_tabbed_in_node=None):
         hda_instance = inside.createNode(asset_name + "_" + department)
         print('noce')
     except Exception as e:
-        message_gui.error("HDA Creation Error. " + asset_name + "_" + department + " must not exist.")
+        error_message("HDA Creation Error. " + asset_name + "_" + department + " must not exist.")
     hda_instance.setName(department)
     tab_into_correct_place(inside, hda_instance, department)
     hda_instance.allowEditingOfContents()
@@ -737,7 +754,7 @@ def tab_into_correct_place(inside, node, department):
         # Hair and Cloth assets should be connected to geo. If it doesn't exist, throw an error.
         geo = inside.node("geo")
         if geo is None:
-            message_gui.error("There should be a geo network. Something went wrong.")
+            error_message("There should be a geo network. Something went wrong.")
             return
 
         # Attach the Hair or Cloth asset to the geo network.
@@ -750,7 +767,7 @@ def tab_into_correct_place(inside, node, department):
         geo = inside.node("geo")
         shot_modeling = inside.node("shot_modeling")
         if shot_modeling is None or geo is None:
-            message_gui.error("There should be a shot_modeling and geo network. Something went wrong.")
+            error_message("There should be a shot_modeling and geo network. Something went wrong.")
             return None
 
         # If we're inserting a modify node, do the following
@@ -991,7 +1008,7 @@ def commit_conversions():
 
     # Don't go on unless there's a valid network box
     if len(boxes) < 1:
-        message_gui.error("There aren't any network boxes created by the conversion script.")
+        error_message("There aren't any network boxes created by the conversion script.")
         return
 
     for box in boxes:
@@ -1018,7 +1035,7 @@ def shotInfo(shot_name):
         with open(shot_file) as f:
             shot_data = json.load(f)
     except Exception as error:
-        message_gui.error("No valid JSON file for " + shot_name)
+        error_message("No valid JSON file for " + shot_name)
         return
 
     for asset in shot_data:

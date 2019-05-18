@@ -1,8 +1,11 @@
 #Author: Trevor Barrus and Ben DeMann
 import hou
 import os
-from PySide2 import QtGui, QtWidgets, QtCore
-from byugui import PublishWindow, message_gui
+try:
+	from PySide2 import QtGui, QtWidgets, QtCore
+	from byugui import PublishWindow, message_gui
+except:
+	pass
 
 from byuam import Department, Project, Element, Environment
 
